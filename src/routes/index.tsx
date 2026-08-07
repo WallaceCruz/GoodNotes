@@ -40,8 +40,13 @@ function Index() {
   const activeNote =
     (store.project?.files ?? []).flatMap((f) => f.notes).find((n) => n.id === activeNoteId) ?? null;
 
+  if (!store.hydrated) {
+    return <div className="h-screen w-full bg-background" />;
+  }
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+
       <AppSidebar store={store} />
 
       <div className="flex min-w-0 flex-1 flex-col">
