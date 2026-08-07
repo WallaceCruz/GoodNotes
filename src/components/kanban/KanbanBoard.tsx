@@ -48,7 +48,7 @@ export function KanbanBoard({
 
   return (
     <div className="canvas-dots flex-1 overflow-x-auto p-4">
-      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+      <DndContext id="kanban-dnd" sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
         <div className="flex items-start gap-3">
           {file.columns.map((c) => (
             <KanbanColumn
