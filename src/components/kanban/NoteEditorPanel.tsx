@@ -9,14 +9,14 @@ import {
   Italic,
   List,
   ListOrdered,
-  Plus,
   Strikethrough,
-  Trash2,
   Underline as UnderlineIcon,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { NOTE_COLORS, type Note, type NoteColor } from "@/lib/board-types";
+import { useEffect } from "react";
+import { NOTE_COLORS, type Note, type NoteColor, type SubStatus } from "@/lib/board-types";
+import { SubnoteDeck } from "./SubnoteDeck";
+import { TagEditor } from "./TagEditor";
 import { cn } from "@/lib/utils";
 import { noteBg, noteLabel } from "./note-style";
 
@@ -24,8 +24,9 @@ type Props = {
   note: Note;
   onClose: () => void;
   onChange: (patch: Partial<Note>) => void;
-  onAddSubnote: (text: string, color: NoteColor) => void;
+  onAddSubnote: (text: string, color: NoteColor, status: SubStatus) => void;
   onUpdateSubnote: (subId: string, text: string) => void;
+  onMoveSubnote: (subId: string, status: SubStatus) => void;
   onRemoveSubnote: (subId: string) => void;
 };
 
@@ -35,9 +36,9 @@ export function NoteEditorPanel({
   onChange,
   onAddSubnote,
   onUpdateSubnote,
+  onMoveSubnote,
   onRemoveSubnote,
 }: Props) {
-  const [subColor, setSubColor] = useState<NoteColor>("amber");
 
   const editor = useEditor(
     {
@@ -71,7 +72,7 @@ export function NoteEditorPanel({
   );
 
   return (
-    <section className="flex w-96 shrink-0 flex-col border-l border-border bg-background">
+    <section className="flex w-[26rem] shrink-0 flex-col border-l border-border bg-background">
       <header className="flex items-center gap-2 border-b border-border px-3 py-2">
         <span className="text-sm font-semibold">Nota</span>
         <button onClick={onClose} aria-label="Fechar nota" className="ml-auto text-muted-foreground">
@@ -148,58 +149,22 @@ export function NoteEditorPanel({
         </div>
 
         <div className="mt-5">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Subnotas
-            </p>
-            <div className="flex items-center gap-1">
-              {NOTE_COLORS.map((c) => (
-                <button
-                  key={c}
-                  aria-label={`Cor da subnota ${noteLabel[c]}`}
-                  onClick={() => setSubColor(c)}
-                  className={cn(
-                    "h-4 w-4 rounded-full border border-border",
-                    noteBg[c],
-                    subColor === c && "ring-2 ring-ring",
-                  )}
-                />
-              ))}
-              <button
-                aria-label="Adicionar subnota"
-                onClick={() => onAddSubnote("Nova subnota", subColor)}
-                className="ml-1 rounded p-1 text-muted-foreground hover:bg-accent"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Tags
+          </p>
+          <div className="mt-2">
+            <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} size="md" />
           </div>
+        </div>
 
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {note.subnotes.map((s) => (
-              <div
-                key={s.id}
-                className={cn(
-                  "group relative rounded-md border border-border/60 p-2 shadow-sm",
-                  noteBg[s.color],
-                )}
-              >
-                <textarea
-                  value={s.text}
-                  onChange={(e) => onUpdateSubnote(s.id, e.target.value)}
-                  rows={3}
-                  className="w-full resize-none bg-transparent text-xs leading-relaxed outline-none"
-                />
-                <button
-                  aria-label="Excluir subnota"
-                  onClick={() => onRemoveSubnote(s.id)}
-                  className="absolute right-1 top-1 opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 className="h-3 w-3 text-foreground/60" />
-                </button>
-              </div>
-            ))}
-          </div>
+        <div className="mt-5">
+          <SubnoteDeck
+            subnotes={note.subnotes}
+            onAdd={onAddSubnote}
+            onUpdate={onUpdateSubnote}
+            onMove={onMoveSubnote}
+            onRemove={onRemoveSubnote}
+          />
         </div>
       </div>
     </section>
