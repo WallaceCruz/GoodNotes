@@ -175,7 +175,7 @@ export function useBoardStore() {
           return { ...f, notes: rest };
         }),
 
-      addSubnote: (noteId: string, text: string, color: NoteColor) =>
+      addSubnote: (noteId: string, text: string, color: NoteColor, status: SubStatus = "todo") =>
         updateFile((f) => ({
           ...f,
           notes: f.notes.map((n) =>
@@ -183,7 +183,7 @@ export function useBoardStore() {
               ? {
                   ...n,
                   updatedAt: Date.now(),
-                  subnotes: [...n.subnotes, { id: uid(), text, color, status: "todo" as SubStatus }],
+                  subnotes: [...n.subnotes, { id: uid(), text, color, status }],
                 }
               : n,
           ),
