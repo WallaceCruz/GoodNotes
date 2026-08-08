@@ -2,10 +2,21 @@ export type NoteColor = "rose" | "amber" | "lime" | "sky" | "violet" | "peach";
 
 export const NOTE_COLORS: NoteColor[] = ["rose", "amber", "lime", "sky", "violet", "peach"];
 
+export type SubStatus = "todo" | "doing" | "done";
+
+export const SUB_STATUSES: SubStatus[] = ["todo", "doing", "done"];
+
+export const SUB_STATUS_LABEL: Record<SubStatus, string> = {
+  todo: "A fazer",
+  doing: "Fazendo",
+  done: "Feito",
+};
+
 export type SubNote = {
   id: string;
   text: string;
   color: NoteColor;
+  status: SubStatus;
 };
 
 export type Note = {
@@ -16,6 +27,7 @@ export type Note = {
   color: NoteColor;
   author: string;
   updatedAt: number;
+  tags: string[];
   subnotes: SubNote[];
 };
 
@@ -65,6 +77,7 @@ function makeFile(name: string, seed: Array<Partial<Note>>): BoardFile {
       color: n.color ?? "rose",
       author: n.author ?? "Walle Dev",
       updatedAt: n.updatedAt ?? minutes(60 + i * 30),
+      tags: n.tags ?? [],
       subnotes: n.subnotes ?? [],
     })),
   };
@@ -83,11 +96,13 @@ export function createInitialState(): BoardState {
               content:
                 "<p>Revisar os bundles priorizados para a primeira onda de 2026 e alinhar com o time de pricing.</p>",
               color: "rose",
+              tags: ["pricing", "bundles"],
               author: "Walle Dev",
               updatedAt: minutes(12),
               subnotes: [
-                { id: uid(), text: "Levantar bundles duplicados", color: "amber" },
-                { id: uid(), text: "Validar com pricing", color: "sky" },
+                { id: uid(), text: "Levantar bundles duplicados", color: "amber", status: "todo" },
+                { id: uid(), text: "Validar com pricing", color: "sky", status: "doing" },
+                { id: uid(), text: "Mapear onda 1", color: "lime", status: "done" },
               ],
             },
             {
@@ -95,6 +110,7 @@ export function createInitialState(): BoardState {
               content:
                 "<p>Detectei duplicidade entre dois requisitos funcionais e uma regra de negócio.</p>",
               color: "amber",
+              tags: ["checkout"],
               author: "Agente Allan",
               updatedAt: minutes(48),
             },
@@ -103,6 +119,7 @@ export function createInitialState(): BoardState {
               content:
                 "<p>Precisamos incluir Jurídico como dependência antes de fechar esse escopo.</p>",
               color: "lime",
+              tags: ["mobile", "jurídico"],
               author: "Marina Costa",
               updatedAt: minutes(120),
             },
@@ -111,6 +128,7 @@ export function createInitialState(): BoardState {
               content:
                 "<p>Revisei os critérios de aceitação e faltam cenários para tentativa expirada e link reutilizado.</p>",
               color: "violet",
+              tags: ["user story"],
               author: "Agente Angelina",
               updatedAt: minutes(180),
             },
@@ -119,6 +137,7 @@ export function createInitialState(): BoardState {
               content:
                 "<p>Os cenários de falha do login social ainda não foram refletidos nos casos de teste vinculados.</p>",
               color: "sky",
+              tags: ["qa", "checkout"],
               author: "Agente Bruno",
               updatedAt: minutes(240),
             },
@@ -129,6 +148,7 @@ export function createInitialState(): BoardState {
               content:
                 "<p>Precisamos explicitar retenção de logs por 12 meses para atender compliance interno.</p>",
               color: "peach",
+              tags: ["compliance"],
               author: "Paula Mendes",
               updatedAt: minutes(300),
             },
@@ -137,6 +157,7 @@ export function createInitialState(): BoardState {
               content:
                 "<p>Vamos quebrar esse bloco em dois épicos menores: onboarding e pagamentos.</p>",
               color: "amber",
+              tags: ["mobile"],
               author: "Thiago Ghisi",
               updatedAt: minutes(420),
             },

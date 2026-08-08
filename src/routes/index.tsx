@@ -2,10 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ChevronRight, FileText, Folder, Layers } from "lucide-react";
 import { useState } from "react";
 import { AppSidebar } from "@/components/kanban/AppSidebar";
+import { BoardFilters, emptyFilters, type Filters } from "@/components/kanban/BoardFilters";
 import { InboxList } from "@/components/kanban/InboxList";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { NoteEditorPanel } from "@/components/kanban/NoteEditorPanel";
 import { useBoardStore } from "@/hooks/useBoardStore";
+import type { Note } from "@/lib/board-types";
+import { stripHtml } from "@/components/kanban/note-style";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,9 +35,24 @@ export const Route = createFileRoute("/")({
 function Index() {
   const store = useBoardStore();
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<Filters>(emptyFilters);
+
+  const allTags = Array.from(
+    new Set((store.project?.files ?? []).flatMap((f) => f.notes).flatMap((n) => n.tags)),
+  ).sort();
+
+  const matches = (n: Note) => {
+    const q = filters.query.trim().toLowerCase();
+    if (q && !`${n.title} ${stripHtml(n.content)} ${n.tags.join(" ")}`.toLowerCase().includes(q))
+      return false;
+    if (filters.colors.length > 0 && !filters.colors.includes(n.color)) return false;
+    if (filters.tags.length > 0 && !filters.tags.every((t) => n.tags.includes(t))) return false;
+    return true;
+  };
 
   const inboxNotes = (store.project?.files ?? [])
     .flatMap((f) => f.notes)
+    .filter(matches)
     .sort((a, b) => b.updatedAt - a.updatedAt);
 
   const activeNote =
@@ -59,15 +77,25 @@ function Index() {
           <h1 className="font-semibold">{store.file?.name ?? "Sem arquivo"}</h1>
         </header>
 
+        <BoardFilters filters={filters} allTags={allTags} onChange={setFilters} />
+
         <div className="flex min-h-0 flex-1">
           <InboxList notes={inboxNotes} activeId={activeNoteId} onSelect={setActiveNoteId} />
-          <KanbanBoard store={store} activeNoteId={activeNoteId} onOpenNote={setActiveNoteId} />
+          <KanbanBoard
+            store={store}
+            activeNoteId={activeNoteId}
+            onOpenNote={setActiveNoteId}
+            matches={matches}
+          />
           {activeNote && (
             <NoteEditorPanel
               note={activeNote}
               onClose={() => setActiveNoteId(null)}
               onChange={(patch) => store.updateNote(activeNote.id, patch)}
-              onAddSubnote={(text, color) => store.addSubnote(activeNote.id, text, color)}
+              onAddSubnote={(text, color, status) =>
+                store.addSubnote(activeNote.id, text, color, status)
+              }
+              onMoveSubnote={(subId, status) => store.moveSubnote(activeNote.id, subId, status)}
               onUpdateSubnote={(subId, text) => store.updateSubnote(activeNote.id, subId, text)}
               onRemoveSubnote={(subId) => store.removeSubnote(activeNote.id, subId)}
             />
