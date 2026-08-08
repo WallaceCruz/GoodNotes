@@ -7,9 +7,26 @@ import {
   type Note,
   type NoteColor,
   type Project,
+  type SubStatus,
 } from "@/lib/board-types";
 
 const STORAGE_KEY = "sticky-kanban-v1";
+
+function normalize(s: BoardState): BoardState {
+  return {
+    projects: s.projects.map((p) => ({
+      ...p,
+      files: p.files.map((f) => ({
+        ...f,
+        notes: f.notes.map((n) => ({
+          ...n,
+          tags: n.tags ?? [],
+          subnotes: (n.subnotes ?? []).map((sn) => ({ ...sn, status: sn.status ?? "todo" })),
+        })),
+      })),
+    })),
+  };
+}
 
 export function useBoardStore() {
   const [state, setState] = useState<BoardState>(() => createInitialState());
@@ -20,7 +37,7 @@ export function useBoardStore() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setState(JSON.parse(raw) as BoardState);
+      if (raw) setState(normalize(JSON.parse(raw) as BoardState));
     } catch {
       /* ignore corrupt storage */
     }
@@ -137,6 +154,7 @@ export function useBoardStore() {
           color: "amber",
           author: "Você",
           updatedAt: Date.now(),
+          tags: [],
           subnotes: [],
         };
         updateFile((f) => ({ ...f, notes: [note, ...f.notes] }));
@@ -165,7 +183,7 @@ export function useBoardStore() {
               ? {
                   ...n,
                   updatedAt: Date.now(),
-                  subnotes: [...n.subnotes, { id: uid(), text, color }],
+                  subnotes: [...n.subnotes, { id: uid(), text, color, status: "todo" as SubStatus }],
                 }
               : n,
           ),
@@ -178,6 +196,18 @@ export function useBoardStore() {
               ? {
                   ...n,
                   subnotes: n.subnotes.map((s) => (s.id === subId ? { ...s, text } : s)),
+                }
+              : n,
+          ),
+        })),
+      moveSubnote: (noteId: string, subId: string, status: SubStatus) =>
+        updateFile((f) => ({
+          ...f,
+          notes: f.notes.map((n) =>
+            n.id === noteId
+              ? {
+                  ...n,
+                  subnotes: n.subnotes.map((s) => (s.id === subId ? { ...s, status } : s)),
                 }
               : n,
           ),
