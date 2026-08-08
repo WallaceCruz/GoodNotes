@@ -8,16 +8,19 @@ import {
 } from "@dnd-kit/core";
 import { Plus } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
+import type { Note } from "@/lib/board-types";
 import { KanbanColumn } from "./KanbanColumn";
 
 export function KanbanBoard({
   store,
   activeNoteId,
   onOpenNote,
+  matches,
 }: {
   store: BoardStore;
   activeNoteId: string | null;
   onOpenNote: (id: string) => void;
+  matches: (note: Note) => boolean;
 }) {
   const file = store.file;
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
@@ -54,13 +57,18 @@ export function KanbanBoard({
             <KanbanColumn
               key={c.id}
               column={c}
-              notes={file.notes.filter((n) => n.columnId === c.id)}
+              notes={file.notes.filter((n) => n.columnId === c.id && matches(n))}
               activeNoteId={activeNoteId}
               onRename={(title) => store.renameColumn(c.id, title)}
               onRemove={() => store.removeColumn(c.id)}
               onAddNote={() => onOpenNote(store.addNote(c.id) ?? "")}
               onOpenNote={onOpenNote}
               onDeleteNote={store.removeNote}
+              onChangeNote={store.updateNote}
+              onAddSubnote={store.addSubnote}
+              onUpdateSubnote={store.updateSubnote}
+              onMoveSubnote={store.moveSubnote}
+              onRemoveSubnote={store.removeSubnote}
             />
           ))}
           <button
