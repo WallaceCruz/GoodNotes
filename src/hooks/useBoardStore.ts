@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   createInitialState,
+  matchesAutomation,
   uid,
+  type Automation,
+  type AutomationType,
   type BoardFile,
   type BoardState,
   type Note,
   type NoteColor,
+  type NoteImage,
   type Project,
   type SubStatus,
 } from "@/lib/board-types";
@@ -14,13 +18,21 @@ const STORAGE_KEY = "sticky-kanban-v1";
 
 function normalize(s: BoardState): BoardState {
   return {
-    projects: s.projects.map((p) => ({
+    projects: (s.projects ?? []).map((p) => ({
       ...p,
-      files: p.files.map((f) => ({
+      archived: p.archived ?? false,
+      files: (p.files ?? []).map((f) => ({
         ...f,
-        notes: f.notes.map((n) => ({
+        archived: f.archived ?? false,
+        automations: f.automations ?? [],
+        notes: (f.notes ?? []).map((n) => ({
           ...n,
           tags: n.tags ?? [],
+          checklist: n.checklist ?? [],
+          images: n.images ?? [],
+          priority: n.priority ?? null,
+          deadline: n.deadline ?? null,
+          archived: n.archived ?? false,
           subnotes: (n.subnotes ?? []).map((sn) => ({ ...sn, status: sn.status ?? "todo" })),
         })),
       })),
@@ -50,9 +62,13 @@ export function useBoardStore() {
   }, [state, hydrated]);
 
   const project: Project | undefined =
-    state.projects.find((p) => p.id === projectId) ?? state.projects[0];
+    state.projects.find((p) => p.id === projectId) ??
+    state.projects.find((p) => !p.archived) ??
+    state.projects[0];
   const file: BoardFile | undefined =
-    project?.files.find((f) => f.id === fileId) ?? project?.files[0];
+    project?.files.find((f) => f.id === fileId) ??
+    project?.files.find((f) => !f.archived) ??
+    project?.files[0];
 
   const updateFile = useCallback(
     (fn: (f: BoardFile) => BoardFile) => {
@@ -79,13 +95,36 @@ export function useBoardStore() {
     [updateFile],
   );
 
+  // Automações: move notas entre colunas conforme regras ativas.
+  useEffect(() => {
+    if (!hydrated || !file) return;
+    const rules = file.automations.filter((r) => r.enabled);
+    if (rules.length === 0) return;
+    const moves = new Map<string, string>();
+    for (const n of file.notes) {
+      if (n.archived) continue;
+      for (const r of rules) {
+        if (!file.columns.some((c) => c.id === r.columnId)) continue;
+        if (matchesAutomation(r, n) && n.columnId !== r.columnId) {
+          moves.set(n.id, r.columnId);
+          break;
+        }
+      }
+    }
+    if (moves.size === 0) return;
+    updateFile((f) => ({
+      ...f,
+      notes: f.notes.map((n) => (moves.has(n.id) ? { ...n, columnId: moves.get(n.id)! } : n)),
+    }));
+  }, [file, hydrated, updateFile]);
+
   const api = useMemo(
     () => ({
       addProject: () =>
         setState((s) => ({
           projects: [
             ...s.projects,
-            { id: uid(), name: "Novo projeto", files: [] } satisfies Project,
+            { id: uid(), name: "Novo projeto", files: [], archived: false } satisfies Project,
           ],
         })),
       renameProject: (id: string, name: string) =>
@@ -94,6 +133,10 @@ export function useBoardStore() {
         })),
       removeProject: (id: string) =>
         setState((s) => ({ projects: s.projects.filter((p) => p.id !== id) })),
+      setProjectArchived: (id: string, archived: boolean) =>
+        setState((s) => ({
+          projects: s.projects.map((p) => (p.id === id ? { ...p, archived } : p)),
+        })),
       addFile: (pid: string) => {
         const newFile: BoardFile = {
           id: uid(),
@@ -104,6 +147,8 @@ export function useBoardStore() {
             { id: uid(), title: "Feito" },
           ],
           notes: [],
+          automations: [],
+          archived: false,
         };
         setState((s) => ({
           projects: s.projects.map((p) =>
@@ -127,6 +172,14 @@ export function useBoardStore() {
             p.id !== pid ? p : { ...p, files: p.files.filter((f) => f.id !== fid) },
           ),
         })),
+      setFileArchived: (pid: string, fid: string, archived: boolean) =>
+        setState((s) => ({
+          projects: s.projects.map((p) =>
+            p.id !== pid
+              ? p
+              : { ...p, files: p.files.map((f) => (f.id === fid ? { ...f, archived } : f)) },
+          ),
+        })),
 
       addColumn: () =>
         updateFile((f) => ({
@@ -143,7 +196,24 @@ export function useBoardStore() {
           ...f,
           columns: f.columns.filter((c) => c.id !== cid),
           notes: f.notes.filter((n) => n.columnId !== cid),
+          automations: f.automations.filter((a) => a.columnId !== cid),
         })),
+
+      addAutomation: (type: AutomationType, value: string, columnId: string) =>
+        updateFile((f) => ({
+          ...f,
+          automations: [
+            ...f.automations,
+            { id: uid(), type, value, columnId, enabled: true } satisfies Automation,
+          ],
+        })),
+      toggleAutomation: (id: string) =>
+        updateFile((f) => ({
+          ...f,
+          automations: f.automations.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a)),
+        })),
+      removeAutomation: (id: string) =>
+        updateFile((f) => ({ ...f, automations: f.automations.filter((a) => a.id !== id) })),
 
       addNote: (columnId: string) => {
         const note: Note = {
@@ -156,11 +226,21 @@ export function useBoardStore() {
           updatedAt: Date.now(),
           tags: [],
           subnotes: [],
+          checklist: [],
+          images: [],
+          priority: null,
+          deadline: null,
+          archived: false,
         };
         updateFile((f) => ({ ...f, notes: [note, ...f.notes] }));
         return note.id;
       },
       updateNote,
+      setNoteArchived: (noteId: string, archived: boolean) =>
+        updateFile((f) => ({
+          ...f,
+          notes: f.notes.map((n) => (n.id === noteId ? { ...n, archived } : n)),
+        })),
       removeNote: (noteId: string) =>
         updateFile((f) => ({ ...f, notes: f.notes.filter((n) => n.id !== noteId) })),
       moveNote: (noteId: string, columnId: string, beforeNoteId?: string) =>
@@ -174,6 +254,63 @@ export function useBoardStore() {
           else rest.splice(idx, 0, updated);
           return { ...f, notes: rest };
         }),
+
+      addChecklistItem: (noteId: string, text: string) =>
+        updateFile((f) => ({
+          ...f,
+          notes: f.notes.map((n) =>
+            n.id === noteId
+              ? { ...n, checklist: [...n.checklist, { id: uid(), text, done: false }] }
+              : n,
+          ),
+        })),
+      updateChecklistItem: (
+        noteId: string,
+        itemId: string,
+        patch: { text?: string; done?: boolean },
+      ) =>
+        updateFile((f) => ({
+          ...f,
+          notes: f.notes.map((n) =>
+            n.id === noteId
+              ? {
+                  ...n,
+                  checklist: n.checklist.map((i) => (i.id === itemId ? { ...i, ...patch } : i)),
+                }
+              : n,
+          ),
+        })),
+      removeChecklistItem: (noteId: string, itemId: string) =>
+        updateFile((f) => ({
+          ...f,
+          notes: f.notes.map((n) =>
+            n.id === noteId ? { ...n, checklist: n.checklist.filter((i) => i.id !== itemId) } : n,
+          ),
+        })),
+
+      addImage: (noteId: string, url: string, link = "") =>
+        updateFile((f) => ({
+          ...f,
+          notes: f.notes.map((n) =>
+            n.id === noteId ? { ...n, images: [...n.images, { id: uid(), url, link }] } : n,
+          ),
+        })),
+      updateImage: (noteId: string, imageId: string, patch: Partial<NoteImage>) =>
+        updateFile((f) => ({
+          ...f,
+          notes: f.notes.map((n) =>
+            n.id === noteId
+              ? { ...n, images: n.images.map((i) => (i.id === imageId ? { ...i, ...patch } : i)) }
+              : n,
+          ),
+        })),
+      removeImage: (noteId: string, imageId: string) =>
+        updateFile((f) => ({
+          ...f,
+          notes: f.notes.map((n) =>
+            n.id === noteId ? { ...n, images: n.images.filter((i) => i.id !== imageId) } : n,
+          ),
+        })),
 
       addSubnote: (noteId: string, text: string, color: NoteColor, status: SubStatus = "todo") =>
         updateFile((f) => ({
