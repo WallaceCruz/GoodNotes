@@ -13,7 +13,7 @@ import {
   Underline as UnderlineIcon,
   X,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { NOTE_COLORS, type Note, type NoteColor, type SubStatus } from "@/lib/board-types";
 import { SubnoteDeck } from "./SubnoteDeck";
 import { TagEditor } from "./TagEditor";
@@ -40,22 +40,24 @@ export function NoteEditorPanel({
   onRemoveSubnote,
 }: Props) {
 
-  const editor = useEditor(
-    {
-      extensions: [StarterKit, Underline],
-      content: note.content,
-      immediatelyRender: false,
-      editorProps: { attributes: { class: "min-h-40 text-sm outline-none" } },
-      onUpdate: ({ editor }) => onChange({ content: editor.getHTML() }),
-    },
-    [note.id],
-  );
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  const editor = useEditor({
+    extensions: [StarterKit, Underline],
+    content: note.content,
+    immediatelyRender: false,
+    editorProps: { attributes: { class: "min-h-40 text-sm outline-none" } },
+    onUpdate: ({ editor }) => onChangeRef.current({ content: editor.getHTML() }),
+  });
 
   useEffect(() => {
-    if (editor && editor.getHTML() !== note.content && !editor.isFocused) {
-      editor.commands.setContent(note.content);
+    if (!editor || editor.isDestroyed) return;
+    if (!editor.isFocused && editor.getHTML() !== note.content) {
+      editor.commands.setContent(note.content || "");
     }
-  }, [note.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [note.id, editor]);
 
   const btn = (activeKey: string, action: () => void, Icon: typeof Bold, label: string) => (
     <button
