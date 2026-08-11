@@ -50,25 +50,18 @@ export function KanbanBoard({
   };
 
   return (
-    <div className="canvas-dots flex-1 overflow-x-auto p-4">
+    <div className="canvas-dots scroll-thin flex-1 overflow-auto p-4">
       <DndContext id="kanban-dnd" sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-        <div className="flex items-start gap-3">
+        <div className="flex h-full items-start gap-3">
           {file.columns.map((c) => (
             <KanbanColumn
               key={c.id}
               column={c}
+              store={store}
               notes={file.notes.filter((n) => n.columnId === c.id && matches(n))}
               activeNoteId={activeNoteId}
-              onRename={(title) => store.renameColumn(c.id, title)}
-              onRemove={() => store.removeColumn(c.id)}
               onAddNote={() => onOpenNote(store.addNote(c.id) ?? "")}
               onOpenNote={onOpenNote}
-              onDeleteNote={store.removeNote}
-              onChangeNote={store.updateNote}
-              onAddSubnote={store.addSubnote}
-              onUpdateSubnote={store.updateSubnote}
-              onMoveSubnote={store.moveSubnote}
-              onRemoveSubnote={store.removeSubnote}
             />
           ))}
           <button

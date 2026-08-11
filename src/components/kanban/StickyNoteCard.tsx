@@ -1,38 +1,32 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronDown, ChevronUp, GripVertical, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, ChevronDown, ChevronUp, GripVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { NOTE_COLORS, type Note, type NoteColor, type SubStatus } from "@/lib/board-types";
+import type { BoardStore } from "@/hooks/useBoardStore";
+import { NOTE_COLORS, type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
+import { ChecklistEditor } from "./ChecklistEditor";
 import { noteBg, noteLabel, stripHtml } from "./note-style";
+import { DeadlineBadge, PriorityBadge, PriorityDeadlineControls } from "./NoteMeta";
 import { SubnoteDeck } from "./SubnoteDeck";
 import { TagEditor } from "./TagEditor";
 
 export function StickyNoteCard({
   note,
   active,
+  store,
   onOpen,
-  onDelete,
-  onChange,
-  onAddSubnote,
-  onUpdateSubnote,
-  onMoveSubnote,
-  onRemoveSubnote,
 }: {
   note: Note;
   active: boolean;
+  store: BoardStore;
   onOpen: () => void;
-  onDelete: () => void;
-  onChange: (patch: Partial<Note>) => void;
-  onAddSubnote: (text: string, color: NoteColor, status: SubStatus) => void;
-  onUpdateSubnote: (subId: string, text: string) => void;
-  onMoveSubnote: (subId: string, status: SubStatus) => void;
-  onRemoveSubnote: (subId: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: note.id,
   });
   const [expanded, setExpanded] = useState(false);
+  const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
 
   return (
     <div
@@ -43,6 +37,7 @@ export function StickyNoteCard({
         "group cursor-pointer rounded-lg border border-border/60 p-3 shadow-sm transition-shadow hover:shadow-md",
         noteBg[note.color],
         isDragging && "opacity-50",
+        note.archived && "opacity-60 grayscale",
         active && "ring-2 ring-ring",
       )}
     >
@@ -74,16 +69,37 @@ export function StickyNoteCard({
           ))}
         </div>
         <button
+          aria-label={note.archived ? "Restaurar nota" : "Arquivar nota"}
+          onClick={(e) => {
+            e.stopPropagation();
+            store.setNoteArchived(note.id, !note.archived);
+          }}
+          className="ml-auto opacity-0 group-hover:opacity-100"
+        >
+          {note.archived ? (
+            <ArchiveRestore className="h-3.5 w-3.5 text-foreground/50" />
+          ) : (
+            <Archive className="h-3.5 w-3.5 text-foreground/50" />
+          )}
+        </button>
+        <button
           aria-label="Excluir nota"
           onClick={(e) => {
             e.stopPropagation();
-            onDelete();
+            store.removeNote(note.id);
           }}
-          className="ml-auto opacity-0 group-hover:opacity-100"
+          className="opacity-0 group-hover:opacity-100"
         >
           <Trash2 className="h-3.5 w-3.5 text-foreground/50" />
         </button>
       </div>
+
+      {(note.priority || note.deadline) && (
+        <div className="flex flex-wrap items-center gap-1 pb-1">
+          {note.priority && <PriorityBadge priority={note.priority} />}
+          {note.deadline && <DeadlineBadge deadline={note.deadline} />}
+        </div>
+      )}
 
       <input
         value={note.title}
@@ -103,9 +119,49 @@ export function StickyNoteCard({
         className="mt-1 w-full resize-none bg-transparent text-xs leading-relaxed text-foreground/75 outline-none"
       />
 
+      {note.images.length > 0 && (
+        <div className="mt-1.5 grid grid-cols-2 gap-1.5" onClick={(e) => e.stopPropagation()}>
+          {note.images.slice(0, 4).map((img) =>
+            img.link ? (
+              <a key={img.id} href={img.link} target="_blank" rel="noreferrer noopener">
+                <img
+                  src={img.url}
+                  alt="Imagem da nota"
+                  loading="lazy"
+                  className="h-20 w-full rounded-md border border-border/50 object-cover"
+                />
+              </a>
+            ) : (
+              <img
+                key={img.id}
+                src={img.url}
+                alt="Imagem da nota"
+                loading="lazy"
+                className="h-20 w-full rounded-md border border-border/50 object-cover"
+              />
+            ),
+          )}
+        </div>
+      )}
+
       <div className="mt-1.5" onClick={(e) => e.stopPropagation()}>
         <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} />
       </div>
+
+      <div className="mt-1.5">
+        <PriorityDeadlineControls note={note} onChange={onChange} />
+      </div>
+
+      {note.checklist.length > 0 && (
+        <div className="mt-2">
+          <ChecklistEditor
+            items={note.checklist}
+            onAdd={(text) => store.addChecklistItem(note.id, text)}
+            onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
+            onRemove={(id) => store.removeChecklistItem(note.id, id)}
+          />
+        </div>
+      )}
 
       <button
         onClick={(e) => {
@@ -119,14 +175,22 @@ export function StickyNoteCard({
       </button>
 
       {expanded && (
-        <div className="mt-2">
+        <div className="mt-2 space-y-3">
+          {note.checklist.length === 0 && (
+            <ChecklistEditor
+              items={note.checklist}
+              onAdd={(text) => store.addChecklistItem(note.id, text)}
+              onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
+              onRemove={(id) => store.removeChecklistItem(note.id, id)}
+            />
+          )}
           <SubnoteDeck
             subnotes={note.subnotes}
             compact
-            onAdd={onAddSubnote}
-            onUpdate={onUpdateSubnote}
-            onMove={onMoveSubnote}
-            onRemove={onRemoveSubnote}
+            onAdd={(text, color, status) => store.addSubnote(note.id, text, color, status)}
+            onUpdate={(subId, text) => store.updateSubnote(note.id, subId, text)}
+            onMove={(subId, status) => store.moveSubnote(note.id, subId, status)}
+            onRemove={(subId) => store.removeSubnote(note.id, subId)}
           />
         </div>
       )}
