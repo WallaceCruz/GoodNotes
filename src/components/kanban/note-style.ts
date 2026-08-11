@@ -1,4 +1,4 @@
-import type { NoteColor } from "@/lib/board-types";
+import type { NoteColor, Priority } from "@/lib/board-types";
 
 export const noteBg: Record<NoteColor, string> = {
   rose: "bg-note-rose",
@@ -18,6 +18,13 @@ export const noteLabel: Record<NoteColor, string> = {
   peach: "Laranja",
 };
 
+export const priorityClass: Record<Priority, string> = {
+  urgent: "border-destructive/50 bg-destructive/15 text-foreground",
+  high: "border-note-peach bg-note-peach text-foreground",
+  medium: "border-note-sky bg-note-sky text-foreground",
+  low: "border-border bg-muted text-muted-foreground",
+};
+
 export function timeAgo(ts: number) {
   const diff = Math.max(0, Date.now() - ts);
   const m = Math.round(diff / 60000);
@@ -27,6 +34,45 @@ export function timeAgo(ts: number) {
   if (h < 24) return `${h} h`;
   const d = Math.round(h / 24);
   return d === 1 ? "Ontem" : `${d} d`;
+}
+
+export function toDateInput(ts: number | null) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+export function fromDateInput(value: string): number | null {
+  if (!value) return null;
+  const [y, m, d] = value.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d, 23, 59, 59).getTime();
+}
+
+export function deadlineInfo(ts: number | null) {
+  if (!ts) return null;
+  const dayMs = 86_400_000;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(ts);
+  target.setHours(0, 0, 0, 0);
+  const diff = Math.round((target.getTime() - today.getTime()) / dayMs);
+  const label =
+    diff < 0
+      ? `Atrasado ${Math.abs(diff)}d`
+      : diff === 0
+        ? "Vence hoje"
+        : diff === 1
+          ? "Vence amanhã"
+          : `Em ${diff} dias`;
+  const tone =
+    diff < 0
+      ? "border-destructive/50 bg-destructive/15"
+      : diff <= 2
+        ? "border-note-peach bg-note-peach"
+        : "border-border bg-muted";
+  return { diff, label, tone, date: new Date(ts).toLocaleDateString("pt-BR") };
 }
 
 export function stripHtml(html: string) {
