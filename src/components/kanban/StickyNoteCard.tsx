@@ -1,14 +1,13 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Archive, ArchiveRestore, GripVertical, ListChecks, Maximize2, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, GripVertical, Maximize2, Trash2 } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { AssigneeSelect } from "./AssigneeSelect";
 import { ChecklistEditor } from "./ChecklistEditor";
 import { noteBg, noteLabel } from "./note-style";
-import { NoteImageStrip } from "./NoteImageStrip";
-import { DeadlineBadge, PriorityBadge, PriorityDeadlineControls } from "./NoteMeta";
+import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 
@@ -27,6 +26,8 @@ export function StickyNoteCard({
     id: note.id,
   });
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
+  const showChecklist = note.showChecklist;
+
 
   return (
     <div
@@ -46,7 +47,7 @@ export function StickyNoteCard({
         className="-mx-1 flex cursor-grab items-center gap-1 rounded px-1 pb-1.5 active:cursor-grabbing"
       >
         <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
-        <div className="flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
+        <div className="flex flex-wrap items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
           {NOTE_COLORS.map((c) => (
             <button
               key={c}
@@ -111,19 +112,11 @@ export function StickyNoteCard({
         onChange={(html) => onChange({ content: html })}
         minHeight="min-h-14"
         compact
+        checklistActive={showChecklist}
+        onToggleChecklist={() => onChange({ showChecklist: !showChecklist })}
       />
 
-      <div className="mt-1.5">
-        <NoteImageStrip
-          images={note.images}
-          compact
-          onAdd={(url, link) => store.addImage(note.id, url, link)}
-          onUpdate={(id, patch) => store.updateImage(note.id, id, patch)}
-          onRemove={(id) => store.removeImage(note.id, id)}
-        />
-      </div>
-
-      {note.showChecklist || note.checklist.length > 0 ? (
+      {showChecklist && (
         <div className="mt-2">
           <ChecklistEditor
             items={note.checklist}
@@ -132,19 +125,7 @@ export function StickyNoteCard({
             onRemove={(id) => store.removeChecklistItem(note.id, id)}
           />
         </div>
-      ) : (
-        <button
-          onClick={() => onChange({ showChecklist: true })}
-          className="mt-2 flex items-center gap-1 rounded-md border border-dashed border-foreground/25 px-1.5 py-0.5 text-[10px] text-foreground/60 hover:bg-foreground/5"
-        >
-          <ListChecks className="h-3 w-3" />
-          Adicionar checklist
-        </button>
       )}
-
-      <div className="mt-2">
-        <PriorityDeadlineControls note={note} onChange={onChange} />
-      </div>
 
       <footer className="mt-2 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2">
         <AssigneeSelect

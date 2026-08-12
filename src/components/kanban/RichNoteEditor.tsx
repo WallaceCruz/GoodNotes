@@ -2,13 +2,18 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Image from "@tiptap/extension-image";
+import Highlight from "@tiptap/extension-highlight";
+import Link from "@tiptap/extension-link";
 import {
   Bold,
   Heading1,
   Heading2,
+  Highlighter,
   ImagePlus,
   Italic,
+  Link2,
   List,
+  ListChecks,
   ListOrdered,
   Redo2,
   Strikethrough,
@@ -24,7 +29,13 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-type Lightbox = { src: string; title: string } | null;
+const HIGHLIGHTS = [
+  { label: "Amarelo", value: "#fde68a" },
+  { label: "Verde", value: "#bbf7d0" },
+  { label: "Azul", value: "#bae6fd" },
+  { label: "Rosa", value: "#fbcfe8" },
+  { label: "Laranja", value: "#fed7aa" },
+];
 
 function readAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve) => {
@@ -39,21 +50,28 @@ export function RichNoteEditor({
   onChange,
   minHeight = "min-h-16",
   compact = false,
+  onToggleChecklist,
+  checklistActive = false,
 }: {
   content: string;
   onChange: (html: string) => void;
   minHeight?: string;
   compact?: boolean;
+  onToggleChecklist?: () => void;
+  checklistActive?: boolean;
 }) {
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
-  const [lightbox, setLightbox] = useState<Lightbox>(null);
-  const [linkDraft, setLinkDraft] = useState("");
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [swatchOpen, setSwatchOpen] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
     extensions: [
       StarterKit,
       Underline,
+      Highlight.configure({ multicolor: true }),
+      Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { rel: "noreferrer noopener", target: "_blank" } }),
       Image.configure({ inline: false, allowBase64: true, HTMLAttributes: { class: "note-img" } }),
     ],
     content,
@@ -62,7 +80,7 @@ export function RichNoteEditor({
       attributes: {
         class: cn("outline-none", minHeight, compact ? "text-xs" : "text-sm"),
       },
-      handleDrop: (view, event) => {
+      handleDrop: (_view, event) => {
         const files = Array.from(event.dataTransfer?.files ?? []).filter((f) =>
           f.type.startsWith("image/"),
         );
@@ -107,34 +125,27 @@ export function RichNoteEditor({
     }
   }, [content, editor]);
 
-  const openImage = (src: string) => {
+  const insertFiles = (files: FileList | null) => {
+    if (!files) return;
+    void Promise.all(Array.from(files).filter((f) => f.type.startsWith("image/")).map(readAsDataUrl)).then(
+      (urls) =>
+        urls.forEach((src) => {
+          const ed = editorRef.current;
+          if (!ed || ed.isDestroyed) return;
+          ed.chain().focus().setImage({ src }).run();
+        }),
+    );
+  };
+
+  const applyLink = () => {
     if (!editor || editor.isDestroyed) return;
-    let title = "";
-    editor.state.doc.descendants((node) => {
-      if (node.type.name === "image" && node.attrs['src'] === src) title = (node.attrs['title'] as string) ?? "";
-    });
-    setLinkDraft(title || "");
-    setLightbox({ src, title: title || "" });
-  };
-
-  const saveLink = () => {
-    if (!editor || editor.isDestroyed || !lightbox) return;
-    const { state, view } = editor;
-    const tr = state.tr;
-    state.doc.descendants((node, pos) => {
-      if (node.type.name === "image" && node.attrs['src'] === lightbox.src) {
-        tr.setNodeMarkup(pos, undefined, { ...node.attrs, title: linkDraft });
-      }
-    });
-    view.dispatch(tr);
-    onChangeRef.current(editor.getHTML());
-    setLightbox(null);
-  };
-
-  const addImageByUrl = () => {
-    const url = window.prompt("Cole a URL da imagem");
-    if (url?.trim() && editor && !editor.isDestroyed)
-      editor.chain().focus().setImage({ src: url.trim() }).run();
+    if (editor.isActive("link")) {
+      editor.chain().focus().unsetLink().run();
+      return;
+    }
+    const url = window.prompt("Cole o endereço do link (https://...)");
+    if (!url?.trim()) return;
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
   };
 
   const btn = (
@@ -143,6 +154,7 @@ export function RichNoteEditor({
     Icon: typeof Bold,
     label: string,
     disabled = false,
+    forceActive = false,
   ) => (
     <button
       key={label}
@@ -156,7 +168,7 @@ export function RichNoteEditor({
       }}
       className={cn(
         "rounded p-1 text-foreground/60 hover:bg-foreground/10 disabled:opacity-30",
-        key && editor?.isActive(key) && "bg-foreground/10 text-foreground",
+        ((key && editor?.isActive(key)) || forceActive) && "bg-foreground/10 text-foreground",
       )}
     >
       <Icon className={compact ? "h-3 w-3" : "h-4 w-4"} />
@@ -165,7 +177,7 @@ export function RichNoteEditor({
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
-      <div className="flex flex-wrap items-center gap-0.5 border-y border-foreground/10 py-0.5">
+      <div className="relative flex flex-wrap items-center gap-0.5 border-y border-foreground/10 py-0.5">
         {btn("bold", () => editor?.chain().focus().toggleBold().run(), Bold, "Negrito")}
         {btn("italic", () => editor?.chain().focus().toggleItalic().run(), Italic, "Itálico")}
         {btn(
@@ -194,7 +206,11 @@ export function RichNoteEditor({
           ListOrdered,
           "Lista numerada",
         )}
-        {btn(null, addImageByUrl, ImagePlus, "Inserir imagem por URL")}
+        {onToggleChecklist &&
+          btn(null, onToggleChecklist, ListChecks, "Checklist", false, checklistActive)}
+        {btn(null, () => fileRef.current?.click(), ImagePlus, "Adicionar imagem")}
+        {btn(null, () => setSwatchOpen((v) => !v), Highlighter, "Cor de realce", false, editor?.isActive("highlight") ?? false)}
+        {btn("link", applyLink, Link2, "Inserir hiperlink")}
         <span className="mx-0.5 h-3 w-px bg-foreground/15" />
         {btn(
           null,
@@ -210,12 +226,51 @@ export function RichNoteEditor({
           "Refazer",
           !editor?.can().redo(),
         )}
+
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          onChange={(e) => {
+            insertFiles(e.target.files);
+            e.target.value = "";
+          }}
+        />
+
+        {swatchOpen && (
+          <div className="absolute right-0 top-full z-20 mt-1 flex items-center gap-1 rounded-md border border-border bg-popover p-1.5 shadow-md">
+            {HIGHLIGHTS.map((h) => (
+              <button
+                key={h.value}
+                aria-label={`Realce ${h.label}`}
+                title={h.label}
+                onClick={() => {
+                  editor?.chain().focus().setHighlight({ color: h.value }).run();
+                  setSwatchOpen(false);
+                }}
+                className="h-5 w-5 rounded-full border border-border"
+                style={{ backgroundColor: h.value }}
+              />
+            ))}
+            <button
+              onClick={() => {
+                editor?.chain().focus().unsetHighlight().run();
+                setSwatchOpen(false);
+              }}
+              className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-accent"
+            >
+              Limpar
+            </button>
+          </div>
+        )}
       </div>
       <div
         className="note-prose py-1.5"
         onClick={(e) => {
           const target = e.target as HTMLElement;
-          if (target.tagName === "IMG") openImage((target as HTMLImageElement).src);
+          if (target.tagName === "IMG") setLightbox((target as HTMLImageElement).src);
         }}
       >
         <EditorContent editor={editor} />
@@ -227,38 +282,11 @@ export function RichNoteEditor({
             <DialogTitle>Imagem da nota</DialogTitle>
           </DialogHeader>
           {lightbox && (
-            <div className="space-y-3">
-              <img
-                src={lightbox.src}
-                alt="Imagem ampliada da nota"
-                className="max-h-[60vh] w-full rounded-md object-contain"
-              />
-              <div className="flex items-center gap-2">
-                <input
-                  value={linkDraft}
-                  onChange={(e) => setLinkDraft(e.target.value)}
-                  placeholder="https://link-da-imagem"
-                  aria-label="Link da imagem"
-                  className="flex-1 rounded-md border border-border bg-background px-2 py-1 text-sm outline-none"
-                />
-                <button
-                  onClick={saveLink}
-                  className="rounded-md border border-border px-3 py-1 text-sm hover:bg-accent"
-                >
-                  Salvar link
-                </button>
-                {linkDraft && (
-                  <a
-                    href={linkDraft}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="rounded-md border border-border px-3 py-1 text-sm hover:bg-accent"
-                  >
-                    Abrir
-                  </a>
-                )}
-              </div>
-            </div>
+            <img
+              src={lightbox}
+              alt="Imagem ampliada da nota"
+              className="max-h-[70vh] w-full rounded-md object-contain"
+            />
           )}
         </DialogContent>
       </Dialog>

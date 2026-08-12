@@ -1,6 +1,31 @@
-export type NoteColor = "rose" | "amber" | "lime" | "sky" | "violet" | "peach";
+export type NoteColor =
+  | "rose"
+  | "amber"
+  | "lime"
+  | "sky"
+  | "violet"
+  | "peach"
+  | "teal"
+  | "indigo"
+  | "sand"
+  | "mint"
+  | "coral"
+  | "slate";
 
-export const NOTE_COLORS: NoteColor[] = ["rose", "amber", "lime", "sky", "violet", "peach"];
+export const NOTE_COLORS: NoteColor[] = [
+  "rose",
+  "amber",
+  "lime",
+  "sky",
+  "violet",
+  "peach",
+  "teal",
+  "indigo",
+  "sand",
+  "mint",
+  "coral",
+  "slate",
+];
 
 export type Priority = "urgent" | "high" | "medium" | "low";
 

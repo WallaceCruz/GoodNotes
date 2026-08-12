@@ -1,4 +1,5 @@
-import { Archive, MessageSquare } from "lucide-react";
+import { Archive, Inbox, MessageSquare, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useState } from "react";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { stripHtml, timeAgo } from "./note-style";
@@ -13,11 +14,38 @@ export function InboxList({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  if (collapsed) {
+    return (
+      <section className="flex w-12 shrink-0 flex-col items-center gap-2 border-r border-border bg-background py-3">
+        <button
+          onClick={() => setCollapsed(false)}
+          aria-label="Expandir inbox"
+          title="Expandir inbox"
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent"
+        >
+          <PanelLeftOpen className="h-4 w-4" />
+        </button>
+        <Inbox className="h-4 w-4 text-muted-foreground" />
+        <span className="text-[11px] text-muted-foreground">{notes.length}</span>
+      </section>
+    );
+  }
+
   return (
     <section className="flex w-80 shrink-0 flex-col border-r border-border bg-background">
       <header className="flex items-center gap-2 border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold">Inbox</h2>
         <span className="text-xs text-muted-foreground">{notes.length}</span>
+        <button
+          onClick={() => setCollapsed(true)}
+          aria-label="Recolher inbox"
+          title="Recolher inbox"
+          className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-accent"
+        >
+          <PanelLeftClose className="h-4 w-4" />
+        </button>
       </header>
       <div className="scroll-thin flex-1 overflow-y-auto">
         {notes.length === 0 && (

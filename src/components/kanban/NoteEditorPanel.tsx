@@ -1,14 +1,13 @@
-import { Archive, ArchiveRestore, ListChecks, X } from "lucide-react";
+import { Archive, ArchiveRestore, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import { NOTE_COLORS, type Note } from "@/lib/board-types";
+import { NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
 import { AssigneeSelect } from "./AssigneeSelect";
 import { ChecklistEditor } from "./ChecklistEditor";
-import { NoteImageStrip } from "./NoteImageStrip";
-import { PriorityDeadlineControls } from "./NoteMeta";
+import { DeadlinePicker } from "./DeadlinePicker";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel } from "./note-style";
+import { noteBg, noteLabel, priorityClass } from "./note-style";
 
 export function NoteEditorPanel({
   note,
@@ -55,18 +54,11 @@ export function NoteEditorPanel({
             content={note.content}
             onChange={(html) => onChange({ content: html })}
             minHeight="min-h-32"
+            checklistActive={note.showChecklist}
+            onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
           />
 
-          <div className="mt-2">
-            <NoteImageStrip
-              images={note.images}
-              onAdd={(url, link) => store.addImage(note.id, url, link)}
-              onUpdate={(id, patch) => store.updateImage(note.id, id, patch)}
-              onRemove={(id) => store.removeImage(note.id, id)}
-            />
-          </div>
-
-          {note.showChecklist || note.checklist.length > 0 ? (
+          {note.showChecklist && (
             <div className="mt-3">
               <ChecklistEditor
                 items={note.checklist}
@@ -75,19 +67,7 @@ export function NoteEditorPanel({
                 onRemove={(id) => store.removeChecklistItem(note.id, id)}
               />
             </div>
-          ) : (
-            <button
-              onClick={() => onChange({ showChecklist: true })}
-              className="mt-3 flex items-center gap-1 rounded-md border border-dashed border-foreground/25 px-1.5 py-0.5 text-[10px] text-foreground/60 hover:bg-foreground/5"
-            >
-              <ListChecks className="h-3 w-3" />
-              Adicionar checklist
-            </button>
           )}
-
-          <div className="mt-3">
-            <PriorityDeadlineControls note={note} onChange={onChange} />
-          </div>
 
           <footer className="mt-3 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2">
             <AssigneeSelect
@@ -103,9 +83,43 @@ export function NoteEditorPanel({
 
         <div className="mt-4">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Prioridade
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {PRIORITIES.map((p) => (
+              <button
+                key={p}
+                onClick={() => onChange({ priority: note.priority === p ? null : p })}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-xs",
+                  note.priority === p
+                    ? priorityClass[p]
+                    : "border-border bg-background text-muted-foreground hover:bg-accent",
+                )}
+              >
+                {PRIORITY_ICON[p]} {PRIORITY_LABEL[p]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Prazo de conclusão
+          </p>
+          <div className="mt-2">
+            <DeadlinePicker
+              value={note.deadline}
+              onChange={(deadline) => onChange({ deadline })}
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             Cor da nota
           </p>
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             {NOTE_COLORS.map((c) => (
               <button
                 key={c}

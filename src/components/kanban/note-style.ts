@@ -7,6 +7,12 @@ export const noteBg: Record<NoteColor, string> = {
   sky: "bg-note-sky",
   violet: "bg-note-violet",
   peach: "bg-note-peach",
+  teal: "bg-note-teal",
+  indigo: "bg-note-indigo",
+  sand: "bg-note-sand",
+  mint: "bg-note-mint",
+  coral: "bg-note-coral",
+  slate: "bg-note-slate",
 };
 
 export const noteLabel: Record<NoteColor, string> = {
@@ -16,6 +22,12 @@ export const noteLabel: Record<NoteColor, string> = {
   sky: "Azul",
   violet: "Lilás",
   peach: "Laranja",
+  teal: "Turquesa",
+  indigo: "Índigo",
+  sand: "Areia",
+  mint: "Menta",
+  coral: "Coral",
+  slate: "Cinza",
 };
 
 export const priorityClass: Record<Priority, string> = {
