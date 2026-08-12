@@ -111,7 +111,7 @@ export function RichNoteEditor({
     if (!editor || editor.isDestroyed) return;
     let title = "";
     editor.state.doc.descendants((node) => {
-      if (node.type.name === "image" && node.attrs.src === src) title = node.attrs.title ?? "";
+      if (node.type.name === "image" && node.attrs['src'] === src) title = (node.attrs['title'] as string) ?? "";
     });
     setLinkDraft(title || "");
     setLightbox({ src, title: title || "" });
@@ -122,7 +122,7 @@ export function RichNoteEditor({
     const { state, view } = editor;
     const tr = state.tr;
     state.doc.descendants((node, pos) => {
-      if (node.type.name === "image" && node.attrs.src === lightbox.src) {
+      if (node.type.name === "image" && node.attrs['src'] === lightbox.src) {
         tr.setNodeMarkup(pos, undefined, { ...node.attrs, title: linkDraft });
       }
     });
