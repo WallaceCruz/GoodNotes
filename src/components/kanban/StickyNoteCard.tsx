@@ -1,4 +1,15 @@
 import { useSortable } from "@dnd-kit/sortable";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { CSS } from "@dnd-kit/utilities";
 import { Archive, ArchiveRestore, GripVertical, Maximize2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
