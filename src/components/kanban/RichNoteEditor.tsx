@@ -188,17 +188,21 @@ export function RichNoteEditor({
           "Sublinhado",
         )}
         {btn("strike", () => editor?.chain().focus().toggleStrike().run(), Strikethrough, "Tachado")}
-        {btn(
-          "heading",
-          () => editor?.chain().focus().toggleHeading({ level: 1 }).run(),
-          Heading1,
-          "Título 1",
-        )}
-        {btn(
-          "heading",
-          () => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
-          Heading2,
-          "Título 2",
+        {([
+          [1, Heading1],
+          [2, Heading2],
+          [3, Heading3],
+          [4, Heading4],
+          [5, Heading5],
+        ] as const).map(([level, Icon]) =>
+          btn(
+            null,
+            () => editor?.chain().focus().toggleHeading({ level }).run(),
+            Icon,
+            `Título ${level}`,
+            false,
+            editor?.isActive("heading", { level }) ?? false,
+          ),
         )}
         {btn("bulletList", () => editor?.chain().focus().toggleBulletList().run(), List, "Lista")}
         {btn(
