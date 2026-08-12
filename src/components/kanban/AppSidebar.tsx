@@ -207,6 +207,11 @@ export function AppSidebar({
           </div>
         ))}
       </div>
+
+      <div className="border-t border-border p-2">
+        <UserMenu variant="full" className="w-full" />
+      </div>
     </aside>
   );
 }
+
