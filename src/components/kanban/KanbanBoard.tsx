@@ -1,15 +1,23 @@
 import {
   DndContext,
+  DragOverlay,
+  KeyboardSensor,
   PointerSensor,
   closestCorners,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { Plus } from "lucide-react";
+import { useState } from "react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import type { Note } from "@/lib/board-types";
+import { cn } from "@/lib/utils";
 import { KanbanColumn } from "./KanbanColumn";
+import { noteBg, stripHtml } from "./note-style";
 
 export function KanbanBoard({
   store,
@@ -23,35 +31,61 @@ export function KanbanBoard({
   matches: (note: Note) => boolean;
 }) {
   const file = store.file;
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   if (!file) {
     return (
-      <div className="canvas-dots flex flex-1 items-center justify-center text-sm text-muted-foreground">
+      <div className="flex flex-1 items-center justify-center bg-canvas text-sm text-muted-foreground">
         Selecione ou crie um arquivo para começar.
       </div>
     );
   }
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const resolveTarget = (noteId: string, overId: string) => {
+    const column = file.columns.find((c) => c.id === overId);
+    if (column) return { columnId: column.id, beforeId: undefined as string | undefined };
+    const overNote = file.notes.find((n) => n.id === overId);
+    if (overNote && overNote.id !== noteId)
+      return { columnId: overNote.columnId, beforeId: overNote.id };
+    return null;
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over) return;
     const noteId = String(active.id);
-    const overId = String(over.id);
-    if (noteId === overId) return;
-
-    const column = file.columns.find((c) => c.id === overId);
-    if (column) {
-      store.moveNote(noteId, column.id);
-      return;
-    }
-    const overNote = file.notes.find((n) => n.id === overId);
-    if (overNote) store.moveNote(noteId, overNote.columnId, overNote.id);
+    const target = resolveTarget(noteId, String(over.id));
+    const note = file.notes.find((n) => n.id === noteId);
+    if (!target || !note) return;
+    if (note.columnId !== target.columnId) store.moveNote(noteId, target.columnId, target.beforeId);
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    setDraggingId(null);
+    const { active, over } = event;
+    if (!over) return;
+    const noteId = String(active.id);
+    const target = resolveTarget(noteId, String(over.id));
+    if (target) store.moveNote(noteId, target.columnId, target.beforeId);
+  };
+
+  const dragging = file.notes.find((n) => n.id === draggingId);
+
   return (
-    <div className="canvas-dots scroll-thin flex-1 overflow-auto p-4">
-      <DndContext id="kanban-dnd" sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+    <div className="scroll-thin flex-1 overflow-auto bg-canvas p-4">
+      <DndContext
+        id="kanban-dnd"
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={(e: DragStartEvent) => setDraggingId(String(e.active.id))}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setDraggingId(null)}
+      >
         <div className="flex h-full items-start gap-3">
           {file.columns.map((c) => (
             <KanbanColumn
@@ -72,6 +106,22 @@ export function KanbanBoard({
             Nova coluna
           </button>
         </div>
+
+        <DragOverlay dropAnimation={{ duration: 160, easing: "cubic-bezier(0.2,0,0,1)" }}>
+          {dragging ? (
+            <div
+              className={cn(
+                "w-96 rotate-2 rounded-lg border border-border/60 p-3 shadow-lg",
+                noteBg[dragging.color],
+              )}
+            >
+              <p className="text-[15px] font-semibold leading-snug">{dragging.title}</p>
+              <p className="mt-1 line-clamp-3 text-xs text-foreground/70">
+                {stripHtml(dragging.content)}
+              </p>
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );

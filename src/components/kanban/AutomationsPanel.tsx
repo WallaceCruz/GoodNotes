@@ -10,7 +10,7 @@ import {
 } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 
-const TYPES: AutomationType[] = ["tag", "priority", "checklist-done", "subnotes-done"];
+const TYPES: AutomationType[] = ["tag", "priority", "checklist-done"];
 
 export function AutomationsPanel({ store, allTags }: { store: BoardStore; allTags: string[] }) {
   const file = store.file;

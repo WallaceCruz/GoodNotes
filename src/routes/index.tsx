@@ -7,7 +7,9 @@ import { BoardFilters, emptyFilters, type Filters } from "@/components/kanban/Bo
 import { InboxList } from "@/components/kanban/InboxList";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { NoteEditorPanel } from "@/components/kanban/NoteEditorPanel";
+import { UserMenu } from "@/components/kanban/UserMenu";
 import { useBoardStore } from "@/hooks/useBoardStore";
+
 import type { Note } from "@/lib/board-types";
 import { stripHtml } from "@/components/kanban/note-style";
 
@@ -84,7 +86,11 @@ function Index() {
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
               <FileText className="h-4 w-4 text-muted-foreground" />
               <h1 className="font-semibold">{store.file?.name ?? "Sem arquivo"}</h1>
+              <div className="ml-auto">
+                <UserMenu />
+              </div>
             </header>
+
 
             <BoardFilters
               filters={filters}

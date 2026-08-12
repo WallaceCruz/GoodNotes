@@ -16,6 +16,8 @@ import {
 import { useState } from "react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { cn } from "@/lib/utils";
+import { UserMenu } from "./UserMenu";
+
 
 export function AppSidebar({
   store,
@@ -47,9 +49,13 @@ export function AppSidebar({
         <Home className="h-4 w-4 text-muted-foreground" />
         <Inbox className="h-4 w-4 text-muted-foreground" />
         <Folder className="h-4 w-4 text-muted-foreground" />
+        <div className="mt-auto">
+          <UserMenu />
+        </div>
       </aside>
     );
   }
+
 
   return (
     <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-sidebar">
@@ -201,6 +207,11 @@ export function AppSidebar({
           </div>
         ))}
       </div>
+
+      <div className="border-t border-border p-2">
+        <UserMenu variant="full" className="w-full" />
+      </div>
     </aside>
   );
 }
+
