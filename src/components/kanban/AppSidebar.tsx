@@ -16,6 +16,8 @@ import {
 import { useState } from "react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { cn } from "@/lib/utils";
+import { UserMenu } from "./UserMenu";
+
 
 export function AppSidebar({
   store,
