@@ -70,7 +70,11 @@ export function KanbanBoard({
     if (!over) return;
     const noteId = String(active.id);
     const target = resolveTarget(noteId, String(over.id));
-    if (target) store.moveNote(noteId, target.columnId, target.beforeId);
+    if (!target) return;
+    store.moveNote(noteId, target.columnId, target.beforeId);
+    const note = file.notes.find((n) => n.id === noteId);
+    const column = file.columns.find((c) => c.id === target.columnId);
+    if (column) toast.success(`"${note?.title || "Nota"}" movida para ${column.title}`);
   };
 
   const dragging = file.notes.find((n) => n.id === draggingId);
