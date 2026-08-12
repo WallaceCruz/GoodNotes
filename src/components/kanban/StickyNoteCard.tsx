@@ -28,6 +28,7 @@ export function StickyNoteCard({
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
   const showChecklist = note.showChecklist || note.checklist.length > 0;
 
+
   return (
     <div
       ref={setNodeRef}
@@ -112,9 +113,7 @@ export function StickyNoteCard({
         minHeight="min-h-14"
         compact
         checklistActive={showChecklist}
-        onToggleChecklist={() =>
-          onChange({ showChecklist: !note.showChecklist || note.checklist.length > 0 ? !showChecklist : true })
-        }
+        onToggleChecklist={() => onChange({ showChecklist: !showChecklist })}
       />
 
       {showChecklist && (
