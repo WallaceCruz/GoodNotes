@@ -7,7 +7,9 @@ import { BoardFilters, emptyFilters, type Filters } from "@/components/kanban/Bo
 import { InboxList } from "@/components/kanban/InboxList";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { NoteEditorPanel } from "@/components/kanban/NoteEditorPanel";
+import { UserMenu } from "@/components/kanban/UserMenu";
 import { useBoardStore } from "@/hooks/useBoardStore";
+
 import type { Note } from "@/lib/board-types";
 import { stripHtml } from "@/components/kanban/note-style";
 
