@@ -8,10 +8,8 @@ import {
   type BoardFile,
   type BoardState,
   type Note,
-  type NoteColor,
   type NoteImage,
   type Project,
-  type SubStatus,
 } from "@/lib/board-types";
 
 const STORAGE_KEY = "sticky-kanban-v1";
@@ -33,7 +31,8 @@ function normalize(s: BoardState): BoardState {
           priority: n.priority ?? null,
           deadline: n.deadline ?? null,
           archived: n.archived ?? false,
-          subnotes: (n.subnotes ?? []).map((sn) => ({ ...sn, status: sn.status ?? "todo" })),
+          assignee: n.assignee ?? n.author ?? null,
+          showChecklist: n.showChecklist ?? (n.checklist?.length ?? 0) > 0,
         })),
       })),
     })),
@@ -223,10 +222,11 @@ export function useBoardStore() {
           content: "",
           color: "amber",
           author: "Você",
+          assignee: "Walle Dev",
           updatedAt: Date.now(),
           tags: [],
-          subnotes: [],
           checklist: [],
+          showChecklist: false,
           images: [],
           priority: null,
           deadline: null,
@@ -312,52 +312,6 @@ export function useBoardStore() {
           ),
         })),
 
-      addSubnote: (noteId: string, text: string, color: NoteColor, status: SubStatus = "todo") =>
-        updateFile((f) => ({
-          ...f,
-          notes: f.notes.map((n) =>
-            n.id === noteId
-              ? {
-                  ...n,
-                  updatedAt: Date.now(),
-                  subnotes: [...n.subnotes, { id: uid(), text, color, status }],
-                }
-              : n,
-          ),
-        })),
-      updateSubnote: (noteId: string, subId: string, text: string) =>
-        updateFile((f) => ({
-          ...f,
-          notes: f.notes.map((n) =>
-            n.id === noteId
-              ? {
-                  ...n,
-                  subnotes: n.subnotes.map((s) => (s.id === subId ? { ...s, text } : s)),
-                }
-              : n,
-          ),
-        })),
-      moveSubnote: (noteId: string, subId: string, status: SubStatus) =>
-        updateFile((f) => ({
-          ...f,
-          notes: f.notes.map((n) =>
-            n.id === noteId
-              ? {
-                  ...n,
-                  subnotes: n.subnotes.map((s) => (s.id === subId ? { ...s, status } : s)),
-                }
-              : n,
-          ),
-        })),
-      removeSubnote: (noteId: string, subId: string) =>
-        updateFile((f) => ({
-          ...f,
-          notes: f.notes.map((n) =>
-            n.id === noteId
-              ? { ...n, subnotes: n.subnotes.filter((s) => s.id !== subId) }
-              : n,
-          ),
-        })),
     }),
     [updateFile, updateNote],
   );
