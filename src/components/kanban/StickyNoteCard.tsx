@@ -84,18 +84,34 @@ export function StickyNoteCard({
               <Archive className="h-3.5 w-3.5 text-foreground/50" />
             )}
           </button>
-          <button
-            aria-label="Excluir nota"
-            onClick={() => {
-              store.removeNote(note.id);
-              toast.success(`"${note.title || "Nota"}" excluída`, {
-                action: { label: "Desfazer", onClick: () => store.restoreNote(note) },
-              });
-            }}
-            className="opacity-0 group-hover:opacity-100"
-          >
-            <Trash2 className="h-3.5 w-3.5 text-foreground/50" />
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button aria-label="Excluir nota" className="opacity-0 group-hover:opacity-100">
+                <Trash2 className="h-3.5 w-3.5 text-foreground/50" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir "{note.title || "Nota"}"?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  A nota será removida do quadro. Você poderá desfazer logo em seguida.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    store.removeNote(note.id);
+                    toast.success(`"${note.title || "Nota"}" excluída`, {
+                      action: { label: "Desfazer", onClick: () => store.restoreNote(note) },
+                    });
+                  }}
+                >
+                  Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
