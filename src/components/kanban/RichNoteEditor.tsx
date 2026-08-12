@@ -8,6 +8,9 @@ import {
   Bold,
   Heading1,
   Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
   Highlighter,
   ImagePlus,
   Italic,
@@ -15,10 +18,8 @@ import {
   List,
   ListChecks,
   ListOrdered,
-  Redo2,
   Strikethrough,
   Underline as UnderlineIcon,
-  Undo2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
