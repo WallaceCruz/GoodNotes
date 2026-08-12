@@ -70,10 +70,21 @@ export function KanbanBoard({
     const { active, over } = event;
     if (!over) return;
     const noteId = String(active.id);
-    const target = resolveTarget(noteId, String(over.id));
+    const overId = String(over.id);
+    if (overId === noteId) return;
+    const note = file.notes.find((n) => n.id === noteId);
+    const overNote = file.notes.find((n) => n.id === overId);
+    if (overNote) {
+      const sameColumn = overNote.columnId === note?.columnId;
+      store.reorderNote(noteId, overId);
+      const column = file.columns.find((c) => c.id === overNote.columnId);
+      if (sameColumn) toast.success(`"${note?.title || "Nota"}" reordenada`);
+      else if (column) toast.success(`"${note?.title || "Nota"}" movida para ${column.title}`);
+      return;
+    }
+    const target = resolveTarget(noteId, overId);
     if (!target) return;
     store.moveNote(noteId, target.columnId, target.beforeId);
-    const note = file.notes.find((n) => n.id === noteId);
     const column = file.columns.find((c) => c.id === target.columnId);
     if (column) toast.success(`"${note?.title || "Nota"}" movida para ${column.title}`);
   };
