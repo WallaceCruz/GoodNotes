@@ -13,6 +13,7 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
