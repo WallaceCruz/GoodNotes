@@ -212,21 +212,6 @@ export function RichNoteEditor({
         {btn(null, () => fileRef.current?.click(), ImagePlus, "Adicionar imagem")}
         {btn(null, () => setSwatchOpen((v) => !v), Highlighter, "Cor de realce", false, editor?.isActive("highlight") ?? false)}
         {btn("link", applyLink, Link2, "Inserir hiperlink")}
-        <span className="mx-0.5 h-3 w-px bg-foreground/15" />
-        {btn(
-          null,
-          () => editor?.chain().focus().undo().run(),
-          Undo2,
-          "Desfazer",
-          !editor?.can().undo(),
-        )}
-        {btn(
-          null,
-          () => editor?.chain().focus().redo().run(),
-          Redo2,
-          "Refazer",
-          !editor?.can().redo(),
-        )}
 
         <input
           ref={fileRef}
