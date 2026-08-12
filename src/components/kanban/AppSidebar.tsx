@@ -25,6 +25,7 @@ export function AppSidebar({
   onToggleCollapsed,
   inboxOpen,
   onToggleInbox,
+  onGoHome,
   archivedView,
   onToggleArchivedView,
 }: {
@@ -33,6 +34,7 @@ export function AppSidebar({
   onToggleCollapsed: () => void;
   inboxOpen: boolean;
   onToggleInbox: () => void;
+  onGoHome: () => void;
   archivedView: boolean;
   onToggleArchivedView: () => void;
 }) {
@@ -54,7 +56,13 @@ export function AppSidebar({
         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
           <Layers className="h-4 w-4" />
         </span>
-        <Home className="h-4 w-4 text-muted-foreground" />
+        <button
+          onClick={onGoHome}
+          aria-label="Home (kanban)"
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent"
+        >
+          <Home className="h-4 w-4" />
+        </button>
         <button
           onClick={onToggleInbox}
           aria-label={inboxOpen ? "Recolher inbox" : "Expandir inbox"}
@@ -101,10 +109,16 @@ export function AppSidebar({
       </div>
 
       <nav className="space-y-1 px-2">
-        <div className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent">
+        <button
+          onClick={onGoHome}
+          className={cn(
+            "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
+            !archivedView && "bg-sidebar-accent font-medium",
+          )}
+        >
           <Home className="h-4 w-4 text-muted-foreground" />
           Home
-        </div>
+        </button>
         <button
           onClick={onToggleInbox}
           className={cn(

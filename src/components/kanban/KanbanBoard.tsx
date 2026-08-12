@@ -110,7 +110,7 @@ export function KanbanBoard({
               store={store}
               notes={file.notes.filter((n) => n.columnId === c.id && matches(n))}
               activeNoteId={activeNoteId}
-              onAddNote={() => onOpenNote(store.addNote(c.id) ?? "")}
+              onAddNote={() => store.addNote(c.id)}
               onOpenNote={onOpenNote}
             />
           ))}
