@@ -237,10 +237,20 @@
     color: inherit;
   }
   .note-prose a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
     color: var(--color-primary);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+    background-color: color-mix(in oklab, var(--color-primary) 12%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-primary) 45%, transparent);
+    border-radius: 9999px;
+    padding: 0 0.4rem;
+    font-weight: 500;
+    text-decoration: none;
     cursor: pointer;
+  }
+  .note-prose a:hover {
+    background-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
   }
   .note-prose img {
     display: block;
