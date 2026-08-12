@@ -1,14 +1,15 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Archive, ArchiveRestore, ChevronDown, ChevronUp, GripVertical, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Archive, ArchiveRestore, GripVertical, ListChecks, Maximize2, Trash2 } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
+import { AssigneeSelect } from "./AssigneeSelect";
 import { ChecklistEditor } from "./ChecklistEditor";
-import { noteBg, noteLabel, stripHtml } from "./note-style";
+import { noteBg, noteLabel } from "./note-style";
+import { NoteImageStrip } from "./NoteImageStrip";
 import { DeadlineBadge, PriorityBadge, PriorityDeadlineControls } from "./NoteMeta";
-import { SubnoteDeck } from "./SubnoteDeck";
+import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 
 export function StickyNoteCard({
@@ -25,41 +26,32 @@ export function StickyNoteCard({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: note.id,
   });
-  const [expanded, setExpanded] = useState(false);
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
 
   return (
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      onClick={onOpen}
       className={cn(
-        "group cursor-pointer rounded-lg border border-border/60 p-3 shadow-sm transition-shadow hover:shadow-md",
+        "group rounded-lg border border-border/60 p-3 shadow-sm transition-shadow hover:shadow-md",
         noteBg[note.color],
-        isDragging && "opacity-50",
+        isDragging && "opacity-40",
         note.archived && "opacity-60 grayscale",
         active && "ring-2 ring-ring",
       )}
     >
-      <div className="flex items-center gap-1 pb-1.5">
-        <button
-          {...attributes}
-          {...listeners}
-          aria-label="Mover nota"
-          onClick={(e) => e.stopPropagation()}
-          className="cursor-grab text-foreground/40"
-        >
-          <GripVertical className="h-3.5 w-3.5" />
-        </button>
-        <div className="flex items-center gap-1">
+      <div
+        {...attributes}
+        {...listeners}
+        className="-mx-1 flex cursor-grab items-center gap-1 rounded px-1 pb-1.5 active:cursor-grabbing"
+      >
+        <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
+        <div className="flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
           {NOTE_COLORS.map((c) => (
             <button
               key={c}
               aria-label={`Cor ${noteLabel[c]}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onChange({ color: c });
-              }}
+              onClick={() => onChange({ color: c })}
               className={cn(
                 "h-3 w-3 rounded-full border border-border/70",
                 noteBg[c],
@@ -68,30 +60,36 @@ export function StickyNoteCard({
             />
           ))}
         </div>
-        <button
-          aria-label={note.archived ? "Restaurar nota" : "Arquivar nota"}
-          onClick={(e) => {
-            e.stopPropagation();
-            store.setNoteArchived(note.id, !note.archived);
-          }}
-          className="ml-auto opacity-0 group-hover:opacity-100"
+        <div
+          className="ml-auto flex items-center gap-1"
+          onPointerDown={(e) => e.stopPropagation()}
         >
-          {note.archived ? (
-            <ArchiveRestore className="h-3.5 w-3.5 text-foreground/50" />
-          ) : (
-            <Archive className="h-3.5 w-3.5 text-foreground/50" />
-          )}
-        </button>
-        <button
-          aria-label="Excluir nota"
-          onClick={(e) => {
-            e.stopPropagation();
-            store.removeNote(note.id);
-          }}
-          className="opacity-0 group-hover:opacity-100"
-        >
-          <Trash2 className="h-3.5 w-3.5 text-foreground/50" />
-        </button>
+          <button
+            aria-label="Abrir detalhes"
+            onClick={onOpen}
+            className="opacity-0 group-hover:opacity-100"
+          >
+            <Maximize2 className="h-3.5 w-3.5 text-foreground/50" />
+          </button>
+          <button
+            aria-label={note.archived ? "Restaurar nota" : "Arquivar nota"}
+            onClick={() => store.setNoteArchived(note.id, !note.archived)}
+            className="opacity-0 group-hover:opacity-100"
+          >
+            {note.archived ? (
+              <ArchiveRestore className="h-3.5 w-3.5 text-foreground/50" />
+            ) : (
+              <Archive className="h-3.5 w-3.5 text-foreground/50" />
+            )}
+          </button>
+          <button
+            aria-label="Excluir nota"
+            onClick={() => store.removeNote(note.id)}
+            className="opacity-0 group-hover:opacity-100"
+          >
+            <Trash2 className="h-3.5 w-3.5 text-foreground/50" />
+          </button>
+        </div>
       </div>
 
       {(note.priority || note.deadline) && (
@@ -103,56 +101,29 @@ export function StickyNoteCard({
 
       <input
         value={note.title}
-        onClick={(e) => e.stopPropagation()}
         onChange={(e) => onChange({ title: e.target.value })}
         aria-label="Título da nota"
         className="w-full bg-transparent text-[15px] font-semibold leading-snug text-foreground outline-none"
       />
 
-      <textarea
-        value={stripHtml(note.content)}
-        onClick={(e) => e.stopPropagation()}
-        onChange={(e) => onChange({ content: `<p>${e.target.value}</p>` })}
-        rows={3}
-        placeholder="Escreva aqui..."
-        aria-label="Conteúdo da nota"
-        className="mt-1 w-full resize-none bg-transparent text-xs leading-relaxed text-foreground/75 outline-none"
+      <RichNoteEditor
+        content={note.content}
+        onChange={(html) => onChange({ content: html })}
+        minHeight="min-h-14"
+        compact
       />
 
-      {note.images.length > 0 && (
-        <div className="mt-1.5 grid grid-cols-2 gap-1.5" onClick={(e) => e.stopPropagation()}>
-          {note.images.slice(0, 4).map((img) =>
-            img.link ? (
-              <a key={img.id} href={img.link} target="_blank" rel="noreferrer noopener">
-                <img
-                  src={img.url}
-                  alt="Imagem da nota"
-                  loading="lazy"
-                  className="h-20 w-full rounded-md border border-border/50 object-cover"
-                />
-              </a>
-            ) : (
-              <img
-                key={img.id}
-                src={img.url}
-                alt="Imagem da nota"
-                loading="lazy"
-                className="h-20 w-full rounded-md border border-border/50 object-cover"
-              />
-            ),
-          )}
-        </div>
-      )}
-
-      <div className="mt-1.5" onClick={(e) => e.stopPropagation()}>
-        <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} />
-      </div>
-
       <div className="mt-1.5">
-        <PriorityDeadlineControls note={note} onChange={onChange} />
+        <NoteImageStrip
+          images={note.images}
+          compact
+          onAdd={(url, link) => store.addImage(note.id, url, link)}
+          onUpdate={(id, patch) => store.updateImage(note.id, id, patch)}
+          onRemove={(id) => store.removeImage(note.id, id)}
+        />
       </div>
 
-      {note.checklist.length > 0 && (
+      {note.showChecklist || note.checklist.length > 0 ? (
         <div className="mt-2">
           <ChecklistEditor
             items={note.checklist}
@@ -161,39 +132,29 @@ export function StickyNoteCard({
             onRemove={(id) => store.removeChecklistItem(note.id, id)}
           />
         </div>
+      ) : (
+        <button
+          onClick={() => onChange({ showChecklist: true })}
+          className="mt-2 flex items-center gap-1 rounded-md border border-dashed border-foreground/25 px-1.5 py-0.5 text-[10px] text-foreground/60 hover:bg-foreground/5"
+        >
+          <ListChecks className="h-3 w-3" />
+          Adicionar checklist
+        </button>
       )}
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setExpanded((v) => !v);
-        }}
-        className="mt-2 flex w-full items-center gap-1 text-[11px] text-foreground/60"
-      >
-        {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-        {note.subnotes.length} subtarefa{note.subnotes.length === 1 ? "" : "s"}
-      </button>
+      <div className="mt-2">
+        <PriorityDeadlineControls note={note} onChange={onChange} />
+      </div>
 
-      {expanded && (
-        <div className="mt-2 space-y-3">
-          {note.checklist.length === 0 && (
-            <ChecklistEditor
-              items={note.checklist}
-              onAdd={(text) => store.addChecklistItem(note.id, text)}
-              onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
-              onRemove={(id) => store.removeChecklistItem(note.id, id)}
-            />
-          )}
-          <SubnoteDeck
-            subnotes={note.subnotes}
-            compact
-            onAdd={(text, color, status) => store.addSubnote(note.id, text, color, status)}
-            onUpdate={(subId, text) => store.updateSubnote(note.id, subId, text)}
-            onMove={(subId, status) => store.moveSubnote(note.id, subId, status)}
-            onRemove={(subId) => store.removeSubnote(note.id, subId)}
-          />
+      <footer className="mt-2 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2">
+        <AssigneeSelect
+          value={note.assignee}
+          onChange={(assignee) => onChange({ assignee })}
+        />
+        <div className="min-w-0 flex-1">
+          <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} />
         </div>
-      )}
+      </footer>
     </div>
   );
 }
