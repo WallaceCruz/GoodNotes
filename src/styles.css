@@ -240,9 +240,9 @@
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
-    color: var(--color-primary);
-    background-color: color-mix(in oklab, var(--color-primary) 12%, transparent);
-    border: 1px solid color-mix(in oklab, var(--color-primary) 45%, transparent);
+    color: #1d4ed8;
+    background-color: color-mix(in oklab, #2563eb 12%, transparent);
+    border: 1px solid color-mix(in oklab, #2563eb 45%, transparent);
     border-radius: 9999px;
     padding: 0 0.4rem;
     font-weight: 500;
@@ -250,7 +250,7 @@
     cursor: pointer;
   }
   .note-prose a:hover {
-    background-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
+    background-color: color-mix(in oklab, #2563eb 22%, transparent);
   }
   .note-prose img {
     display: block;

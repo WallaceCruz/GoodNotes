@@ -81,6 +81,10 @@ function Index() {
             onToggleCollapsed={() => setCollapsed((v) => !v)}
             inboxOpen={inboxOpen}
             onToggleInbox={() => setInboxOpen((v) => !v)}
+            onGoHome={() => {
+              setArchivedView(false);
+              setActiveNoteId(null);
+            }}
             archivedView={archivedView}
             onToggleArchivedView={() => setArchivedView((v) => !v)}
           />
