@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Archive, ArchiveRestore, GripVertical, Maximize2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
@@ -85,7 +86,12 @@ export function StickyNoteCard({
           </button>
           <button
             aria-label="Excluir nota"
-            onClick={() => store.removeNote(note.id)}
+            onClick={() => {
+              store.removeNote(note.id);
+              toast.success(`"${note.title || "Nota"}" excluída`, {
+                action: { label: "Desfazer", onClick: () => store.restoreNote(note) },
+              });
+            }}
             className="opacity-0 group-hover:opacity-100"
           >
             <Trash2 className="h-3.5 w-3.5 text-foreground/50" />

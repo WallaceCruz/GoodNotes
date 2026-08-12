@@ -7,6 +7,7 @@ import { BoardFilters, emptyFilters, type Filters } from "@/components/kanban/Bo
 import { InboxList } from "@/components/kanban/InboxList";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { NoteEditorPanel } from "@/components/kanban/NoteEditorPanel";
+import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { UserMenu } from "@/components/kanban/UserMenu";
 import { useBoardStore } from "@/hooks/useBoardStore";
 
@@ -41,13 +42,19 @@ function Index() {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [collapsed, setCollapsed] = useState(false);
   const [automationsOpen, setAutomationsOpen] = useState(false);
+  const [inboxOpen, setInboxOpen] = useState(true);
+  const [archivedView, setArchivedView] = useState(false);
 
   const allTags = Array.from(
     new Set((store.project?.files ?? []).flatMap((f) => f.notes).flatMap((n) => n.tags)),
   ).sort();
 
+  const allNotes = (store.project?.files ?? []).flatMap((f) => f.notes);
+
   const matches = (n: Note) => {
-    if (!filters.showArchived && n.archived) return false;
+    if (archivedView) {
+      if (!n.archived) return false;
+    } else if (!filters.showArchived && n.archived) return false;
     const q = filters.query.trim().toLowerCase();
     if (q && !`${n.title} ${stripHtml(n.content)} ${n.tags.join(" ")}`.toLowerCase().includes(q))
       return false;
@@ -58,13 +65,11 @@ function Index() {
     return true;
   };
 
-  const inboxNotes = (store.project?.files ?? [])
-    .flatMap((f) => f.notes)
+  const inboxNotes = allNotes
     .filter(matches)
     .sort((a, b) => b.updatedAt - a.updatedAt);
 
-  const activeNote =
-    (store.project?.files ?? []).flatMap((f) => f.notes).find((n) => n.id === activeNoteId) ?? null;
+  const activeNote = allNotes.find((n) => n.id === activeNoteId) ?? null;
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
@@ -74,6 +79,10 @@ function Index() {
             store={store}
             collapsed={collapsed}
             onToggleCollapsed={() => setCollapsed((v) => !v)}
+            inboxOpen={inboxOpen}
+            onToggleInbox={() => setInboxOpen((v) => !v)}
+            archivedView={archivedView}
+            onToggleArchivedView={() => setArchivedView((v) => !v)}
           />
 
           <div className="flex min-w-0 flex-1 flex-col">
@@ -86,7 +95,13 @@ function Index() {
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
               <FileText className="h-4 w-4 text-muted-foreground" />
               <h1 className="font-semibold">{store.file?.name ?? "Sem arquivo"}</h1>
-              <div className="ml-auto">
+              {archivedView && (
+                <span className="rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">
+                  Vendo arquivadas
+                </span>
+              )}
+              <div className="ml-auto flex items-center gap-1">
+                <NotificationsMenu notes={allNotes} onSelect={setActiveNoteId} />
                 <UserMenu />
               </div>
             </header>
@@ -103,7 +118,9 @@ function Index() {
             {automationsOpen && <AutomationsPanel store={store} allTags={allTags} />}
 
             <div className="flex min-h-0 flex-1">
-              <InboxList notes={inboxNotes} activeId={activeNoteId} onSelect={setActiveNoteId} />
+              {inboxOpen && (
+                <InboxList notes={inboxNotes} activeId={activeNoteId} onSelect={setActiveNoteId} />
+              )}
               <KanbanBoard
                 store={store}
                 activeNoteId={activeNoteId}

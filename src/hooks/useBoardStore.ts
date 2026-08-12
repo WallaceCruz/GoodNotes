@@ -7,6 +7,7 @@ import {
   type AutomationType,
   type BoardFile,
   type BoardState,
+  type Column,
   type Note,
   type NoteImage,
   type Project,
@@ -243,6 +244,24 @@ export function useBoardStore() {
         })),
       removeNote: (noteId: string) =>
         updateFile((f) => ({ ...f, notes: f.notes.filter((n) => n.id !== noteId) })),
+      restoreNote: (note: Note) => updateFile((f) => ({ ...f, notes: [note, ...f.notes] })),
+      restoreColumn: (column: Column, notes: Note[]) =>
+        updateFile((f) => ({
+          ...f,
+          columns: [...f.columns, column],
+          notes: [...notes, ...f.notes],
+        })),
+      reorderNote: (activeId: string, overId: string) =>
+        updateFile((f) => {
+          const from = f.notes.findIndex((n) => n.id === activeId);
+          const to = f.notes.findIndex((n) => n.id === overId);
+          if (from < 0 || to < 0 || from === to) return f;
+          const columnId = f.notes[to]!.columnId;
+          const notes = [...f.notes];
+          const [moving] = notes.splice(from, 1);
+          notes.splice(to, 0, { ...moving!, columnId });
+          return { ...f, notes };
+        }),
       moveNote: (noteId: string, columnId: string, beforeNoteId?: string) =>
         updateFile((f) => {
           const moving = f.notes.find((n) => n.id === noteId);

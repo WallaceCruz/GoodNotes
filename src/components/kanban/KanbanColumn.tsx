@@ -1,6 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Plus, X } from "lucide-react";
+import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import type { Column, Note } from "@/lib/board-types";
 import { StickyNoteCard } from "./StickyNoteCard";
@@ -37,7 +38,19 @@ export function KanbanColumn({
           <Plus className="h-4 w-4" />
         </button>
         <button
-          onClick={() => store.removeColumn(column.id)}
+          onClick={() => {
+            const removedNotes = notes;
+            store.removeColumn(column.id);
+            toast.success(`Coluna "${column.title}" excluída`, {
+              description: removedNotes.length
+                ? `${removedNotes.length} nota(s) removida(s) junto.`
+                : undefined,
+              action: {
+                label: "Desfazer",
+                onClick: () => store.restoreColumn(column, removedNotes),
+              },
+            });
+          }}
           aria-label="Excluir coluna"
           className="text-muted-foreground"
         >

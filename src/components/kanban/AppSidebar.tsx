@@ -23,13 +23,21 @@ export function AppSidebar({
   store,
   collapsed,
   onToggleCollapsed,
+  inboxOpen,
+  onToggleInbox,
+  archivedView,
+  onToggleArchivedView,
 }: {
   store: BoardStore;
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  inboxOpen: boolean;
+  onToggleInbox: () => void;
+  archivedView: boolean;
+  onToggleArchivedView: () => void;
 }) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  const [showArchived, setShowArchived] = useState(false);
+  const showArchived = archivedView;
   const isOpen = (id: string) => open[id] ?? true;
   const projects = store.state.projects.filter((p) => showArchived || !p.archived);
 
@@ -47,7 +55,26 @@ export function AppSidebar({
           <Layers className="h-4 w-4" />
         </span>
         <Home className="h-4 w-4 text-muted-foreground" />
-        <Inbox className="h-4 w-4 text-muted-foreground" />
+        <button
+          onClick={onToggleInbox}
+          aria-label={inboxOpen ? "Recolher inbox" : "Expandir inbox"}
+          className={cn(
+            "rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent",
+            inboxOpen && "bg-sidebar-accent text-foreground",
+          )}
+        >
+          <Inbox className="h-4 w-4" />
+        </button>
+        <button
+          onClick={onToggleArchivedView}
+          aria-label="Arquivados"
+          className={cn(
+            "rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent",
+            archivedView && "bg-sidebar-accent text-foreground",
+          )}
+        >
+          <Archive className="h-4 w-4" />
+        </button>
         <Folder className="h-4 w-4 text-muted-foreground" />
         <div className="mt-auto">
           <UserMenu />
@@ -74,20 +101,25 @@ export function AppSidebar({
       </div>
 
       <nav className="space-y-1 px-2">
-        {[
-          { icon: Home, label: "Home" },
-          { icon: Inbox, label: "Inbox" },
-        ].map((item) => (
-          <div
-            key={item.label}
-            className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"
-          >
-            <item.icon className="h-4 w-4 text-muted-foreground" />
-            {item.label}
-          </div>
-        ))}
+        <div className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent">
+          <Home className="h-4 w-4 text-muted-foreground" />
+          Home
+        </div>
         <button
-          onClick={() => setShowArchived((v) => !v)}
+          onClick={onToggleInbox}
+          className={cn(
+            "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
+            inboxOpen && "bg-sidebar-accent font-medium",
+          )}
+        >
+          <Inbox className="h-4 w-4 text-muted-foreground" />
+          Inbox
+          <span className="ml-auto text-[11px] text-muted-foreground">
+            {inboxOpen ? "Ocultar" : "Mostrar"}
+          </span>
+        </button>
+        <button
+          onClick={onToggleArchivedView}
           className={cn(
             "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
             showArchived && "bg-sidebar-accent font-medium",

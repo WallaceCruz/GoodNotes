@@ -1,9 +1,17 @@
-import { Archive, Inbox, MessageSquare, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Archive, MessageSquare, Search, X } from "lucide-react";
 import { useState } from "react";
-import type { Note } from "@/lib/board-types";
+import { PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note, type Priority } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
-import { stripHtml, timeAgo } from "./note-style";
+import { priorityClass, stripHtml, timeAgo } from "./note-style";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
+
+type Status = "all" | "active" | "archived";
+
+const STATUS_LABEL: Record<Status, string> = {
+  all: "Todas",
+  active: "Ativas",
+  archived: "Arquivadas",
+};
 
 export function InboxList({
   notes,
@@ -14,44 +22,95 @@ export function InboxList({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [query, setQuery] = useState("");
+  const [priorities, setPriorities] = useState<Priority[]>([]);
+  const [status, setStatus] = useState<Status>("all");
 
-  if (collapsed) {
-    return (
-      <section className="flex w-12 shrink-0 flex-col items-center gap-2 border-r border-border bg-background py-3">
-        <button
-          onClick={() => setCollapsed(false)}
-          aria-label="Expandir inbox"
-          title="Expandir inbox"
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent"
-        >
-          <PanelLeftOpen className="h-4 w-4" />
-        </button>
-        <Inbox className="h-4 w-4 text-muted-foreground" />
-        <span className="text-[11px] text-muted-foreground">{notes.length}</span>
-      </section>
-    );
-  }
+  const togglePriority = (p: Priority) =>
+    setPriorities((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
+
+  const q = query.trim().toLowerCase();
+  const filtered = notes.filter((n) => {
+    if (status === "active" && n.archived) return false;
+    if (status === "archived" && !n.archived) return false;
+    if (priorities.length > 0 && !(n.priority && priorities.includes(n.priority))) return false;
+    if (q && !`${n.title} ${n.tags.join(" ")} ${stripHtml(n.content)}`.toLowerCase().includes(q))
+      return false;
+    return true;
+  });
+
+  const dirty = q !== "" || priorities.length > 0 || status !== "all";
 
   return (
     <section className="flex w-80 shrink-0 flex-col border-r border-border bg-background">
       <header className="flex items-center gap-2 border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold">Inbox</h2>
-        <span className="text-xs text-muted-foreground">{notes.length}</span>
-        <button
-          onClick={() => setCollapsed(true)}
-          aria-label="Recolher inbox"
-          title="Recolher inbox"
-          className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-accent"
-        >
-          <PanelLeftClose className="h-4 w-4" />
-        </button>
+        <span className="text-xs text-muted-foreground">{filtered.length}</span>
       </header>
+
+      <div className="space-y-2 border-b border-border px-3 py-2">
+        <div className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1">
+          <Search className="h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar por título ou #tag"
+            aria-label="Buscar notas no inbox"
+            className="w-full bg-transparent text-xs outline-none"
+          />
+          {dirty && (
+            <button
+              aria-label="Limpar filtros do inbox"
+              onClick={() => {
+                setQuery("");
+                setPriorities([]);
+                setStatus("all");
+              }}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1">
+          {PRIORITIES.map((p) => (
+            <button
+              key={p}
+              onClick={() => togglePriority(p)}
+              className={cn(
+                "rounded-full border px-2 py-0.5 text-[11px]",
+                priorities.includes(p)
+                  ? priorityClass[p]
+                  : "border-border text-muted-foreground hover:bg-accent",
+              )}
+            >
+              {PRIORITY_ICON[p]} {PRIORITY_LABEL[p]}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-1">
+          {(Object.keys(STATUS_LABEL) as Status[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatus(s)}
+              className={cn(
+                "rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-accent",
+                status === s && "border-primary bg-primary/10 text-foreground",
+              )}
+            >
+              {STATUS_LABEL[s]}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="scroll-thin flex-1 overflow-y-auto">
-        {notes.length === 0 && (
-          <p className="p-4 text-sm text-muted-foreground">Nenhuma nota por aqui ainda.</p>
+        {filtered.length === 0 && (
+          <p className="p-4 text-sm text-muted-foreground">Nenhuma nota encontrada.</p>
         )}
-        {notes.map((n) => (
+        {filtered.map((n) => (
           <button
             key={n.id}
             onClick={() => onSelect(n.id)}
