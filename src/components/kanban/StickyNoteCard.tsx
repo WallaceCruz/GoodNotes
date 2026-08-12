@@ -26,7 +26,7 @@ export function StickyNoteCard({
     id: note.id,
   });
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
-  const showChecklist = note.showChecklist || note.checklist.length > 0;
+  const showChecklist = note.showChecklist;
 
 
   return (
