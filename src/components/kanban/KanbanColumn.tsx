@@ -1,4 +1,15 @@
 import { useDroppable } from "@dnd-kit/core";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
@@ -37,25 +48,43 @@ export function KanbanColumn({
         <button onClick={onAddNote} aria-label="Adicionar nota" className="text-muted-foreground">
           <Plus className="h-4 w-4" />
         </button>
-        <button
-          onClick={() => {
-            const removedNotes = notes;
-            store.removeColumn(column.id);
-            toast.success(`Coluna "${column.title}" excluída`, {
-              description: removedNotes.length
-                ? `${removedNotes.length} nota(s) removida(s) junto.`
-                : undefined,
-              action: {
-                label: "Desfazer",
-                onClick: () => store.restoreColumn(column, removedNotes),
-              },
-            });
-          }}
-          aria-label="Excluir coluna"
-          className="text-muted-foreground"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button aria-label="Excluir coluna" className="text-muted-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir coluna "{column.title}"?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {notes.length
+                  ? `${notes.length} nota(s) desta coluna também serão removidas.`
+                  : "Esta ação removerá a coluna do quadro."}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  const removedNotes = notes;
+                  store.removeColumn(column.id);
+                  toast.success(`Coluna "${column.title}" excluída`, {
+                    description: removedNotes.length
+                      ? `${removedNotes.length} nota(s) removida(s) junto.`
+                      : undefined,
+                    action: {
+                      label: "Desfazer",
+                      onClick: () => store.restoreColumn(column, removedNotes),
+                    },
+                  });
+                }}
+              >
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <div

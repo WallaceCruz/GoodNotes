@@ -8,6 +8,9 @@ import {
   Bold,
   Heading1,
   Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
   Highlighter,
   ImagePlus,
   Italic,
@@ -15,10 +18,8 @@ import {
   List,
   ListChecks,
   ListOrdered,
-  Redo2,
   Strikethrough,
   Underline as UnderlineIcon,
-  Undo2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -187,17 +188,21 @@ export function RichNoteEditor({
           "Sublinhado",
         )}
         {btn("strike", () => editor?.chain().focus().toggleStrike().run(), Strikethrough, "Tachado")}
-        {btn(
-          "heading",
-          () => editor?.chain().focus().toggleHeading({ level: 1 }).run(),
-          Heading1,
-          "Título 1",
-        )}
-        {btn(
-          "heading",
-          () => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
-          Heading2,
-          "Título 2",
+        {([
+          [1, Heading1],
+          [2, Heading2],
+          [3, Heading3],
+          [4, Heading4],
+          [5, Heading5],
+        ] as const).map(([level, Icon]) =>
+          btn(
+            null,
+            () => editor?.chain().focus().toggleHeading({ level }).run(),
+            Icon,
+            `Título ${level}`,
+            false,
+            editor?.isActive("heading", { level }) ?? false,
+          ),
         )}
         {btn("bulletList", () => editor?.chain().focus().toggleBulletList().run(), List, "Lista")}
         {btn(
@@ -211,21 +216,6 @@ export function RichNoteEditor({
         {btn(null, () => fileRef.current?.click(), ImagePlus, "Adicionar imagem")}
         {btn(null, () => setSwatchOpen((v) => !v), Highlighter, "Cor de realce", false, editor?.isActive("highlight") ?? false)}
         {btn("link", applyLink, Link2, "Inserir hiperlink")}
-        <span className="mx-0.5 h-3 w-px bg-foreground/15" />
-        {btn(
-          null,
-          () => editor?.chain().focus().undo().run(),
-          Undo2,
-          "Desfazer",
-          !editor?.can().undo(),
-        )}
-        {btn(
-          null,
-          () => editor?.chain().focus().redo().run(),
-          Redo2,
-          "Refazer",
-          !editor?.can().redo(),
-        )}
 
         <input
           ref={fileRef}
