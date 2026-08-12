@@ -47,8 +47,8 @@ export function KanbanColumn({
 
       <div
         ref={setNodeRef}
-        className={`scroll-thin flex min-h-32 flex-1 flex-col gap-3 overflow-y-auto p-2 ${
-          isOver ? "bg-accent/60" : ""
+        className={`scroll-thin flex min-h-32 flex-1 flex-col gap-3 overflow-y-auto rounded-b-lg p-2 transition-colors ${
+          isOver ? "bg-accent/60 ring-2 ring-inset ring-ring/50" : ""
         }`}
       >
         <SortableContext items={notes.map((n) => n.id)} strategy={verticalListSortingStrategy}>
@@ -62,6 +62,9 @@ export function KanbanColumn({
             />
           ))}
         </SortableContext>
+        {isOver && (
+          <div className="h-16 shrink-0 rounded-lg border-2 border-dashed border-ring/60 bg-background/40" />
+        )}
       </div>
     </div>
   );
