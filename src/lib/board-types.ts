@@ -2,16 +2,6 @@ export type NoteColor = "rose" | "amber" | "lime" | "sky" | "violet" | "peach";
 
 export const NOTE_COLORS: NoteColor[] = ["rose", "amber", "lime", "sky", "violet", "peach"];
 
-export type SubStatus = "todo" | "doing" | "done";
-
-export const SUB_STATUSES: SubStatus[] = ["todo", "doing", "done"];
-
-export const SUB_STATUS_LABEL: Record<SubStatus, string> = {
-  todo: "A fazer",
-  doing: "Fazendo",
-  done: "Feito",
-};
-
 export type Priority = "urgent" | "high" | "medium" | "low";
 
 export const PRIORITIES: Priority[] = ["urgent", "high", "medium", "low"];
@@ -30,12 +20,26 @@ export const PRIORITY_ICON: Record<Priority, string> = {
   low: "🌱",
 };
 
-export type SubNote = {
-  id: string;
-  text: string;
-  color: NoteColor;
-  status: SubStatus;
-};
+export type Member = { id: string; name: string };
+
+export const MEMBERS: Member[] = [
+  { id: "walle", name: "Walle Dev" },
+  { id: "marina", name: "Marina Costa" },
+  { id: "paula", name: "Paula Mendes" },
+  { id: "thiago", name: "Thiago Ghisi" },
+  { id: "allan", name: "Agente Allan" },
+  { id: "angelina", name: "Agente Angelina" },
+  { id: "bruno", name: "Agente Bruno" },
+];
+
+export function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]!.toUpperCase())
+    .join("");
+}
 
 export type ChecklistItem = {
   id: string;
@@ -56,10 +60,11 @@ export type Note = {
   content: string;
   color: NoteColor;
   author: string;
+  assignee: string | null;
   updatedAt: number;
   tags: string[];
-  subnotes: SubNote[];
   checklist: ChecklistItem[];
+  showChecklist: boolean;
   images: NoteImage[];
   priority: Priority | null;
   deadline: number | null;
@@ -71,13 +76,12 @@ export type Column = {
   title: string;
 };
 
-export type AutomationType = "tag" | "priority" | "checklist-done" | "subnotes-done";
+export type AutomationType = "tag" | "priority" | "checklist-done";
 
 export const AUTOMATION_LABEL: Record<AutomationType, string> = {
   tag: "Tem a tag",
   priority: "Prioridade é",
   "checklist-done": "Checklist 100% concluído",
-  "subnotes-done": "Subtarefas todas em Feito",
 };
 
 export type Automation = {
@@ -127,8 +131,6 @@ export function matchesAutomation(rule: Automation, note: Note): boolean {
       return note.priority === rule.value;
     case "checklist-done":
       return note.checklist.length > 0 && note.checklist.every((i) => i.done);
-    case "subnotes-done":
-      return note.subnotes.length > 0 && note.subnotes.every((s) => s.status === "done");
     default:
       return false;
   }
@@ -149,10 +151,11 @@ function makeFile(name: string, seed: Array<Partial<Note>>): BoardFile {
       content: n.content ?? "",
       color: n.color ?? "rose",
       author: n.author ?? "Walle Dev",
+      assignee: n.assignee ?? n.author ?? null,
       updatedAt: n.updatedAt ?? minutes(60 + i * 30),
       tags: n.tags ?? [],
-      subnotes: n.subnotes ?? [],
       checklist: n.checklist ?? [],
+      showChecklist: (n.checklist?.length ?? 0) > 0,
       images: n.images ?? [],
       priority: n.priority ?? null,
       deadline: n.deadline ?? null,
@@ -183,11 +186,6 @@ export function createInitialState(): BoardState {
               checklist: [
                 { id: uid(), text: "Listar bundles ativos", done: true },
                 { id: uid(), text: "Aprovar com pricing", done: false },
-              ],
-              subnotes: [
-                { id: uid(), text: "Levantar bundles duplicados", color: "amber", status: "todo" },
-                { id: uid(), text: "Validar com pricing", color: "sky", status: "doing" },
-                { id: uid(), text: "Mapear onda 1", color: "lime", status: "done" },
               ],
             },
             {
