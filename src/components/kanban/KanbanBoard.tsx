@@ -32,7 +32,7 @@ export function KanbanBoard({
   activeNoteId: string | null;
   onOpenNote: (id: string) => void;
   matches: (note: Note) => boolean;
-  highlightIds?: Set<string>;
+  highlightIds?: Set<string> | undefined;
 }) {
   const file = store.file;
   const [draggingId, setDraggingId] = useState<string | null>(null);

@@ -46,6 +46,7 @@ function Index() {
   const [inboxOpen, setInboxOpen] = useState(true);
   const [archivedView, setArchivedView] = useState(false);
   const [calendarView, setCalendarView] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   const allTags = Array.from(
     new Set([
@@ -74,6 +75,18 @@ function Index() {
   const inboxNotes = allNotes
     .filter(matches)
     .sort((a, b) => b.updatedAt - a.updatedAt);
+
+  const highlightIds = selectedDay
+    ? new Set(
+        allNotes
+          .filter((n) => {
+            if (!n.deadline) return false;
+            const d = new Date(n.deadline);
+            return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}` === selectedDay;
+          })
+          .map((n) => n.id),
+      )
+    : undefined;
 
   const activeNote = allNotes.find((n) => n.id === activeNoteId) ?? null;
 

@@ -39,7 +39,7 @@ export function KanbanColumn({
   store: BoardStore;
   onAddNote: (kind: NoteKind) => void;
   onOpenNote: (id: string) => void;
-  highlightIds?: Set<string>;
+  highlightIds?: Set<string> | undefined;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
