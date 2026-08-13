@@ -375,6 +375,10 @@ export function RichNoteEditor({
           />
         )}
 
+        {showToolbar && mounted && <TableMenu editor={editor} containerRef={proseRef} />}
+
+
+
         {hovered && (
           <div
             data-img-tools
