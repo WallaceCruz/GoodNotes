@@ -77,6 +77,10 @@ export function fromDateInput(value: string): number | null {
   return new Date(y, m - 1, d, 23, 59, 59).getTime();
 }
 
+export function formatTime(ts: number) {
+  return new Date(ts).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
 export function deadlineInfo(ts: number | null) {
   if (!ts) return null;
   const dayMs = 86_400_000;
