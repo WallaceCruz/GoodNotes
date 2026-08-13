@@ -140,7 +140,20 @@ function Index() {
 
             <div className="flex min-h-0 flex-1">
               {calendarView ? (
-                <CalendarView notes={store.file?.notes ?? []} onOpenNote={setActiveNoteId} />
+                <CalendarView
+                  notes={store.file?.notes ?? []}
+                  onOpenNote={setActiveNoteId}
+                  selectedDay={selectedDay}
+                  onSelectDay={setSelectedDay}
+                  onCreateNote={(deadline) => {
+                    const columnId = store.file?.columns[0]?.id;
+                    if (!columnId) return;
+                    const id = store.addNote(columnId, "sticky");
+                    store.updateNote(id, { deadline });
+                    setActiveNoteId(id);
+                  }}
+                  onSetDeadline={(id, deadline) => store.updateNote(id, { deadline })}
+                />
               ) : (
                 <>
               {inboxOpen && (
@@ -151,6 +164,7 @@ function Index() {
                 activeNoteId={activeNoteId}
                 onOpenNote={setActiveNoteId}
                 matches={matches}
+                highlightIds={highlightIds}
               />
                 </>
               )}
