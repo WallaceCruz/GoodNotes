@@ -284,14 +284,18 @@ export function CalendarView({
                   <span
                     key={n.id}
                     draggable
-                    onDragStart={(e) => e.dataTransfer.setData("text/note-id", n.id)}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("text/note-id", n.id);
+                      setDragging(true);
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onOpenNote(n.id);
+                      setPreviewId(n.id);
                     }}
+                    title={noteLabel[n.color]}
                     className={cn(
-                      "cursor-grab truncate rounded border px-1 py-0.5 text-[10px] active:cursor-grabbing",
-                      n.priority ? priorityClass[n.priority] : "border-border text-muted-foreground",
+                      "cursor-grab truncate rounded border border-border/60 px-1 py-0.5 text-[10px] text-foreground active:cursor-grabbing",
+                      n.kind === "notepad" ? "bg-card" : noteBg[n.color],
                     )}
                   >
                     {n.title || "Sem título"}
