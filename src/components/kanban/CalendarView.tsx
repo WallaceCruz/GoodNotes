@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
@@ -7,6 +7,9 @@ import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const HOURS: number[] = Array.from({ length: 24 }, (_, i) => i);
+const SNAPS = [5, 10, 15, 30, 60];
+const SNAP_KEY = "sticky-flow:calendar-snap";
+
 const MONTHS = [
   "Janeiro",
   "Fevereiro",
