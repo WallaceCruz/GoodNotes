@@ -144,12 +144,31 @@ export function CalendarView({
         })
       : `${MONTHS[(view === "week" ? dateFromKey(selected) : cursor).getMonth()]} ${(view === "week" ? dateFromKey(selected) : cursor).getFullYear()}`;
 
-  const handleDrop = (k: string) => (e: React.DragEvent) => {
+  const slotTime = (k: string, hour: number | null) => {
+    const d = dateFromKey(k);
+    if (hour === null) d.setHours(23, 59, 0, 0);
+    else d.setHours(hour, 0, 0, 0);
+    return d.getTime();
+  };
+
+  const handleDrop = (k: string, hour: number | null = null) => (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragOverKey(null);
     setDragging(false);
     const id = e.dataTransfer.getData("text/note-id");
-    if (id) onSetDeadline(id, dateFromKey(k).getTime());
+    if (id) onSetDeadline(id, slotTime(k, hour));
+  };
+
+  const dragTargetLabel = () => {
+    if (!dragOverKey) return "Solte sobre um dia";
+    const [k, h] = dragOverKey.split("|");
+    const d = new Date(slotTime(k!, h === undefined ? null : Number(h)));
+    return `Prazo: ${d.toLocaleDateString("pt-BR", {
+      weekday: "short",
+      day: "2-digit",
+      month: "long",
+    })} · ${formatTime(d.getTime())}`;
   };
 
   const filterChip = (label: string, on: boolean, toggle: () => void) => (
