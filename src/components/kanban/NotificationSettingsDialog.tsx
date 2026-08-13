@@ -10,7 +10,13 @@ import {
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import type { NotificationSettings } from "@/hooks/useNotificationSettings";
+import {
+  MINUTES_BEFORE_OPTIONS,
+  minutesBeforeLabel,
+  type NotificationSettings,
+} from "@/hooks/useNotificationSettings";
+import { cn } from "@/lib/utils";
+
 
 function Row({
   title,
