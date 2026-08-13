@@ -132,6 +132,18 @@ function Index() {
                   Vendo arquivadas
                 </span>
               )}
+              {!calendarView && selectedDay && (
+                <button
+                  onClick={() => setSelectedDay(null)}
+                  className="rounded-full border border-primary bg-primary/10 px-2 py-0.5 text-[11px] text-foreground"
+                >
+                  Dia do calendário: {new Date(
+                    Number(selectedDay.split("-")[0]),
+                    Number(selectedDay.split("-")[1]),
+                    Number(selectedDay.split("-")[2]),
+                  ).toLocaleDateString("pt-BR")} · limpar
+                </button>
+              )}
               <div className="ml-auto flex items-center gap-1.5">
                 <FiltersMenu filters={filters} allTags={allTags} store={store} onChange={setFilters} />
                 <button
