@@ -1,8 +1,8 @@
-import { CalendarDays, ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
-import { priorityClass, stripHtml } from "./note-style";
+import { noteBg, noteLabel, stripHtml } from "./note-style";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -58,6 +58,28 @@ export function CalendarView({
   const [showWithout, setShowWithout] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [pointer, setPointer] = useState({ x: 0, y: 0 });
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const previewNote = notes.find((n) => n.id === previewId) ?? null;
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: DragEvent) => setPointer({ x: e.clientX, y: e.clientY });
+    const onEnd = () => {
+      setDragging(false);
+      setDragOverKey(null);
+    };
+    window.addEventListener("dragover", onMove);
+    window.addEventListener("dragend", onEnd);
+    window.addEventListener("drop", onEnd);
+    return () => {
+      window.removeEventListener("dragover", onMove);
+      window.removeEventListener("dragend", onEnd);
+      window.removeEventListener("drop", onEnd);
+    };
+  }, [dragging]);
+
 
   const visible = useMemo(
     () => notes.filter((n) => (n.archived ? showArchived : true)),
@@ -125,6 +147,7 @@ export function CalendarView({
   const handleDrop = (k: string) => (e: React.DragEvent) => {
     e.preventDefault();
     setDragOverKey(null);
+    setDragging(false);
     const id = e.dataTransfer.getData("text/note-id");
     if (id) onSetDeadline(id, dateFromKey(k).getTime());
   };
@@ -248,7 +271,8 @@ export function CalendarView({
                   "flex min-h-[5rem] flex-col gap-1 rounded-md border border-border p-1.5 text-left transition-colors hover:bg-accent",
                   outside && "opacity-40",
                   selected === k && "border-primary bg-primary/5",
-                  dragOverKey === k && "border-primary bg-primary/10 ring-2 ring-ring/50",
+                  dragOverKey === k &&
+                    "scale-[1.02] border-primary bg-primary/15 shadow-lg ring-2 ring-primary",
                 )}
               >
                 <span
@@ -263,14 +287,18 @@ export function CalendarView({
                   <span
                     key={n.id}
                     draggable
-                    onDragStart={(e) => e.dataTransfer.setData("text/note-id", n.id)}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("text/note-id", n.id);
+                      setDragging(true);
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onOpenNote(n.id);
+                      setPreviewId(n.id);
                     }}
+                    title={noteLabel[n.color]}
                     className={cn(
-                      "cursor-grab truncate rounded border px-1 py-0.5 text-[10px] active:cursor-grabbing",
-                      n.priority ? priorityClass[n.priority] : "border-border text-muted-foreground",
+                      "cursor-grab truncate rounded border border-border/60 px-1 py-0.5 text-[10px] text-foreground active:cursor-grabbing",
+                      n.kind === "notepad" ? "bg-card" : noteBg[n.color],
                     )}
                   >
                     {n.title || "Sem título"}
@@ -315,9 +343,15 @@ export function CalendarView({
             <button
               key={n.id}
               draggable
-              onDragStart={(e) => e.dataTransfer.setData("text/note-id", n.id)}
-              onClick={() => onOpenNote(n.id)}
-              className="block w-full rounded-md border border-border p-2 text-left hover:bg-accent"
+              onDragStart={(e) => {
+                e.dataTransfer.setData("text/note-id", n.id);
+                setDragging(true);
+              }}
+              onClick={() => setPreviewId(n.id)}
+              className={cn(
+                "block w-full rounded-md border border-border/60 p-2 text-left transition-shadow hover:shadow-md",
+                n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+              )}
             >
               <p className="text-sm font-medium leading-snug">{n.title || "Sem título"}</p>
               <div className="mt-1 flex flex-wrap items-center gap-1">
@@ -341,9 +375,15 @@ export function CalendarView({
                 <button
                   key={n.id}
                   draggable
-                  onDragStart={(e) => e.dataTransfer.setData("text/note-id", n.id)}
-                  onClick={() => onOpenNote(n.id)}
-                  className="block w-full cursor-grab truncate rounded-md px-2 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent active:cursor-grabbing"
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("text/note-id", n.id);
+                    setDragging(true);
+                  }}
+                  onClick={() => setPreviewId(n.id)}
+                  className={cn(
+                    "block w-full cursor-grab truncate rounded-md border border-border/60 px-2 py-1.5 text-left text-xs text-foreground hover:shadow-md active:cursor-grabbing",
+                    n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                  )}
                 >
                   {n.title || "Sem título"}
                 </button>
@@ -352,6 +392,81 @@ export function CalendarView({
           </>
         )}
       </aside>
+
+      {dragging && (
+        <div
+          className="pointer-events-none fixed z-50 rounded-md border border-primary bg-popover px-2 py-1 text-[11px] font-medium text-foreground shadow-lg"
+          style={{ left: pointer.x + 14, top: pointer.y + 14 }}
+        >
+          {dragOverKey
+            ? `Prazo: ${dateFromKey(dragOverKey).toLocaleDateString("pt-BR", {
+                weekday: "short",
+                day: "2-digit",
+                month: "long",
+              })}`
+            : "Solte sobre um dia"}
+        </div>
+      )}
+
+      {previewNote && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-6 backdrop-blur-sm"
+          onClick={() => setPreviewId(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={cn(
+              "relative max-h-[80vh] w-full max-w-xl overflow-y-auto rounded-xl border border-border/60 p-6 shadow-2xl",
+              previewNote.kind === "notepad" ? "bg-card" : noteBg[previewNote.color],
+            )}
+          >
+            <button
+              onClick={() => setPreviewId(null)}
+              aria-label="Fechar visualização"
+              className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <h3 className="pr-8 text-xl font-bold leading-snug">
+              {previewNote.title || "Sem título"}
+            </h3>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              {previewNote.priority && <PriorityBadge priority={previewNote.priority} />}
+              {previewNote.deadline && <DeadlineBadge deadline={previewNote.deadline} />}
+              {previewNote.tags.map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full border border-foreground/15 px-2 py-0.5 text-[10px]"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            <div
+              className="prose-sm mt-4 text-sm leading-relaxed [&_img]:my-2 [&_img]:max-h-64 [&_img]:rounded-md"
+              dangerouslySetInnerHTML={{ __html: previewNote.content }}
+            />
+            {previewNote.checklist.length > 0 && (
+              <ul className="mt-4 space-y-1 text-sm">
+                {previewNote.checklist.map((i) => (
+                  <li key={i.id} className={cn(i.done && "text-muted-foreground line-through")}>
+                    {i.done ? "☑" : "☐"} {i.text}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <button
+              onClick={() => {
+                onOpenNote(previewNote.id);
+                setPreviewId(null);
+              }}
+              className="mt-5 rounded-md border border-foreground/20 bg-background/70 px-3 py-1.5 text-xs font-medium hover:bg-background"
+            >
+              Abrir detalhes
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
