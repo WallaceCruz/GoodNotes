@@ -58,10 +58,7 @@ export function NotepadCard({
       <div
         {...attributes}
         {...listeners}
-        className={cn(
-          "flex cursor-grab items-center gap-1.5 border-b border-border px-2 py-1.5 active:cursor-grabbing",
-          noteAccent[note.color],
-        )}
+        className="flex cursor-grab items-center gap-1.5 border-b border-border/70 bg-card px-2 py-1.5 active:cursor-grabbing"
       >
         <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
         <NotebookPen className="h-3.5 w-3.5 text-foreground/60" />
