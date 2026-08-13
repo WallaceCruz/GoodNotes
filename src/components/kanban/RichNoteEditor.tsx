@@ -261,14 +261,26 @@ export function RichNoteEditor({
         )}
       </div>
       <div
-        className="note-prose py-1.5"
+        className={cn("note-prose py-1.5", compact ? "text-xs" : "text-sm")}
         onClick={(e) => {
           const target = e.target as HTMLElement;
-          if (target.tagName === "IMG") setLightbox((target as HTMLImageElement).src);
+          if (target.tagName === "IMG") {
+            setLightbox((target as HTMLImageElement).src);
+            return;
+          }
+          if (!mounted) setMounted(true);
         }}
       >
-        <EditorContent editor={editor} />
+        {mounted ? (
+          <EditorContent editor={editor} />
+        ) : (
+          <div
+            className={cn("cursor-text", minHeight)}
+            dangerouslySetInnerHTML={{ __html: content || "<p></p>" }}
+          />
+        )}
       </div>
+
 
       <Dialog open={!!lightbox} onOpenChange={(open) => !open && setLightbox(null)}>
         <DialogContent className="max-w-3xl">
