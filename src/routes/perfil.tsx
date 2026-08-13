@@ -3,6 +3,7 @@ import { Check, Loader2, Trash2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AccountLayout } from "@/components/account/AccountLayout";
+import { AvatarCropDialog } from "@/components/account/AvatarCropDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,6 +66,7 @@ function PerfilPage() {
   });
   const [errors, setErrors] = useState<Partial<Record<ProfileField, string>>>({});
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
@@ -110,13 +112,7 @@ function PerfilPage() {
       toast.error("A imagem deve ter no máximo 2 MB");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      update({ avatar: String(reader.result) });
-      toast.success("Foto atualizada");
-    };
-    reader.onerror = () => toast.error("Não foi possível ler a imagem");
-    reader.readAsDataURL(file);
+    setCropFile(file);
   };
 
   return (
@@ -161,6 +157,15 @@ function PerfilPage() {
             onChange={(e) => {
               onAvatar(e.target.files?.[0]);
               e.target.value = "";
+            }}
+          />
+          <AvatarCropDialog
+            file={cropFile}
+            onCancel={() => setCropFile(null)}
+            onConfirm={(dataUrl) => {
+              update({ avatar: dataUrl });
+              setCropFile(null);
+              toast.success("Foto atualizada");
             }}
           />
           <span

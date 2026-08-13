@@ -9,6 +9,9 @@ export type NotificationSettings = {
   quietMode: boolean;
   timeReminders: boolean;
   minutesBefore: number;
+  channelApp: boolean;
+  channelEmail: boolean;
+  emailAddress: string;
 };
 
 export const MINUTES_BEFORE_OPTIONS = [5, 10, 15, 30, 60, 120, 1440];
@@ -25,6 +28,9 @@ export const defaultNotificationSettings: NotificationSettings = {
   quietMode: false,
   timeReminders: true,
   minutesBefore: 30,
+  channelApp: true,
+  channelEmail: false,
+  emailAddress: "",
 };
 
 

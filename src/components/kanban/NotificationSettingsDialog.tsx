@@ -132,6 +132,41 @@ export function NotificationSettingsDialog({
 
 
 
+          <div className="rounded-lg border border-border px-3 py-3">
+            <p className="text-sm font-medium">Canais de notificação</p>
+            <p className="mb-2 text-[11px] text-muted-foreground">
+              Escolha onde você quer receber os lembretes.
+            </p>
+            <div className="space-y-2">
+              <label className="flex items-center justify-between gap-4 text-sm">
+                <span className="text-[13px]">Notificação no app</span>
+                <Switch
+                  checked={settings.channelApp}
+                  disabled={off}
+                  onCheckedChange={(v) => onChange({ channelApp: v })}
+                />
+              </label>
+              <label className="flex items-center justify-between gap-4 text-sm">
+                <span className="text-[13px]">E-mail</span>
+                <Switch
+                  checked={settings.channelEmail}
+                  disabled={off}
+                  onCheckedChange={(v) => onChange({ channelEmail: v })}
+                />
+              </label>
+              {settings.channelEmail && (
+                <input
+                  type="email"
+                  value={settings.emailAddress}
+                  disabled={off}
+                  onChange={(e) => onChange({ emailAddress: e.target.value })}
+                  placeholder="seu@email.com"
+                  className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-ring/40"
+                />
+              )}
+            </div>
+          </div>
+
           <Row
             title="Avisar notas atrasadas"
             description="Mantém no topo as notas cujo prazo já venceu."

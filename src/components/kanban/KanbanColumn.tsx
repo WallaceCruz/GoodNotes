@@ -15,12 +15,15 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { NotebookPen, Plus, StickyNote, X } from "lucide-react";
+import { Copy, MoreHorizontal, NotebookPen, Plus, StickyNote, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import type { Column, Note, NoteKind } from "@/lib/board-types";
+import { NOTE_COLORS, type Column, type Note, type NoteKind } from "@/lib/board-types";
+import { cn } from "@/lib/utils";
+import { noteBg, noteLabel } from "./note-style";
 import { NotepadCard } from "./NotepadCard";
 import { StickyNoteCard } from "./StickyNoteCard";
 
@@ -44,8 +47,14 @@ export function KanbanColumn({
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
   return (
-    <div className="flex max-h-full w-96 shrink-0 flex-col rounded-lg border border-border bg-card/70 backdrop-blur-sm">
-      <div className="flex items-center gap-1 border-b border-border px-3 py-2">
+    <div className="flex max-h-full w-96 shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-card/70 backdrop-blur-sm">
+      <div className={cn("h-1.5 w-full", column.color ? noteBg[column.color] : "bg-transparent")} />
+      <div
+        className={cn(
+          "flex items-center gap-1 border-b border-border px-3 py-2",
+          column.color && `${noteBg[column.color]}/40`,
+        )}
+      >
         <input
           value={column.title}
           onChange={(e) => store.renameColumn(column.id, e.target.value)}
@@ -71,12 +80,61 @@ export function KanbanColumn({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
         <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <button aria-label="Excluir coluna" className="text-muted-foreground">
-              <X className="h-4 w-4" />
-            </button>
-          </AlertDialogTrigger>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button aria-label="Mais opções da coluna" className="text-muted-foreground">
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-60">
+              <div className="px-2 py-1.5">
+                <p className="mb-2 text-[11px] font-medium text-muted-foreground">Cor da coluna</p>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    title="Sem cor"
+                    onClick={() => store.setColumnColor(column.id, null)}
+                    className={cn(
+                      "h-5 w-5 rounded-full border border-border bg-background",
+                      !column.color && "ring-2 ring-ring ring-offset-1 ring-offset-background",
+                    )}
+                  />
+                  {NOTE_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      title={noteLabel[c]}
+                      onClick={() => store.setColumnColor(column.id, c)}
+                      className={cn(
+                        "h-5 w-5 rounded-full border border-border",
+                        noteBg[c],
+                        column.color === c && "ring-2 ring-ring ring-offset-1 ring-offset-background",
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => {
+                  store.duplicateColumn(column.id);
+                  toast.success(`Coluna "${column.title}" duplicada`);
+                }}
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicar coluna
+              </DropdownMenuItem>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir coluna
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Excluir coluna "{column.title}"?</AlertDialogTitle>
@@ -109,6 +167,7 @@ export function KanbanColumn({
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
 
       <div
         ref={setNodeRef}

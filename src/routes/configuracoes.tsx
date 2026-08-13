@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { AccountLayout } from "@/components/account/AccountLayout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -110,6 +111,29 @@ function ConfiguracoesPage() {
             </SelectContent>
           </Select>
         </Row>
+        <Row label="Notificação no app" hint="Receber avisos no sino e na tela.">
+          <Switch
+            checked={settings.channelApp}
+            onCheckedChange={(v) => update({ channelApp: v })}
+          />
+        </Row>
+        <Row label="Notificação por e-mail" hint="Receber lembretes também por e-mail.">
+          <Switch
+            checked={settings.channelEmail}
+            onCheckedChange={(v) => update({ channelEmail: v })}
+          />
+        </Row>
+        {settings.channelEmail && (
+          <Row label="E-mail para lembretes" hint="Endereço que receberá os avisos.">
+            <Input
+              type="email"
+              value={settings.emailAddress}
+              onChange={(e) => update({ emailAddress: e.target.value })}
+              placeholder="seu@email.com"
+              className="w-60"
+            />
+          </Row>
+        )}
         <Row label="Notas atrasadas" hint="Destacar notas com prazo vencido.">
           <Switch
             checked={settings.notifyOverdue}
