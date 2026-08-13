@@ -11,10 +11,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Plus, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { NotebookPen, Plus, StickyNote, X } from "lucide-react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import type { Column, Note } from "@/lib/board-types";
+import type { Column, Note, NoteKind } from "@/lib/board-types";
+import { NotepadCard } from "./NotepadCard";
 import { StickyNoteCard } from "./StickyNoteCard";
 
 export function KanbanColumn({
@@ -29,7 +36,7 @@ export function KanbanColumn({
   notes: Note[];
   activeNoteId: string | null;
   store: BoardStore;
-  onAddNote: () => void;
+  onAddNote: (kind: NoteKind) => void;
   onOpenNote: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
@@ -45,9 +52,23 @@ export function KanbanColumn({
         <span className="rounded bg-muted px-1.5 text-[11px] text-muted-foreground">
           {notes.length}
         </span>
-        <button onClick={onAddNote} aria-label="Adicionar nota" className="text-muted-foreground">
-          <Plus className="h-4 w-4" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button aria-label="Adicionar item" className="text-muted-foreground">
+              <Plus className="h-4 w-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuItem onClick={() => onAddNote("sticky")}>
+              <StickyNote className="mr-2 h-4 w-4" />
+              Nota autoadesiva
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onAddNote("notepad")}>
+              <NotebookPen className="mr-2 h-4 w-4" />
+              Bloco de notas
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <button aria-label="Excluir coluna" className="text-muted-foreground">
@@ -94,15 +115,18 @@ export function KanbanColumn({
         }`}
       >
         <SortableContext items={notes.map((n) => n.id)} strategy={verticalListSortingStrategy}>
-          {notes.map((n) => (
-            <StickyNoteCard
-              key={n.id}
-              note={n}
-              store={store}
-              active={activeNoteId === n.id}
-              onOpen={() => onOpenNote(n.id)}
-            />
-          ))}
+          {notes.map((n) => {
+            const Card = n.kind === "notepad" ? NotepadCard : StickyNoteCard;
+            return (
+              <Card
+                key={n.id}
+                note={n}
+                store={store}
+                active={activeNoteId === n.id}
+                onOpen={() => onOpenNote(n.id)}
+              />
+            );
+          })}
         </SortableContext>
         {isOver && (
           <div className="h-16 shrink-0 rounded-lg border-2 border-dashed border-ring/60 bg-background/40" />

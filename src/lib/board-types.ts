@@ -78,9 +78,17 @@ export type NoteImage = {
   link: string;
 };
 
+export type NoteKind = "sticky" | "notepad";
+
+export const NOTE_KIND_LABEL: Record<NoteKind, string> = {
+  sticky: "Nota autoadesiva",
+  notepad: "Bloco de notas",
+};
+
 export type Note = {
   id: string;
   columnId: string;
+  kind: NoteKind;
   title: string;
   content: string;
   color: NoteColor;
@@ -197,6 +205,7 @@ function makeFile(name: string, seed: Array<Partial<Note>>): BoardFile {
     notes: seed.map((n, i) => ({
       id: uid(),
       columnId: columns[Math.min(i % 3, 2)]!.id,
+      kind: n.kind ?? "sticky",
       title: n.title ?? "Nova nota",
       content: n.content ?? "",
       color: n.color ?? "rose",
