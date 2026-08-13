@@ -185,6 +185,7 @@ export function RichNoteEditor({
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
+      {showToolbar && (
       <div className="relative flex flex-wrap items-center gap-0.5 border-y border-foreground/10 py-0.5">
         {btn("bold", () => editor?.chain().focus().toggleBold().run(), Bold, "Negrito")}
         {btn("italic", () => editor?.chain().focus().toggleItalic().run(), Italic, "Itálico")}
