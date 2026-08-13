@@ -4,6 +4,7 @@ import Underline from "@tiptap/extension-underline";
 import Image from "@tiptap/extension-image";
 import Highlight from "@tiptap/extension-highlight";
 import Link from "@tiptap/extension-link";
+import { TableKit } from "@tiptap/extension-table";
 import {
   Bold,
   Heading1,
@@ -21,17 +22,13 @@ import {
   Maximize2,
   Pencil,
   Strikethrough,
+  Table as TableIcon,
   Trash2,
   Underline as UnderlineIcon,
 } from "lucide-react";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ImageLightbox } from "./ImageLightbox";
 import { cn } from "@/lib/utils";
 
 const HIGHLIGHTS = [
@@ -42,6 +39,17 @@ const HIGHLIGHTS = [
   { label: "Laranja", value: "#fed7aa" },
 ];
 
+// Imagens arrastáveis: permite reordenar dentro da nota (a ordem fica no HTML salvo).
+const DraggableImage = Image.extend({ draggable: true, selectable: true });
+
+function collectImages(html: string): string[] {
+  const out: string[] = [];
+  const re = /<img[^>]+src="([^"]+)"/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html))) if (m[1]) out.push(m[1]);
+  return out;
+}
+
 function readAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -49,6 +57,7 @@ function readAsDataUrl(file: File): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
+
 
 export function RichNoteEditor({
   content,
@@ -82,14 +91,19 @@ export function RichNoteEditor({
   const fileRef = useRef<HTMLInputElement>(null);
 
 
+  const images = useMemo(() => collectImages(content), [content]);
+  const lightboxIndex = lightbox ? images.indexOf(lightbox) : -1;
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Underline,
       Highlight.configure({ multicolor: true }),
       Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { rel: "noreferrer noopener", target: "_blank" } }),
-      Image.configure({ inline: false, allowBase64: true, HTMLAttributes: { class: "note-img" } }),
+      DraggableImage.configure({ inline: false, allowBase64: true, HTMLAttributes: { class: "note-img" } }),
+      TableKit.configure({ table: { resizable: true, HTMLAttributes: { class: "note-table" } } }),
     ],
+
     content,
     immediatelyRender: false,
     editorProps: {
@@ -278,6 +292,18 @@ export function RichNoteEditor({
         {btn(null, () => fileRef.current?.click(), ImagePlus, "Adicionar imagem")}
         {btn(null, () => setSwatchOpen((v) => !v), Highlighter, "Cor de realce", false, editor?.isActive("highlight") ?? false)}
         {btn("link", applyLink, Link2, "Inserir hiperlink")}
+        {btn(
+          null,
+          () =>
+            editor?.isActive("table")
+              ? editor.chain().focus().deleteTable().run()
+              : editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+          TableIcon,
+          editor?.isActive("table") ? "Excluir tabela" : "Inserir tabela",
+          false,
+          editor?.isActive("table") ?? false,
+        )}
+
 
         <input
           ref={fileRef}
@@ -407,20 +433,15 @@ export function RichNoteEditor({
 
 
 
-      <Dialog open={!!lightbox} onOpenChange={(open) => !open && setLightbox(null)}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Imagem da nota</DialogTitle>
-          </DialogHeader>
-          {lightbox && (
-            <img
-              src={lightbox}
-              alt="Imagem ampliada da nota"
-              className="max-h-[70vh] w-full rounded-md object-contain"
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {lightbox && lightboxIndex >= 0 && (
+        <ImageLightbox
+          images={images}
+          index={lightboxIndex}
+          onIndexChange={(i) => setLightbox(images[i] ?? null)}
+          onClose={() => setLightbox(null)}
+        />
+      )}
+
     </div>
   );
 }
