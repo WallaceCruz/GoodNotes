@@ -49,7 +49,7 @@ export function NotepadCard({
         zIndex: isDragging ? 30 : undefined,
       }}
       className={cn(
-        "group overflow-hidden rounded-md border border-border bg-card shadow-sm transition-shadow duration-200 hover:shadow-md",
+        "group flex min-h-[22rem] flex-col overflow-hidden rounded-lg border border-border/80 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_14px_-6px_rgba(0,0,0,0.10)] transition-shadow duration-200 hover:shadow-[0_2px_4px_rgba(0,0,0,0.05),0_10px_24px_-10px_rgba(0,0,0,0.16)]",
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",
         active && "ring-2 ring-ring",
@@ -119,7 +119,7 @@ export function NotepadCard({
         </div>
       </div>
 
-      <div className="px-3 pb-2 pt-2">
+      <div className="flex-1 bg-card px-3 pb-2 pt-2">
         {(note.priority || note.deadline) && (
           <div className="flex flex-wrap items-center gap-1 pb-1">
             {note.priority && <PriorityBadge priority={note.priority} />}
