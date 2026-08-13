@@ -65,7 +65,23 @@ export function CalendarView({
   const [dragging, setDragging] = useState(false);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [snap, setSnap] = useState(15);
   const previewNote = notes.find((n) => n.id === previewId) ?? null;
+
+  useEffect(() => {
+    const raw = Number(localStorage.getItem(SNAP_KEY));
+    if (SNAPS.includes(raw)) setSnap(raw);
+  }, []);
+
+  const changeSnap = (v: number) => {
+    setSnap(v);
+    try {
+      localStorage.setItem(SNAP_KEY, String(v));
+    } catch {
+      /* ignore */
+    }
+  };
+
 
   useEffect(() => {
     if (!dragging) return;
