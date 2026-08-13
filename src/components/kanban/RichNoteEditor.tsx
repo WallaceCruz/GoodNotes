@@ -29,6 +29,7 @@ import {
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ImageLightbox } from "./ImageLightbox";
+import { TableMenu } from "./TableMenu";
 import { cn } from "@/lib/utils";
 
 const HIGHLIGHTS = [
@@ -345,44 +346,8 @@ export function RichNoteEditor({
         )}
       </div>
       )}
-      {showToolbar && editor?.isActive("table") && (
-        <div className="flex flex-wrap items-center gap-1 border-b border-foreground/10 py-1">
-          <span className="mr-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Tabela
-          </span>
-          {(
-            [
-              ["Linha acima", () => editor.chain().focus().addRowBefore().run()],
-              ["Linha abaixo", () => editor.chain().focus().addRowAfter().run()],
-              ["Excluir linha", () => editor.chain().focus().deleteRow().run()],
-              ["Coluna à esquerda", () => editor.chain().focus().addColumnBefore().run()],
-              ["Coluna à direita", () => editor.chain().focus().addColumnAfter().run()],
-              ["Excluir coluna", () => editor.chain().focus().deleteColumn().run()],
-              ["Mesclar/dividir", () => editor.chain().focus().mergeOrSplit().run()],
-              ["Alternar cabeçalho", () => editor.chain().focus().toggleHeaderRow().run()],
-              ["Excluir tabela", () => editor.chain().focus().deleteTable().run()],
-            ] as const
-          ).map(([label, action]) => (
-            <button
-              key={label}
-              type="button"
-              title={label}
-              onClick={(e) => {
-                e.stopPropagation();
-                action();
-              }}
-              className={cn(
-                "rounded border border-border px-1.5 py-0.5 text-[10px] hover:bg-accent",
-                label.startsWith("Excluir")
-                  ? "text-destructive"
-                  : "text-muted-foreground",
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
+
+
 
       <div
         ref={proseRef}
@@ -410,6 +375,10 @@ export function RichNoteEditor({
             dangerouslySetInnerHTML={{ __html: content || "<p></p>" }}
           />
         )}
+
+        {showToolbar && mounted && <TableMenu editor={editor} containerRef={proseRef} />}
+
+
 
         {hovered && (
           <div
