@@ -18,9 +18,13 @@ import {
   List,
   ListChecks,
   ListOrdered,
+  Maximize2,
+  Pencil,
   Strikethrough,
+  Trash2,
   Underline as UnderlineIcon,
 } from "lucide-react";
+
 import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
