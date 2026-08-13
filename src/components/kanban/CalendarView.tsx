@@ -109,7 +109,7 @@ export function CalendarView({
           ))}
         </div>
 
-        <div className="scroll-thin grid min-h-0 flex-1 grid-cols-7 grid-rows-6 gap-1 overflow-y-auto">
+        <div className="scroll-thin grid min-h-0 flex-1 auto-rows-[minmax(5.5rem,1fr)] grid-cols-7 content-start gap-1 overflow-y-auto">
           {days.map((d) => {
             const k = dayKey(d);
             const items = byDay.get(k) ?? [];
