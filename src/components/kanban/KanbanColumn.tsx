@@ -17,10 +17,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { NotebookPen, Plus, StickyNote, X } from "lucide-react";
+import { Copy, MoreHorizontal, NotebookPen, Plus, StickyNote, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import type { Column, Note, NoteKind } from "@/lib/board-types";
+import { NOTE_COLORS, type Column, type Note, type NoteKind } from "@/lib/board-types";
+import { cn } from "@/lib/utils";
+import { noteBg, noteLabel } from "./note-style";
 import { NotepadCard } from "./NotepadCard";
 import { StickyNoteCard } from "./StickyNoteCard";
 
