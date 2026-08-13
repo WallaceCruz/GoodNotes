@@ -147,6 +147,7 @@ export function CalendarView({
   const handleDrop = (k: string) => (e: React.DragEvent) => {
     e.preventDefault();
     setDragOverKey(null);
+    setDragging(false);
     const id = e.dataTransfer.getData("text/note-id");
     if (id) onSetDeadline(id, dateFromKey(k).getTime());
   };
