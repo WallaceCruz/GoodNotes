@@ -51,6 +51,7 @@ export function RichNoteEditor({
   onChange,
   minHeight = "min-h-16",
   compact = false,
+  showToolbar = true,
   onToggleChecklist,
   checklistActive = false,
 }: {
@@ -58,6 +59,7 @@ export function RichNoteEditor({
   onChange: (html: string) => void;
   minHeight?: string;
   compact?: boolean;
+  showToolbar?: boolean;
   onToggleChecklist?: () => void;
   checklistActive?: boolean;
 }) {
@@ -183,6 +185,7 @@ export function RichNoteEditor({
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
+      {showToolbar && (
       <div className="relative flex flex-wrap items-center gap-0.5 border-y border-foreground/10 py-0.5">
         {btn("bold", () => editor?.chain().focus().toggleBold().run(), Bold, "Negrito")}
         {btn("italic", () => editor?.chain().focus().toggleItalic().run(), Italic, "Itálico")}
@@ -261,6 +264,7 @@ export function RichNoteEditor({
           </div>
         )}
       </div>
+      )}
       <div
         className={cn("note-prose py-1.5", compact ? "text-xs" : "text-sm")}
         onClick={(e) => {
