@@ -139,7 +139,9 @@ export function KanbanBoard({
             <div
               className={cn(
                 "w-96 origin-center scale-[1.03] cursor-grabbing rounded-lg border border-border/60 p-3 shadow-2xl ring-2 ring-ring/40 transition-transform",
-                dragging.kind === "notepad" ? "bg-card" : cn("rotate-2", noteBg[dragging.color]),
+                dragging.kind === "notepad"
+                  ? "bg-card text-card-foreground"
+                  : cn("rotate-2", noteBg[dragging.color]),
               )}
             >
               <p className="text-[15px] font-semibold leading-snug">{dragging.title}</p>
