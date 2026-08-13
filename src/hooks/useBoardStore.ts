@@ -11,6 +11,7 @@ import {
   type Note,
   type NoteImage,
   type NoteColor,
+  type NoteKind,
   type Project,
   type TagDef,
   collectTags,
@@ -65,6 +66,7 @@ function normalize(s: BoardState): BoardState {
           priority: n.priority ?? null,
           deadline: n.deadline ?? null,
           archived: n.archived ?? false,
+          kind: n.kind ?? "sticky",
           assignee: n.assignee ?? n.author ?? null,
           showChecklist: n.showChecklist ?? (n.checklist?.length ?? 0) > 0,
         })),
@@ -250,13 +252,14 @@ export function useBoardStore() {
       removeAutomation: (id: string) =>
         updateFile((f) => ({ ...f, automations: f.automations.filter((a) => a.id !== id) })),
 
-      addNote: (columnId: string) => {
+      addNote: (columnId: string, kind: NoteKind = "sticky") => {
         const note: Note = {
           id: uid(),
           columnId,
-          title: "Nova nota",
+          kind,
+          title: kind === "notepad" ? "Novo bloco de notas" : "Nova nota",
           content: "",
-          color: "amber",
+          color: kind === "notepad" ? "slate" : "amber",
           author: "Você",
           assignee: "Walle Dev",
           updatedAt: Date.now(),
