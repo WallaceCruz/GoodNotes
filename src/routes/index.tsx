@@ -46,8 +46,12 @@ function Index() {
   const [archivedView, setArchivedView] = useState(false);
 
   const allTags = Array.from(
-    new Set((store.project?.files ?? []).flatMap((f) => f.notes).flatMap((n) => n.tags)),
+    new Set([
+      ...(store.file?.tags ?? []).map((t) => t.name),
+      ...(store.project?.files ?? []).flatMap((f) => f.notes).flatMap((n) => n.tags),
+    ]),
   ).sort();
+
 
   const allNotes = (store.project?.files ?? []).flatMap((f) => f.notes);
 
