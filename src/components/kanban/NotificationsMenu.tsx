@@ -119,9 +119,14 @@ export function NotificationsMenu({
               <p className="text-sm font-semibold">Lembretes de prazo</p>
               <p className="text-[11px] text-muted-foreground">
                 {settings.enabled
-                  ? `Avisando ${settings.daysBefore} ${settings.daysBefore === 1 ? "dia" : "dias"} antes`
+                  ? `Avisando ${settings.daysBefore} ${settings.daysBefore === 1 ? "dia" : "dias"} antes${
+                      settings.timeReminders
+                        ? ` · ${minutesBeforeLabel(settings.minutesBefore)} antes do horário`
+                        : ""
+                    }`
                   : "Lembretes desativados"}
               </p>
+
             </div>
             <button
               onClick={() => setSettingsOpen(true)}
