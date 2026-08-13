@@ -65,7 +65,11 @@ export function RichNoteEditor({
   onChangeRef.current = onChange;
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [swatchOpen, setSwatchOpen] = useState(false);
+  // Em cards compactos o editor só é montado ao interagir: evita dezenas de
+  // instâncias do Tiptap montando ao mesmo tempo (loop de forceUpdate).
+  const [mounted, setMounted] = useState(!compact);
   const fileRef = useRef<HTMLInputElement>(null);
+
 
   const editor = useEditor({
     extensions: [
@@ -165,6 +169,7 @@ export function RichNoteEditor({
       disabled={disabled}
       onClick={(e) => {
         e.stopPropagation();
+        if (!mounted) setMounted(true);
         action();
       }}
       className={cn(
@@ -257,14 +262,26 @@ export function RichNoteEditor({
         )}
       </div>
       <div
-        className="note-prose py-1.5"
+        className={cn("note-prose py-1.5", compact ? "text-xs" : "text-sm")}
         onClick={(e) => {
           const target = e.target as HTMLElement;
-          if (target.tagName === "IMG") setLightbox((target as HTMLImageElement).src);
+          if (target.tagName === "IMG") {
+            setLightbox((target as HTMLImageElement).src);
+            return;
+          }
+          if (!mounted) setMounted(true);
         }}
       >
-        <EditorContent editor={editor} />
+        {mounted ? (
+          <EditorContent editor={editor} />
+        ) : (
+          <div
+            className={cn("cursor-text", minHeight)}
+            dangerouslySetInnerHTML={{ __html: content || "<p></p>" }}
+          />
+        )}
       </div>
+
 
       <Dialog open={!!lightbox} onOpenChange={(open) => !open && setLightbox(null)}>
         <DialogContent className="max-w-3xl">
