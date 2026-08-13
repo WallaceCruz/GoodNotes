@@ -1,6 +1,7 @@
 import {
   Archive,
   ArchiveRestore,
+  CalendarDays,
   ChevronDown,
   ChevronRight,
   FileText,
@@ -28,6 +29,8 @@ export function AppSidebar({
   onGoHome,
   archivedView,
   onToggleArchivedView,
+  calendarView,
+  onToggleCalendarView,
 }: {
   store: BoardStore;
   collapsed: boolean;
@@ -37,6 +40,8 @@ export function AppSidebar({
   onGoHome: () => void;
   archivedView: boolean;
   onToggleArchivedView: () => void;
+  calendarView: boolean;
+  onToggleCalendarView: () => void;
 }) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const showArchived = archivedView;
@@ -72,6 +77,16 @@ export function AppSidebar({
           )}
         >
           <Inbox className="h-4 w-4" />
+        </button>
+        <button
+          onClick={onToggleCalendarView}
+          aria-label="Calendário"
+          className={cn(
+            "rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent",
+            calendarView && "bg-sidebar-accent text-foreground",
+          )}
+        >
+          <CalendarDays className="h-4 w-4" />
         </button>
         <button
           onClick={onToggleArchivedView}
@@ -113,7 +128,7 @@ export function AppSidebar({
           onClick={onGoHome}
           className={cn(
             "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
-            !archivedView && "bg-sidebar-accent font-medium",
+            !archivedView && !calendarView && "bg-sidebar-accent font-medium",
           )}
         >
           <Home className="h-4 w-4 text-muted-foreground" />
@@ -131,6 +146,16 @@ export function AppSidebar({
           <span className="ml-auto text-[11px] text-muted-foreground">
             {inboxOpen ? "Ocultar" : "Mostrar"}
           </span>
+        </button>
+        <button
+          onClick={onToggleCalendarView}
+          className={cn(
+            "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
+            calendarView && "bg-sidebar-accent font-medium",
+          )}
+        >
+          <CalendarDays className="h-4 w-4 text-muted-foreground" />
+          Calendário
         </button>
         <button
           onClick={onToggleArchivedView}

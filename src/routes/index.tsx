@@ -3,6 +3,7 @@ import { ChevronRight, FileText, Folder, Layers, Zap } from "lucide-react";
 import { useState } from "react";
 import { AppSidebar } from "@/components/kanban/AppSidebar";
 import { AutomationsPanel } from "@/components/kanban/AutomationsPanel";
+import { CalendarView } from "@/components/kanban/CalendarView";
 import { FiltersMenu, emptyFilters, type Filters } from "@/components/kanban/FiltersMenu";
 import { InboxList } from "@/components/kanban/InboxList";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
@@ -44,6 +45,7 @@ function Index() {
   const [automationsOpen, setAutomationsOpen] = useState(false);
   const [inboxOpen, setInboxOpen] = useState(true);
   const [archivedView, setArchivedView] = useState(false);
+  const [calendarView, setCalendarView] = useState(false);
 
   const allTags = Array.from(
     new Set([
@@ -87,10 +89,19 @@ function Index() {
             onToggleInbox={() => setInboxOpen((v) => !v)}
             onGoHome={() => {
               setArchivedView(false);
+              setCalendarView(false);
               setActiveNoteId(null);
             }}
             archivedView={archivedView}
-            onToggleArchivedView={() => setArchivedView((v) => !v)}
+            onToggleArchivedView={() => {
+              setCalendarView(false);
+              setArchivedView((v) => !v);
+            }}
+            calendarView={calendarView}
+            onToggleCalendarView={() => {
+              setArchivedView(false);
+              setCalendarView((v) => !v);
+            }}
           />
 
           <div className="flex min-w-0 flex-1 flex-col">
@@ -128,6 +139,10 @@ function Index() {
             {automationsOpen && <AutomationsPanel store={store} allTags={allTags} />}
 
             <div className="flex min-h-0 flex-1">
+              {calendarView ? (
+                <CalendarView notes={store.file?.notes ?? []} onOpenNote={setActiveNoteId} />
+              ) : (
+                <>
               {inboxOpen && (
                 <InboxList notes={inboxNotes} activeId={activeNoteId} onSelect={setActiveNoteId} />
               )}
@@ -137,6 +152,8 @@ function Index() {
                 onOpenNote={setActiveNoteId}
                 matches={matches}
               />
+                </>
+              )}
               {activeNote && (
                 <NoteEditorPanel
                   note={activeNote}
