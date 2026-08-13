@@ -123,11 +123,19 @@ export function KanbanBoard({
           </button>
         </div>
 
-        <DragOverlay dropAnimation={{ duration: 160, easing: "cubic-bezier(0.2,0,0,1)" }}>
+        <DragOverlay
+          dropAnimation={{
+            duration: 260,
+            easing: "cubic-bezier(0.2, 0, 0, 1)",
+            sideEffects: defaultDropAnimationSideEffects({
+              styles: { active: { opacity: "0.35" } },
+            }),
+          }}
+        >
           {dragging ? (
             <div
               className={cn(
-                "w-96 rotate-2 rounded-lg border border-border/60 p-3 shadow-lg",
+                "w-96 origin-center scale-[1.03] rotate-2 cursor-grabbing rounded-lg border border-border/60 p-3 shadow-2xl ring-2 ring-ring/40 transition-transform",
                 noteBg[dragging.color],
               )}
             >

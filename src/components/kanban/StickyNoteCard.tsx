@@ -45,11 +45,15 @@ export function StickyNoteCard({
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 30 : undefined,
+      }}
       className={cn(
-        "group rounded-lg border border-border/60 p-3 shadow-sm transition-shadow hover:shadow-md",
+        "group rounded-lg border border-border/60 p-3 shadow-sm transition-shadow duration-200 hover:shadow-md",
         noteBg[note.color],
-        isDragging && "opacity-40",
+        isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",
         active && "ring-2 ring-ring",
       )}
