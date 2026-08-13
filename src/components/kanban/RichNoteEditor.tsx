@@ -264,6 +264,7 @@ export function RichNoteEditor({
           </div>
         )}
       </div>
+      )}
       <div
         className={cn("note-prose py-1.5", compact ? "text-xs" : "text-sm")}
         onClick={(e) => {
