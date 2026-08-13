@@ -110,13 +110,7 @@ function PerfilPage() {
       toast.error("A imagem deve ter no máximo 2 MB");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      update({ avatar: String(reader.result) });
-      toast.success("Foto atualizada");
-    };
-    reader.onerror = () => toast.error("Não foi possível ler a imagem");
-    reader.readAsDataURL(file);
+    setCropFile(file);
   };
 
   return (
