@@ -71,6 +71,11 @@ export function RichNoteEditor({
   onChangeRef.current = onChange;
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [swatchOpen, setSwatchOpen] = useState(false);
+  const [hovered, setHovered] = useState<{ src: string; top: number; left: number } | null>(null);
+  const proseRef = useRef<HTMLDivElement>(null);
+  const replaceRef = useRef<HTMLInputElement>(null);
+  const replaceTargetRef = useRef<string | null>(null);
+
   // Em cards compactos o editor só é montado ao interagir: evita dezenas de
   // instâncias do Tiptap montando ao mesmo tempo (loop de forceUpdate).
   const [mounted, setMounted] = useState(!compact);
@@ -135,6 +140,48 @@ export function RichNoteEditor({
       editor.commands.setContent(content || "", { emitUpdate: false });
     }
   }, [content, editor]);
+
+  const showImageTools = (img: HTMLImageElement) => {
+    const box = proseRef.current?.getBoundingClientRect();
+    if (!box) return;
+    const r = img.getBoundingClientRect();
+    setHovered({ src: img.src, top: r.top - box.top, left: r.left - box.left });
+  };
+
+  const withImageNode = (src: string, fn: (pos: number, size: number) => void) => {
+    const ed = editorRef.current;
+    if (!ed || ed.isDestroyed) return;
+    let found: { pos: number; size: number } | null = null;
+    ed.state.doc.descendants((node, pos) => {
+      if (!found && node.type.name === "image" && node.attrs.src === src) {
+        found = { pos, size: node.nodeSize };
+        return false;
+      }
+      return true;
+    });
+    if (found) fn(found.pos, found.size);
+  };
+
+  const deleteImage = (src: string) => {
+    setHovered(null);
+    withImageNode(src, (pos, size) => {
+      editorRef.current?.chain().deleteRange({ from: pos, to: pos + size }).run();
+    });
+  };
+
+  const replaceImage = async (file: File) => {
+    const target = replaceTargetRef.current;
+    if (!target) return;
+    const url = await readAsDataUrl(file);
+    setHovered(null);
+    withImageNode(target, (pos, size) => {
+      editorRef.current
+        ?.chain()
+        .insertContentAt({ from: pos, to: pos + size }, { type: "image", attrs: { src: url } })
+        .run();
+    });
+  };
+
 
   const insertFiles = (files: FileList | null) => {
     if (!files) return;
