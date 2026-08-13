@@ -6,6 +6,7 @@ import { formatTime, noteBg, noteLabel, stripHtml } from "./note-style";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const HOURS: number[] = Array.from({ length: 24 }, (_, i) => i);
 const MONTHS = [
   "Janeiro",
   "Fevereiro",
