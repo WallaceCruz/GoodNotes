@@ -159,6 +159,15 @@ function PerfilPage() {
               e.target.value = "";
             }}
           />
+          <AvatarCropDialog
+            file={cropFile}
+            onCancel={() => setCropFile(null)}
+            onConfirm={(dataUrl) => {
+              update({ avatar: dataUrl });
+              setCropFile(null);
+              toast.success("Foto atualizada");
+            }}
+          />
           <span
             className={cn(
               "ml-auto flex items-center gap-1.5 text-xs text-muted-foreground transition-opacity",
