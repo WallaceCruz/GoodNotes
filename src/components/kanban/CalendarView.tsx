@@ -378,17 +378,26 @@ export function CalendarView({
                           e.stopPropagation();
                           setPreviewId(n.id);
                         }}
-                        title={noteLabel[n.color]}
+                        title={
+                          isConflict(n)
+                            ? `Conflito: outra nota com o mesmo horário (${formatTime(n.deadline!)})`
+                            : noteLabel[n.color]
+                        }
                         className={cn(
                           "cursor-grab truncate rounded border border-border/60 px-1 py-0.5 text-[10px] text-foreground active:cursor-grabbing",
                           n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                          isConflict(n) && "border-destructive ring-1 ring-destructive",
                         )}
                       >
+                        {isConflict(n) && (
+                          <AlertTriangle className="mr-0.5 inline h-2.5 w-2.5 text-destructive" />
+                        )}
                         <span className="font-medium tabular-nums">
                           {formatTime(n.deadline!)}
                         </span>{" "}
                         {n.title || "Sem título"}
                       </span>
+
                     ))}
                     {items.length > 2 && (
                       <span className="text-[10px] text-muted-foreground">
