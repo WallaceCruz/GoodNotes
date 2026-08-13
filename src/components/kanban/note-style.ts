@@ -30,6 +30,21 @@ export const noteLabel: Record<NoteColor, string> = {
   slate: "Cinza",
 };
 
+export const noteAccent: Record<NoteColor, string> = {
+  rose: "bg-note-rose/60",
+  amber: "bg-note-amber/60",
+  lime: "bg-note-lime/60",
+  sky: "bg-note-sky/60",
+  violet: "bg-note-violet/60",
+  peach: "bg-note-peach/60",
+  teal: "bg-note-teal/60",
+  indigo: "bg-note-indigo/60",
+  sand: "bg-note-sand/60",
+  mint: "bg-note-mint/60",
+  coral: "bg-note-coral/60",
+  slate: "bg-note-slate/60",
+};
+
 export const priorityClass: Record<Priority, string> = {
   urgent: "border-destructive/50 bg-destructive/15 text-foreground",
   high: "border-note-peach bg-note-peach text-foreground",
