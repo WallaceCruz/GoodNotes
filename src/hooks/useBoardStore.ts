@@ -10,10 +10,39 @@ import {
   type Column,
   type Note,
   type NoteImage,
+  type NoteColor,
   type Project,
+  type TagDef,
+  collectTags,
 } from "@/lib/board-types";
 
 const STORAGE_KEY = "sticky-kanban-v1";
+
+function reindex(notes: Note[]): Note[] {
+  const counters = new Map<string, number>();
+  return notes.map((n) => {
+    const next = counters.get(n.columnId) ?? 0;
+    counters.set(n.columnId, next + 1);
+    return { ...n, order: next };
+  });
+}
+
+// Reordena pelo campo persistido `order` (por coluna) e reindexa para manter posições estáveis.
+function withOrder(notes: Note[]): Note[] {
+  const groups = new Map<string, Array<{ n: Note; i: number }>>();
+  notes.forEach((n, i) => {
+    const list = groups.get(n.columnId) ?? [];
+    list.push({ n, i });
+    groups.set(n.columnId, list);
+  });
+  const out: Note[] = [];
+  for (const list of groups.values()) {
+    list.sort((a, b) => (a.n.order ?? a.i) - (b.n.order ?? b.i));
+    out.push(...list.map((x) => x.n));
+  }
+  return reindex(out);
+}
+
 
 function normalize(s: BoardState): BoardState {
   return {
@@ -24,7 +53,11 @@ function normalize(s: BoardState): BoardState {
         ...f,
         archived: f.archived ?? false,
         automations: f.automations ?? [],
-        notes: (f.notes ?? []).map((n) => ({
+        tags: collectTags(
+          (f.notes ?? []).flatMap((n) => n.tags ?? []),
+          f.tags ?? [],
+        ),
+        notes: withOrder(f.notes ?? []).map((n) => ({
           ...n,
           tags: n.tags ?? [],
           checklist: n.checklist ?? [],
@@ -88,6 +121,7 @@ export function useBoardStore() {
     (noteId: string, patch: Partial<Note>) =>
       updateFile((f) => ({
         ...f,
+        tags: patch.tags ? collectTags(patch.tags, f.tags) : f.tags,
         notes: f.notes.map((n) =>
           n.id === noteId ? { ...n, ...patch, updatedAt: Date.now() } : n,
         ),
@@ -147,6 +181,7 @@ export function useBoardStore() {
             { id: uid(), title: "Feito" },
           ],
           notes: [],
+          tags: [],
           automations: [],
           archived: false,
         };
@@ -232,8 +267,9 @@ export function useBoardStore() {
           priority: null,
           deadline: null,
           archived: false,
+          order: -1,
         };
-        updateFile((f) => ({ ...f, notes: [note, ...f.notes] }));
+        updateFile((f) => ({ ...f, notes: reindex([note, ...f.notes]) }));
         return note.id;
       },
       updateNote,
@@ -244,12 +280,53 @@ export function useBoardStore() {
         })),
       removeNote: (noteId: string) =>
         updateFile((f) => ({ ...f, notes: f.notes.filter((n) => n.id !== noteId) })),
-      restoreNote: (note: Note) => updateFile((f) => ({ ...f, notes: [note, ...f.notes] })),
+      restoreNote: (note: Note) =>
+        updateFile((f) => ({ ...f, notes: reindex([note, ...f.notes]) })),
+
+      addTag: (name: string, color: NoteColor) =>
+        updateFile((f) => {
+          const clean = name.trim().toLowerCase();
+          if (!clean || f.tags.some((t) => t.name === clean)) return f;
+          return { ...f, tags: [...f.tags, { name: clean, color } satisfies TagDef] };
+        }),
+      renameTag: (oldName: string, newName: string) =>
+        updateFile((f) => {
+          const clean = newName.trim().toLowerCase();
+          if (!clean || clean === oldName) return f;
+          return {
+            ...f,
+            tags: f.tags
+              .map((t) => (t.name === oldName ? { ...t, name: clean } : t))
+              .filter((t, i, arr) => arr.findIndex((x) => x.name === t.name) === i),
+            notes: f.notes.map((n) =>
+              n.tags.includes(oldName)
+                ? { ...n, tags: Array.from(new Set(n.tags.map((t) => (t === oldName ? clean : t)))) }
+                : n,
+            ),
+            automations: f.automations.map((a) =>
+              a.type === "tag" && a.value === oldName ? { ...a, value: clean } : a,
+            ),
+          };
+        }),
+      setTagColor: (name: string, color: NoteColor) =>
+        updateFile((f) => ({
+          ...f,
+          tags: f.tags.map((t) => (t.name === name ? { ...t, color } : t)),
+        })),
+      removeTag: (name: string) =>
+        updateFile((f) => ({
+          ...f,
+          tags: f.tags.filter((t) => t.name !== name),
+          notes: f.notes.map((n) =>
+            n.tags.includes(name) ? { ...n, tags: n.tags.filter((t) => t !== name) } : n,
+          ),
+          automations: f.automations.filter((a) => !(a.type === "tag" && a.value === name)),
+        })),
       restoreColumn: (column: Column, notes: Note[]) =>
         updateFile((f) => ({
           ...f,
           columns: [...f.columns, column],
-          notes: [...notes, ...f.notes],
+          notes: reindex([...notes, ...f.notes]),
         })),
       reorderNote: (activeId: string, overId: string) =>
         updateFile((f) => {
@@ -260,7 +337,7 @@ export function useBoardStore() {
           const notes = [...f.notes];
           const [moving] = notes.splice(from, 1);
           notes.splice(to, 0, { ...moving!, columnId });
-          return { ...f, notes };
+          return { ...f, notes: reindex(notes) };
         }),
       moveNote: (noteId: string, columnId: string, beforeNoteId?: string) =>
         updateFile((f) => {
@@ -271,7 +348,7 @@ export function useBoardStore() {
           const idx = beforeNoteId ? rest.findIndex((n) => n.id === beforeNoteId) : -1;
           if (idx === -1) rest.push(updated);
           else rest.splice(idx, 0, updated);
-          return { ...f, notes: rest };
+          return { ...f, notes: reindex(rest) };
         }),
 
       addChecklistItem: (noteId: string, text: string) =>

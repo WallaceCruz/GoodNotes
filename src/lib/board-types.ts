@@ -94,7 +94,20 @@ export type Note = {
   priority: Priority | null;
   deadline: number | null;
   archived: boolean;
+  order: number;
 };
+
+
+export type TagDef = {
+  name: string;
+  color: NoteColor;
+};
+
+export const TAG_PALETTE: NoteColor[] = NOTE_COLORS;
+
+export function tagColorOf(tags: TagDef[], name: string): NoteColor {
+  return tags.find((t) => t.name === name)?.color ?? "slate";
+}
 
 export type Column = {
   id: string;
@@ -122,6 +135,7 @@ export type BoardFile = {
   name: string;
   columns: Column[];
   notes: Note[];
+  tags: TagDef[];
   automations: Automation[];
   archived: boolean;
 };
@@ -161,6 +175,16 @@ export function matchesAutomation(rule: Automation, note: Note): boolean {
   }
 }
 
+export function collectTags(names: string[], existing: TagDef[] = []): TagDef[] {
+  const out = [...existing];
+  for (const raw of names) {
+    const name = raw.trim().toLowerCase();
+    if (!name || out.some((t) => t.name === name)) continue;
+    out.push({ name, color: NOTE_COLORS[out.length % NOTE_COLORS.length]! });
+  }
+  return out;
+}
+
 function makeFile(name: string, seed: Array<Partial<Note>>): BoardFile {
   const columns = defaultColumns();
   return {
@@ -169,6 +193,7 @@ function makeFile(name: string, seed: Array<Partial<Note>>): BoardFile {
     columns,
     automations: [],
     archived: false,
+    tags: collectTags(seed.flatMap((n) => n.tags ?? [])),
     notes: seed.map((n, i) => ({
       id: uid(),
       columnId: columns[Math.min(i % 3, 2)]!.id,
@@ -185,6 +210,7 @@ function makeFile(name: string, seed: Array<Partial<Note>>): BoardFile {
       priority: n.priority ?? null,
       deadline: n.deadline ?? null,
       archived: n.archived ?? false,
+      order: i,
     })),
   };
 }

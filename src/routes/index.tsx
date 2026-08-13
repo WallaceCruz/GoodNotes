@@ -46,8 +46,12 @@ function Index() {
   const [archivedView, setArchivedView] = useState(false);
 
   const allTags = Array.from(
-    new Set((store.project?.files ?? []).flatMap((f) => f.notes).flatMap((n) => n.tags)),
+    new Set([
+      ...(store.file?.tags ?? []).map((t) => t.name),
+      ...(store.project?.files ?? []).flatMap((f) => f.notes).flatMap((n) => n.tags),
+    ]),
   ).sort();
+
 
   const allNotes = (store.project?.files ?? []).flatMap((f) => f.notes);
 
@@ -105,7 +109,7 @@ function Index() {
                 </span>
               )}
               <div className="ml-auto flex items-center gap-1.5">
-                <FiltersMenu filters={filters} allTags={allTags} onChange={setFilters} />
+                <FiltersMenu filters={filters} allTags={allTags} store={store} onChange={setFilters} />
                 <button
                   onClick={() => setAutomationsOpen((v) => !v)}
                   className={`flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent ${
