@@ -1,5 +1,5 @@
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { formatTime, noteBg, noteLabel, stripHtml } from "./note-style";
