@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { CircleHelp, CreditCard, LogOut, Settings, User } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -9,16 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { initials, useUserProfile } from "@/hooks/useUserProfile";
 import { cn } from "@/lib/utils";
 
-const CURRENT_USER = { name: "Walle Dev", email: "walle@stickyflow.app" };
-
-const items = [
-  { label: "Perfil", icon: User },
-  { label: "Planos", icon: CreditCard },
-  { label: "Configurações", icon: Settings },
-  { label: "Ajuda", icon: CircleHelp },
-];
+const links = [
+  { label: "Perfil", icon: User, to: "/perfil" },
+  { label: "Planos", icon: CreditCard, to: "/planos" },
+  { label: "Configurações", icon: Settings, to: "/configuracoes" },
+] as const;
 
 export function UserMenu({
   variant = "compact",
@@ -27,6 +26,8 @@ export function UserMenu({
   variant?: "compact" | "full";
   className?: string;
 }) {
+  const { profile } = useUserProfile();
+  const CURRENT_USER = profile;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,7 +40,7 @@ export function UserMenu({
         >
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary text-[11px] font-semibold text-primary-foreground">
-              WD
+              {initials(profile.name) || "SF"}
             </AvatarFallback>
           </Avatar>
           {variant === "full" && (
@@ -60,12 +61,18 @@ export function UserMenu({
           </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {items.map((i) => (
-          <DropdownMenuItem key={i.label} onClick={() => toast(`${i.label} em breve`)}>
-            <i.icon className="h-4 w-4" />
-            {i.label}
+        {links.map((i) => (
+          <DropdownMenuItem key={i.label} asChild>
+            <Link to={i.to}>
+              <i.icon className="h-4 w-4" />
+              {i.label}
+            </Link>
           </DropdownMenuItem>
         ))}
+        <DropdownMenuItem onClick={() => toast("Ajuda em breve")}>
+          <CircleHelp className="h-4 w-4" />
+          Ajuda
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => toast("Sessão encerrada")}>
           <LogOut className="h-4 w-4" />
