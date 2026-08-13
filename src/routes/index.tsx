@@ -46,6 +46,7 @@ function Index() {
   const [inboxOpen, setInboxOpen] = useState(true);
   const [archivedView, setArchivedView] = useState(false);
   const [calendarView, setCalendarView] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   const allTags = Array.from(
     new Set([
@@ -74,6 +75,18 @@ function Index() {
   const inboxNotes = allNotes
     .filter(matches)
     .sort((a, b) => b.updatedAt - a.updatedAt);
+
+  const highlightIds = selectedDay
+    ? new Set(
+        allNotes
+          .filter((n) => {
+            if (!n.deadline) return false;
+            const d = new Date(n.deadline);
+            return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}` === selectedDay;
+          })
+          .map((n) => n.id),
+      )
+    : undefined;
 
   const activeNote = allNotes.find((n) => n.id === activeNoteId) ?? null;
 
@@ -119,6 +132,18 @@ function Index() {
                   Vendo arquivadas
                 </span>
               )}
+              {!calendarView && selectedDay && (
+                <button
+                  onClick={() => setSelectedDay(null)}
+                  className="rounded-full border border-primary bg-primary/10 px-2 py-0.5 text-[11px] text-foreground"
+                >
+                  Dia do calendário: {new Date(
+                    Number(selectedDay.split("-")[0]),
+                    Number(selectedDay.split("-")[1]),
+                    Number(selectedDay.split("-")[2]),
+                  ).toLocaleDateString("pt-BR")} · limpar
+                </button>
+              )}
               <div className="ml-auto flex items-center gap-1.5">
                 <FiltersMenu filters={filters} allTags={allTags} store={store} onChange={setFilters} />
                 <button
@@ -140,7 +165,20 @@ function Index() {
 
             <div className="flex min-h-0 flex-1">
               {calendarView ? (
-                <CalendarView notes={store.file?.notes ?? []} onOpenNote={setActiveNoteId} />
+                <CalendarView
+                  notes={store.file?.notes ?? []}
+                  onOpenNote={setActiveNoteId}
+                  selectedDay={selectedDay}
+                  onSelectDay={setSelectedDay}
+                  onCreateNote={(deadline) => {
+                    const columnId = store.file?.columns[0]?.id;
+                    if (!columnId) return;
+                    const id = store.addNote(columnId, "sticky");
+                    store.updateNote(id, { deadline });
+                    setActiveNoteId(id);
+                  }}
+                  onSetDeadline={(id, deadline) => store.updateNote(id, { deadline })}
+                />
               ) : (
                 <>
               {inboxOpen && (
@@ -151,6 +189,7 @@ function Index() {
                 activeNoteId={activeNoteId}
                 onOpenNote={setActiveNoteId}
                 matches={matches}
+                highlightIds={highlightIds}
               />
                 </>
               )}

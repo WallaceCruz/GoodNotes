@@ -31,6 +31,7 @@ export function KanbanColumn({
   store,
   onAddNote,
   onOpenNote,
+  highlightIds,
 }: {
   column: Column;
   notes: Note[];
@@ -38,6 +39,7 @@ export function KanbanColumn({
   store: BoardStore;
   onAddNote: (kind: NoteKind) => void;
   onOpenNote: (id: string) => void;
+  highlightIds?: Set<string> | undefined;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
@@ -118,13 +120,21 @@ export function KanbanColumn({
           {notes.map((n) => {
             const Card = n.kind === "notepad" ? NotepadCard : StickyNoteCard;
             return (
-              <Card
+              <div
                 key={n.id}
-                note={n}
-                store={store}
-                active={activeNoteId === n.id}
-                onOpen={() => onOpenNote(n.id)}
-              />
+                className={
+                  highlightIds?.has(n.id)
+                    ? "rounded-xl ring-2 ring-primary ring-offset-2 ring-offset-background"
+                    : undefined
+                }
+              >
+                <Card
+                  note={n}
+                  store={store}
+                  active={activeNoteId === n.id}
+                  onOpen={() => onOpenNote(n.id)}
+                />
+              </div>
             );
           })}
         </SortableContext>

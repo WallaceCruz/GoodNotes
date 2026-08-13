@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
@@ -21,34 +21,73 @@ const MONTHS = [
   "Dezembro",
 ];
 
-const dayKey = (d: number | Date) => {
+export const dayKey = (d: number | Date) => {
   const date = new Date(d);
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 };
 
+const dateFromKey = (k: string) => {
+  const [y, m, d] = k.split("-").map(Number);
+  return new Date(y!, m!, d!, 12, 0, 0, 0);
+};
+
+type ViewMode = "day" | "week" | "month";
+
+const VIEW_LABEL: Record<ViewMode, string> = { day: "Dia", week: "Semana", month: "Mês" };
+
 export function CalendarView({
   notes,
   onOpenNote,
+  selectedDay,
+  onSelectDay,
+  onCreateNote,
+  onSetDeadline,
 }: {
   notes: Note[];
   onOpenNote: (id: string) => void;
+  selectedDay: string | null;
+  onSelectDay: (key: string) => void;
+  onCreateNote: (deadline: number) => void;
+  onSetDeadline: (noteId: string, deadline: number) => void;
 }) {
   const today = new Date();
+  const selected = selectedDay ?? dayKey(today);
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
-  const [selected, setSelected] = useState<string>(dayKey(today));
+  const [view, setView] = useState<ViewMode>("month");
+  const [showWith, setShowWith] = useState(true);
+  const [showWithout, setShowWithout] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+
+  const visible = useMemo(
+    () => notes.filter((n) => (n.archived ? showArchived : true)),
+    [notes, showArchived],
+  );
 
   const byDay = useMemo(() => {
     const map = new Map<string, Note[]>();
-    for (const n of notes) {
+    if (!showWith) return map;
+    for (const n of visible) {
       if (!n.deadline) continue;
       const k = dayKey(n.deadline);
       map.set(k, [...(map.get(k) ?? []), n]);
     }
     return map;
-  }, [notes]);
+  }, [visible, showWith]);
 
   const days = useMemo(() => {
-    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+    if (view === "day") return [dateFromKey(selected)];
+    const base = view === "week" ? dateFromKey(selected) : new Date(cursor);
+    if (view === "week") {
+      const start = new Date(base);
+      start.setDate(base.getDate() - base.getDay());
+      return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        return d;
+      });
+    }
+    const first = new Date(base.getFullYear(), base.getMonth(), 1);
     const start = new Date(first);
     start.setDate(first.getDate() - first.getDay());
     return Array.from({ length: 42 }, (_, i) => {
@@ -56,28 +95,96 @@ export function CalendarView({
       d.setDate(start.getDate() + i);
       return d;
     });
-  }, [cursor]);
+  }, [cursor, view, selected]);
 
   const selectedNotes = (byDay.get(selected) ?? []).sort(
     (a, b) => (a.deadline ?? 0) - (b.deadline ?? 0),
   );
-  const withoutDeadline = notes.filter((n) => !n.deadline);
+  const withoutDeadline = showWithout ? visible.filter((n) => !n.deadline) : [];
 
-  const move = (delta: number) =>
-    setCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
+  const move = (delta: number) => {
+    if (view === "month") {
+      setCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
+      return;
+    }
+    const d = dateFromKey(selected);
+    d.setDate(d.getDate() + delta * (view === "week" ? 7 : 1));
+    setCursor(new Date(d.getFullYear(), d.getMonth(), 1));
+    onSelectDay(dayKey(d));
+  };
+
+  const headerLabel =
+    view === "day"
+      ? dateFromKey(selected).toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })
+      : `${MONTHS[(view === "week" ? dateFromKey(selected) : cursor).getMonth()]} ${(view === "week" ? dateFromKey(selected) : cursor).getFullYear()}`;
+
+  const handleDrop = (k: string) => (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverKey(null);
+    const id = e.dataTransfer.getData("text/note-id");
+    if (id) onSetDeadline(id, dateFromKey(k).getTime());
+  };
+
+  const filterChip = (label: string, on: boolean, toggle: () => void) => (
+    <button
+      key={label}
+      onClick={toggle}
+      className={cn(
+        "rounded-full border px-2.5 py-1 text-[11px] transition-colors",
+        on
+          ? "border-primary bg-primary/10 text-foreground"
+          : "border-border text-muted-foreground hover:bg-accent",
+      )}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className="flex min-h-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col p-4">
-        <div className="mb-3 flex items-center gap-2">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-sm font-semibold">
-            {MONTHS[cursor.getMonth()]} {cursor.getFullYear()}
-          </h2>
+          <h2 className="text-sm font-semibold capitalize">{headerLabel}</h2>
+
+          <div className="ml-2 flex items-center gap-0.5 rounded-md border border-border p-0.5">
+            {(Object.keys(VIEW_LABEL) as ViewMode[]).map((v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={cn(
+                  "rounded px-2 py-1 text-[11px] transition-colors",
+                  view === v
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-accent",
+                )}
+              >
+                {VIEW_LABEL[v]}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {filterChip("Com prazo", showWith, () => setShowWith((v) => !v))}
+            {filterChip("Sem prazo", showWithout, () => setShowWithout((v) => !v))}
+            {filterChip("Arquivadas", showArchived, () => setShowArchived((v) => !v))}
+          </div>
+
           <div className="ml-auto flex items-center gap-1">
             <button
+              onClick={() => onCreateNote(dateFromKey(selected).getTime())}
+              className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Nova nota neste dia
+            </button>
+            <button
               onClick={() => move(-1)}
-              aria-label="Mês anterior"
+              aria-label="Anterior"
               className="rounded-md border border-border p-1.5 text-muted-foreground hover:bg-accent"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -85,7 +192,7 @@ export function CalendarView({
             <button
               onClick={() => {
                 setCursor(new Date(today.getFullYear(), today.getMonth(), 1));
-                setSelected(dayKey(today));
+                onSelectDay(dayKey(today));
               }}
               className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-accent"
             >
@@ -93,7 +200,7 @@ export function CalendarView({
             </button>
             <button
               onClick={() => move(1)}
-              aria-label="Próximo mês"
+              aria-label="Próximo"
               className="rounded-md border border-border p-1.5 text-muted-foreground hover:bg-accent"
             >
               <ChevronRight className="h-3.5 w-3.5" />
@@ -101,28 +208,47 @@ export function CalendarView({
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 pb-1">
-          {WEEKDAYS.map((w) => (
-            <div key={w} className="text-center text-[11px] font-medium text-muted-foreground">
-              {w}
-            </div>
-          ))}
-        </div>
+        {view !== "day" && (
+          <div className={cn("grid gap-1 pb-1", "grid-cols-7")}>
+            {WEEKDAYS.map((w) => (
+              <div key={w} className="text-center text-[11px] font-medium text-muted-foreground">
+                {w}
+              </div>
+            ))}
+          </div>
+        )}
 
-        <div className="scroll-thin grid min-h-0 flex-1 auto-rows-[minmax(5.5rem,1fr)] grid-cols-7 content-start gap-1 overflow-y-auto">
+        <div
+          className={cn(
+            "scroll-thin grid min-h-0 flex-1 content-start gap-1 overflow-y-auto",
+            view === "day"
+              ? "grid-cols-1 auto-rows-[minmax(20rem,1fr)]"
+              : view === "week"
+                ? "grid-cols-7 auto-rows-[minmax(16rem,1fr)]"
+                : "grid-cols-7 auto-rows-[minmax(5.5rem,1fr)]",
+          )}
+        >
           {days.map((d) => {
             const k = dayKey(d);
             const items = byDay.get(k) ?? [];
-            const outside = d.getMonth() !== cursor.getMonth();
+            const outside = view === "month" && d.getMonth() !== cursor.getMonth();
             const isToday = k === dayKey(today);
+            const limit = view === "month" ? 2 : 8;
             return (
               <button
                 key={k}
-                onClick={() => setSelected(k)}
+                onClick={() => onSelectDay(k)}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOverKey(k);
+                }}
+                onDragLeave={() => setDragOverKey((c) => (c === k ? null : c))}
+                onDrop={handleDrop(k)}
                 className={cn(
                   "flex min-h-[5rem] flex-col gap-1 rounded-md border border-border p-1.5 text-left transition-colors hover:bg-accent",
                   outside && "opacity-40",
                   selected === k && "border-primary bg-primary/5",
+                  dragOverKey === k && "border-primary bg-primary/10 ring-2 ring-ring/50",
                 )}
               >
                 <span
@@ -133,20 +259,26 @@ export function CalendarView({
                 >
                   {d.getDate()}
                 </span>
-                {items.slice(0, 2).map((n) => (
+                {items.slice(0, limit).map((n) => (
                   <span
                     key={n.id}
+                    draggable
+                    onDragStart={(e) => e.dataTransfer.setData("text/note-id", n.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenNote(n.id);
+                    }}
                     className={cn(
-                      "truncate rounded border px-1 py-0.5 text-[10px]",
+                      "cursor-grab truncate rounded border px-1 py-0.5 text-[10px] active:cursor-grabbing",
                       n.priority ? priorityClass[n.priority] : "border-border text-muted-foreground",
                     )}
                   >
                     {n.title || "Sem título"}
                   </span>
                 ))}
-                {items.length > 2 && (
+                {items.length > limit && (
                   <span className="text-[10px] text-muted-foreground">
-                    +{items.length - 2} mais
+                    +{items.length - limit} mais
                   </span>
                 )}
               </button>
@@ -156,16 +288,24 @@ export function CalendarView({
       </div>
 
       <aside className="scroll-thin w-80 shrink-0 overflow-y-auto border-l border-border p-4">
-        <h3 className="text-sm font-semibold">
-          {new Date(
-            Number(selected.split("-")[0]),
-            Number(selected.split("-")[1]),
-            Number(selected.split("-")[2]),
-          ).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
+        <h3 className="text-sm font-semibold capitalize">
+          {dateFromKey(selected).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}
         </h3>
         <p className="mt-0.5 text-xs text-muted-foreground">
           {selectedNotes.length} nota(s) com prazo neste dia
         </p>
+
+        <button
+          onClick={() => onCreateNote(dateFromKey(selected).getTime())}
+          className="mt-3 flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-border py-2 text-xs text-muted-foreground hover:bg-accent"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Criar nota para este dia
+        </button>
 
         <div className="mt-3 space-y-2">
           {selectedNotes.length === 0 && (
@@ -174,6 +314,8 @@ export function CalendarView({
           {selectedNotes.map((n) => (
             <button
               key={n.id}
+              draggable
+              onDragStart={(e) => e.dataTransfer.setData("text/note-id", n.id)}
               onClick={() => onOpenNote(n.id)}
               className="block w-full rounded-md border border-border p-2 text-left hover:bg-accent"
             >
@@ -192,14 +334,16 @@ export function CalendarView({
         {withoutDeadline.length > 0 && (
           <>
             <h4 className="mt-5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Sem prazo ({withoutDeadline.length})
+              Sem prazo ({withoutDeadline.length}) — arraste para um dia
             </h4>
             <div className="mt-2 space-y-1">
-              {withoutDeadline.slice(0, 10).map((n) => (
+              {withoutDeadline.slice(0, 20).map((n) => (
                 <button
                   key={n.id}
+                  draggable
+                  onDragStart={(e) => e.dataTransfer.setData("text/note-id", n.id)}
                   onClick={() => onOpenNote(n.id)}
-                  className="block w-full truncate rounded-md px-2 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent"
+                  className="block w-full cursor-grab truncate rounded-md px-2 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent active:cursor-grabbing"
                 >
                   {n.title || "Sem título"}
                 </button>
