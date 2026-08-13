@@ -228,6 +228,24 @@ export function useBoardStore() {
           ...f,
           columns: f.columns.map((c) => (c.id === cid ? { ...c, title } : c)),
         })),
+      setColumnColor: (cid: string, color: NoteColor | null) =>
+        updateFile((f) => ({
+          ...f,
+          columns: f.columns.map((c) => (c.id === cid ? { ...c, color } : c)),
+        })),
+      duplicateColumn: (cid: string) =>
+        updateFile((f) => {
+          const index = f.columns.findIndex((c) => c.id === cid);
+          const source = f.columns[index];
+          if (!source) return f;
+          const clone: Column = { ...source, id: uid(), title: `${source.title} (cópia)` };
+          const columns = [...f.columns];
+          columns.splice(index + 1, 0, clone);
+          const copies = f.notes
+            .filter((n) => n.columnId === cid)
+            .map((n) => ({ ...n, id: uid(), columnId: clone.id }));
+          return { ...f, columns, notes: reindex([...f.notes, ...copies]) };
+        }),
       removeColumn: (cid: string) =>
         updateFile((f) => ({
           ...f,
