@@ -178,32 +178,43 @@ export function CalendarView({
         })
       : `${MONTHS[(view === "week" ? dateFromKey(selected) : cursor).getMonth()]} ${(view === "week" ? dateFromKey(selected) : cursor).getFullYear()}`;
 
-  const slotTime = (k: string, hour: number | null) => {
+  const slotTime = (k: string, hour: number | null, minute = 0) => {
     const d = dateFromKey(k);
     if (hour === null) d.setHours(23, 59, 0, 0);
-    else d.setHours(hour, 0, 0, 0);
+    else d.setHours(hour, minute, 0, 0);
     return d.getTime();
   };
 
+  const snapMinuteFrom = (e: React.DragEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const ratio = Math.min(0.999, Math.max(0, (e.clientY - rect.top) / rect.height));
+    const m = Math.round((ratio * 60) / snap) * snap;
+    return Math.min(60 - snap, Math.max(0, m));
+  };
+
   const handleDrop = (k: string, hour: number | null = null) => (e: React.DragEvent) => {
+    const minute = hour === null ? 0 : snapMinuteFrom(e);
     e.preventDefault();
     e.stopPropagation();
     setDragOverKey(null);
     setDragging(false);
     const id = e.dataTransfer.getData("text/note-id");
-    if (id) onSetDeadline(id, slotTime(k, hour));
+    if (id) onSetDeadline(id, slotTime(k, hour, minute));
   };
 
   const dragTargetLabel = () => {
     if (!dragOverKey) return "Solte sobre um dia";
-    const [k, h] = dragOverKey.split("|");
-    const d = new Date(slotTime(k!, h === undefined ? null : Number(h)));
+    const [k, h, m] = dragOverKey.split("|");
+    const d = new Date(
+      slotTime(k!, h === undefined ? null : Number(h), m === undefined ? 0 : Number(m)),
+    );
     return `Prazo: ${d.toLocaleDateString("pt-BR", {
       weekday: "short",
       day: "2-digit",
       month: "long",
     })} · ${formatTime(d.getTime())}`;
   };
+
 
   const filterChip = (label: string, on: boolean, toggle: () => void) => (
     <button
