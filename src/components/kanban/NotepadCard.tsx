@@ -18,7 +18,7 @@ import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { AssigneeSelect } from "./AssigneeSelect";
 import { ChecklistEditor } from "./ChecklistEditor";
-import { noteAccent, timeAgo } from "./note-style";
+import { timeAgo } from "./note-style";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
