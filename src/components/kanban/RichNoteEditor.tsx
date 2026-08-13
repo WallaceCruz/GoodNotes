@@ -151,15 +151,18 @@ export function RichNoteEditor({
   const withImageNode = (src: string, fn: (pos: number, size: number) => void) => {
     const ed = editorRef.current;
     if (!ed || ed.isDestroyed) return;
-    let found: { pos: number; size: number } | null = null;
+    let foundPos = -1;
+    let foundSize = 0;
     ed.state.doc.descendants((node, pos) => {
-      if (!found && node.type.name === "image" && node.attrs.src === src) {
-        found = { pos, size: node.nodeSize };
+      if (foundPos === -1 && node.type.name === "image" && node.attrs["src"] === src) {
+        foundPos = pos;
+        foundSize = node.nodeSize;
         return false;
       }
       return true;
     });
-    if (found) fn(found.pos, found.size);
+    if (foundPos >= 0) fn(foundPos, foundSize);
+
   };
 
   const deleteImage = (src: string) => {
