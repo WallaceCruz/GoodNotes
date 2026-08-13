@@ -416,20 +416,15 @@ export function RichNoteEditor({
 
 
 
-      <Dialog open={!!lightbox} onOpenChange={(open) => !open && setLightbox(null)}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Imagem da nota</DialogTitle>
-          </DialogHeader>
-          {lightbox && (
-            <img
-              src={lightbox}
-              alt="Imagem ampliada da nota"
-              className="max-h-[70vh] w-full rounded-md object-contain"
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {lightbox && lightboxIndex >= 0 && (
+        <ImageLightbox
+          images={images}
+          index={lightboxIndex}
+          onIndexChange={(i) => setLightbox(images[i] ?? null)}
+          onClose={() => setLightbox(null)}
+        />
+      )}
+
     </div>
   );
 }
