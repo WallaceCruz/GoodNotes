@@ -372,9 +372,15 @@ export function CalendarView({
                 <button
                   key={n.id}
                   draggable
-                  onDragStart={(e) => e.dataTransfer.setData("text/note-id", n.id)}
-                  onClick={() => onOpenNote(n.id)}
-                  className="block w-full cursor-grab truncate rounded-md px-2 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent active:cursor-grabbing"
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("text/note-id", n.id);
+                    setDragging(true);
+                  }}
+                  onClick={() => setPreviewId(n.id)}
+                  className={cn(
+                    "block w-full cursor-grab truncate rounded-md border border-border/60 px-2 py-1.5 text-left text-xs text-foreground hover:shadow-md active:cursor-grabbing",
+                    n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                  )}
                 >
                   {n.title || "Sem título"}
                 </button>
@@ -383,6 +389,81 @@ export function CalendarView({
           </>
         )}
       </aside>
+
+      {dragging && (
+        <div
+          className="pointer-events-none fixed z-50 rounded-md border border-primary bg-popover px-2 py-1 text-[11px] font-medium text-foreground shadow-lg"
+          style={{ left: pointer.x + 14, top: pointer.y + 14 }}
+        >
+          {dragOverKey
+            ? `Prazo: ${dateFromKey(dragOverKey).toLocaleDateString("pt-BR", {
+                weekday: "short",
+                day: "2-digit",
+                month: "long",
+              })}`
+            : "Solte sobre um dia"}
+        </div>
+      )}
+
+      {previewNote && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-6 backdrop-blur-sm"
+          onClick={() => setPreviewId(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={cn(
+              "relative max-h-[80vh] w-full max-w-xl overflow-y-auto rounded-xl border border-border/60 p-6 shadow-2xl",
+              previewNote.kind === "notepad" ? "bg-card" : noteBg[previewNote.color],
+            )}
+          >
+            <button
+              onClick={() => setPreviewId(null)}
+              aria-label="Fechar visualização"
+              className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <h3 className="pr-8 text-xl font-bold leading-snug">
+              {previewNote.title || "Sem título"}
+            </h3>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              {previewNote.priority && <PriorityBadge priority={previewNote.priority} />}
+              {previewNote.deadline && <DeadlineBadge deadline={previewNote.deadline} />}
+              {previewNote.tags.map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full border border-foreground/15 px-2 py-0.5 text-[10px]"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            <div
+              className="prose-sm mt-4 text-sm leading-relaxed [&_img]:my-2 [&_img]:max-h-64 [&_img]:rounded-md"
+              dangerouslySetInnerHTML={{ __html: previewNote.content }}
+            />
+            {previewNote.checklist.length > 0 && (
+              <ul className="mt-4 space-y-1 text-sm">
+                {previewNote.checklist.map((i) => (
+                  <li key={i.id} className={cn(i.done && "text-muted-foreground line-through")}>
+                    {i.done ? "☑" : "☐"} {i.text}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <button
+              onClick={() => {
+                onOpenNote(previewNote.id);
+                setPreviewId(null);
+              }}
+              className="mt-5 rounded-md border border-foreground/20 bg-background/70 px-3 py-1.5 text-xs font-medium hover:bg-background"
+            >
+              Abrir detalhes
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
