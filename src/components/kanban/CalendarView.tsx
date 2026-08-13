@@ -509,13 +509,7 @@ export function CalendarView({
           className="pointer-events-none fixed z-50 rounded-md border border-primary bg-popover px-2 py-1 text-[11px] font-medium text-foreground shadow-lg"
           style={{ left: pointer.x + 14, top: pointer.y + 14 }}
         >
-          {dragOverKey
-            ? `Prazo: ${dateFromKey(dragOverKey).toLocaleDateString("pt-BR", {
-                weekday: "short",
-                day: "2-digit",
-                month: "long",
-              })}`
-            : "Solte sobre um dia"}
+          {dragTargetLabel()}
         </div>
       )}
 
