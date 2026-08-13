@@ -340,9 +340,15 @@ export function CalendarView({
             <button
               key={n.id}
               draggable
-              onDragStart={(e) => e.dataTransfer.setData("text/note-id", n.id)}
-              onClick={() => onOpenNote(n.id)}
-              className="block w-full rounded-md border border-border p-2 text-left hover:bg-accent"
+              onDragStart={(e) => {
+                e.dataTransfer.setData("text/note-id", n.id);
+                setDragging(true);
+              }}
+              onClick={() => setPreviewId(n.id)}
+              className={cn(
+                "block w-full rounded-md border border-border/60 p-2 text-left transition-shadow hover:shadow-md",
+                n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+              )}
             >
               <p className="text-sm font-medium leading-snug">{n.title || "Sem título"}</p>
               <div className="mt-1 flex flex-wrap items-center gap-1">
