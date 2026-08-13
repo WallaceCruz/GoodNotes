@@ -2,7 +2,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel, stripHtml } from "./note-style";
+import { formatTime, noteBg, noteLabel, stripHtml } from "./note-style";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
