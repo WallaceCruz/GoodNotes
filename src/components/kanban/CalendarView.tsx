@@ -219,7 +219,7 @@ export function CalendarView({
 
           <div className="ml-auto flex items-center gap-1">
             <button
-              onClick={() => onCreateNote(dateFromKey(selected).getTime())}
+              onClick={() => onCreateNote(slotTime(selected, null))}
               className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -439,7 +439,7 @@ export function CalendarView({
         </p>
 
         <button
-          onClick={() => onCreateNote(dateFromKey(selected).getTime())}
+          onClick={() => onCreateNote(slotTime(selected, null))}
           className="mt-3 flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-border py-2 text-xs text-muted-foreground hover:bg-accent"
         >
           <Plus className="h-3.5 w-3.5" />
