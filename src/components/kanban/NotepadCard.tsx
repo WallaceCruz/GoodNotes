@@ -119,7 +119,7 @@ export function NotepadCard({
         </div>
       </div>
 
-      <div className="notepad-lines px-3 pb-2 pt-2">
+      <div className="px-3 pb-2 pt-2">
         {(note.priority || note.deadline) && (
           <div className="flex flex-wrap items-center gap-1 pb-1">
             {note.priority && <PriorityBadge priority={note.priority} />}

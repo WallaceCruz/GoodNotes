@@ -200,15 +200,6 @@
   }
 }
 
-@utility notepad-lines {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent,
-    transparent 27px,
-    color-mix(in oklab, var(--color-foreground) 9%, transparent) 27px,
-    color-mix(in oklab, var(--color-foreground) 9%, transparent) 28px
-  );
-}
 
 
 @layer base {

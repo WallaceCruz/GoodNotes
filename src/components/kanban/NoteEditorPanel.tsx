@@ -47,7 +47,7 @@ export function NoteEditorPanel({
         <div
           className={cn(
             "rounded-md border border-border/60 p-3 shadow-sm",
-            note.kind === "notepad" ? "notepad-lines bg-card" : noteBg[note.color],
+            note.kind === "notepad" ? "bg-card" : noteBg[note.color],
           )}
         >
           <input
