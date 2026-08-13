@@ -3,6 +3,7 @@ import { Check, Loader2, Trash2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AccountLayout } from "@/components/account/AccountLayout";
+import { AvatarCropDialog } from "@/components/account/AvatarCropDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,6 +66,7 @@ function PerfilPage() {
   });
   const [errors, setErrors] = useState<Partial<Record<ProfileField, string>>>({});
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
