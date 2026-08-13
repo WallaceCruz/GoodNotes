@@ -120,6 +120,7 @@ export function tagColorOf(tags: TagDef[], name: string): NoteColor {
 export type Column = {
   id: string;
   title: string;
+  color?: NoteColor | null;
 };
 
 export type AutomationType = "tag" | "priority" | "checklist-done";
