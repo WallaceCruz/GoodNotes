@@ -4,6 +4,7 @@ import Underline from "@tiptap/extension-underline";
 import Image from "@tiptap/extension-image";
 import Highlight from "@tiptap/extension-highlight";
 import Link from "@tiptap/extension-link";
+import { TableKit } from "@tiptap/extension-table";
 import {
   Bold,
   Heading1,
@@ -21,17 +22,13 @@ import {
   Maximize2,
   Pencil,
   Strikethrough,
+  Table as TableIcon,
   Trash2,
   Underline as UnderlineIcon,
 } from "lucide-react";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ImageLightbox } from "./ImageLightbox";
 import { cn } from "@/lib/utils";
 
 const HIGHLIGHTS = [
@@ -42,6 +39,17 @@ const HIGHLIGHTS = [
   { label: "Laranja", value: "#fed7aa" },
 ];
 
+// Imagens arrastáveis: permite reordenar dentro da nota (a ordem fica no HTML salvo).
+const DraggableImage = Image.extend({ draggable: true, selectable: true });
+
+function collectImages(html: string): string[] {
+  const out: string[] = [];
+  const re = /<img[^>]+src="([^"]+)"/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html))) if (m[1]) out.push(m[1]);
+  return out;
+}
+
 function readAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -49,6 +57,7 @@ function readAsDataUrl(file: File): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
+
 
 export function RichNoteEditor({
   content,
