@@ -91,14 +91,19 @@ export function RichNoteEditor({
   const fileRef = useRef<HTMLInputElement>(null);
 
 
+  const images = useMemo(() => collectImages(content), [content]);
+  const lightboxIndex = lightbox ? images.indexOf(lightbox) : -1;
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Underline,
       Highlight.configure({ multicolor: true }),
       Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { rel: "noreferrer noopener", target: "_blank" } }),
-      Image.configure({ inline: false, allowBase64: true, HTMLAttributes: { class: "note-img" } }),
+      DraggableImage.configure({ inline: false, allowBase64: true, HTMLAttributes: { class: "note-img" } }),
+      TableKit.configure({ table: { resizable: true, HTMLAttributes: { class: "note-table" } } }),
     ],
+
     content,
     immediatelyRender: false,
     editorProps: {
