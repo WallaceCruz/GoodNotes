@@ -105,7 +105,7 @@ function Index() {
                 </span>
               )}
               <div className="ml-auto flex items-center gap-1.5">
-                <FiltersMenu filters={filters} allTags={allTags} onChange={setFilters} />
+                <FiltersMenu filters={filters} allTags={allTags} store={store} onChange={setFilters} />
                 <button
                   onClick={() => setAutomationsOpen((v) => !v)}
                   className={`flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent ${

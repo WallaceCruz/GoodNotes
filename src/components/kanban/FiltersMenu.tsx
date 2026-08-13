@@ -10,6 +10,10 @@ import {
 } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { noteBg, noteLabel, priorityClass } from "./note-style";
+import { TagManager } from "./TagEditor";
+import { useState } from "react";
+import type { BoardStore } from "@/hooks/useBoardStore";
+import { tagColorOf } from "@/lib/board-types";
 
 export type Filters = {
   query: string;
@@ -40,13 +44,19 @@ export function activeFilterCount(f: Filters) {
 export function FiltersMenu({
   filters,
   allTags,
+  store,
   onChange,
 }: {
   filters: Filters;
   allTags: string[];
+  store: BoardStore;
   onChange: (f: Filters) => void;
 }) {
   const count = activeFilterCount(filters);
+  const [managing, setManaging] = useState(false);
+  const [tagQuery, setTagQuery] = useState("");
+  const [tagColor, setTagColor] = useState<NoteColor>("sky");
+  const tagDefs = store.file?.tags ?? [];
 
   const toggleColor = (c: NoteColor) =>
     onChange({
@@ -162,26 +172,63 @@ export function FiltersMenu({
           </section>
 
           <section>
-            <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              Tags
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {allTags.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => toggleTag(t)}
-                  className={cn(
-                    "rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-accent",
-                    filters.tags.includes(t) && "border-primary bg-primary/10 text-foreground",
-                  )}
-                >
-                  #{t}
-                </button>
-              ))}
-              {allTags.length === 0 && (
-                <span className="text-[11px] text-muted-foreground">Sem tags ainda</span>
-              )}
+            <div className="mb-1.5 flex items-center justify-between">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                Tags
+              </p>
+              <button
+                onClick={() => setManaging((v) => !v)}
+                className="rounded-md px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent"
+              >
+                {managing ? "Concluir" : "Gerenciar"}
+              </button>
             </div>
+
+            {managing ? (
+              <div className="rounded-md border border-border">
+                <TagManager
+                  store={store}
+                  selected={filters.tags}
+                  onToggle={toggleTag}
+                  query={tagQuery}
+                  setQuery={setTagQuery}
+                  color={tagColor}
+                  setColor={setTagColor}
+                  onCreate={() => {
+                    const name = tagQuery.trim().toLowerCase();
+                    if (!name) return;
+                    store.addTag(name, tagColor);
+                    setTagQuery("");
+                  }}
+                  filtered={tagDefs
+                    .filter((d) => d.name.includes(tagQuery.trim().toLowerCase()))
+                    .map((d) => d.name)}
+                  canCreate={
+                    !!tagQuery.trim() &&
+                    !tagDefs.some((d) => d.name === tagQuery.trim().toLowerCase())
+                  }
+                />
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {allTags.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => toggleTag(t)}
+                    className={cn(
+                      "rounded-full border border-foreground/10 px-2 py-0.5 text-[11px] text-foreground/80",
+                      noteBg[tagColorOf(tagDefs, t)],
+                      filters.tags.includes(t) && "ring-2 ring-ring ring-offset-1 ring-offset-popover",
+                    )}
+                  >
+                    #{t}
+                  </button>
+                ))}
+                {allTags.length === 0 && (
+                  <span className="text-[11px] text-muted-foreground">Sem tags ainda</span>
+                )}
+              </div>
+            )}
           </section>
 
           <label className="flex cursor-pointer items-center justify-between rounded-md border border-border px-2.5 py-2 text-xs">
