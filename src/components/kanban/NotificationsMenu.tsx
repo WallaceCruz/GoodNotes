@@ -49,7 +49,7 @@ export function NotificationsMenu({
   }, [alerts, now, settings]);
 
   useEffect(() => {
-    if (!settings.enabled || !settings.showToasts || settings.quietMode) return;
+    if (!settings.enabled || !settings.channelApp || !settings.showToasts || settings.quietMode) return;
     for (const a of imminent) {
       if (timeNotified.current.has(a.note.id)) continue;
       timeNotified.current.add(a.note.id);
@@ -60,7 +60,7 @@ export function NotificationsMenu({
   }, [imminent, settings]);
 
   useEffect(() => {
-    if (!settings.enabled || !settings.showToasts || settings.quietMode) return;
+    if (!settings.enabled || !settings.channelApp || !settings.showToasts || settings.quietMode) return;
     for (const a of alerts) {
       const key = `${a.note.id}:${a.info.label}`;
       if (notified.current.has(key)) continue;
