@@ -271,7 +271,8 @@ export function CalendarView({
                   "flex min-h-[5rem] flex-col gap-1 rounded-md border border-border p-1.5 text-left transition-colors hover:bg-accent",
                   outside && "opacity-40",
                   selected === k && "border-primary bg-primary/5",
-                  dragOverKey === k && "border-primary bg-primary/10 ring-2 ring-ring/50",
+                  dragOverKey === k &&
+                    "scale-[1.02] border-primary bg-primary/15 shadow-lg ring-2 ring-primary",
                 )}
               >
                 <span
