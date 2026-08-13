@@ -136,7 +136,10 @@ function ConfiguracoesPage() {
         </Row>
       </section>
 
-      <div className="flex justify-end gap-2">
+      <div className="flex items-center justify-end gap-3">
+        <span className="mr-auto text-xs text-muted-foreground">
+          Preferências salvas automaticamente neste navegador.
+        </span>
         <Button
           variant="outline"
           onClick={() => {
@@ -146,7 +149,7 @@ function ConfiguracoesPage() {
         >
           Restaurar padrões
         </Button>
-        <Button onClick={() => toast.success("Configurações salvas")}>Salvar</Button>
+        <Button onClick={() => toast.success("Configurações salvas")}>Salvar agora</Button>
       </div>
     </AccountLayout>
   );
