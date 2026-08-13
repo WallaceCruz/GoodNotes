@@ -454,24 +454,40 @@ export function CalendarView({
                     const items = (byDay.get(k) ?? []).filter(
                       (n) => new Date(n.deadline!).getHours() === hour,
                     );
+                    const activeSnap =
+                      dragOverKey?.startsWith(`${slotKey}|`) ?? false;
+                    const activeMinute = activeSnap
+                      ? Number(dragOverKey!.split("|")[2] ?? 0)
+                      : 0;
                     return (
                       <div
                         key={slotKey}
                         onClick={() => onSelectDay(k)}
                         onDragOver={(e) => {
                           e.preventDefault();
-                          setDragOverKey(slotKey);
+                          setDragOverKey(`${slotKey}|${snapMinuteFrom(e)}`);
                         }}
                         onDragLeave={() =>
-                          setDragOverKey((c) => (c === slotKey ? null : c))
+                          setDragOverKey((c) => (c?.startsWith(`${slotKey}|`) ? null : c))
                         }
                         onDrop={handleDrop(k, hour)}
                         className={cn(
-                          "h-14 space-y-0.5 overflow-hidden border-b border-l border-border p-0.5 transition-colors hover:bg-accent/50",
+                          "relative h-14 space-y-0.5 overflow-hidden border-b border-l border-border p-0.5 transition-colors hover:bg-accent/50",
                           selected === k && "bg-primary/5",
-                          dragOverKey === slotKey && "bg-primary/15 ring-2 ring-inset ring-primary",
+                          activeSnap && "bg-primary/15 ring-2 ring-inset ring-primary",
                         )}
                       >
+                        {activeSnap && (
+                          <span
+                            className="pointer-events-none absolute inset-x-0 z-10 flex items-center gap-1 border-t-2 border-primary"
+                            style={{ top: `${(activeMinute / 60) * 100}%` }}
+                          >
+                            <span className="rounded-sm bg-primary px-1 text-[9px] font-semibold tabular-nums text-primary-foreground">
+                              {String(hour).padStart(2, "0")}:
+                              {String(activeMinute).padStart(2, "0")}
+                            </span>
+                          </span>
+                        )}
                         {items.map((n) => (
                           <div
                             key={n.id}
@@ -484,12 +500,20 @@ export function CalendarView({
                               e.stopPropagation();
                               setPreviewId(n.id);
                             }}
-                            title={`${formatTime(n.deadline!)} · ${n.title}`}
+                            title={
+                              isConflict(n)
+                                ? `Conflito de horário às ${formatTime(n.deadline!)}`
+                                : `${formatTime(n.deadline!)} · ${n.title}`
+                            }
                             className={cn(
                               "cursor-grab truncate rounded border border-border/60 px-1 py-0.5 text-[10px] text-foreground active:cursor-grabbing",
                               n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                              isConflict(n) && "border-destructive ring-1 ring-destructive",
                             )}
                           >
+                            {isConflict(n) && (
+                              <AlertTriangle className="mr-0.5 inline h-2.5 w-2.5 text-destructive" />
+                            )}
                             <span className="font-medium tabular-nums">
                               {formatTime(n.deadline!)}
                             </span>{" "}
@@ -497,6 +521,7 @@ export function CalendarView({
                           </div>
                         ))}
                       </div>
+
                     );
                   })}
                 </Fragment>
