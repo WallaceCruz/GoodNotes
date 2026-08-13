@@ -76,7 +76,7 @@ export function NoteEditorPanel({
               size="md"
             />
             <div className="min-w-0 flex-1">
-              <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} />
+              <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} store={store} size="md" />
             </div>
           </footer>
         </div>

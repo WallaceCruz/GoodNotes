@@ -171,7 +171,7 @@ export function StickyNoteCard({
           onChange={(assignee) => onChange({ assignee })}
         />
         <div className="min-w-0 flex-1">
-          <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} />
+          <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} store={store} />
         </div>
       </footer>
     </div>
