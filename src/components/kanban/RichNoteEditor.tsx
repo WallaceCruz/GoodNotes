@@ -169,6 +169,7 @@ export function RichNoteEditor({
       disabled={disabled}
       onClick={(e) => {
         e.stopPropagation();
+        if (!mounted) setMounted(true);
         action();
       }}
       className={cn(
