@@ -27,17 +27,22 @@ function reindex(notes: Note[]): Note[] {
   });
 }
 
-// Reordena pelo campo persistido `order` e reindexa para manter posições estáveis.
+// Reordena pelo campo persistido `order` (por coluna) e reindexa para manter posições estáveis.
 function withOrder(notes: Note[]): Note[] {
-  const indexed = notes.map((n, i) => ({ n, i }));
-  indexed.sort((a, b) => {
-    if (a.n.columnId !== b.n.columnId) return 0;
-    const ao = a.n.order ?? a.i;
-    const bo = b.n.order ?? b.i;
-    return ao - bo;
+  const groups = new Map<string, Array<{ n: Note; i: number }>>();
+  notes.forEach((n, i) => {
+    const list = groups.get(n.columnId) ?? [];
+    list.push({ n, i });
+    groups.set(n.columnId, list);
   });
-  return reindex(indexed.map((x) => x.n));
+  const out: Note[] = [];
+  for (const list of groups.values()) {
+    list.sort((a, b) => (a.n.order ?? a.i) - (b.n.order ?? b.i));
+    out.push(...list.map((x) => x.n));
+  }
+  return reindex(out);
 }
+
 
 function normalize(s: BoardState): BoardState {
   return {
