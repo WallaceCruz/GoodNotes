@@ -104,7 +104,13 @@ export function deadlineInfo(ts: number | null) {
       : diff <= 2
         ? "border-note-peach bg-note-peach"
         : "border-border bg-muted";
-  return { diff, label, tone, date: new Date(ts).toLocaleDateString("pt-BR") };
+  return {
+    diff,
+    label,
+    tone,
+    time,
+    date: `${new Date(ts).toLocaleDateString("pt-BR")} ${time}`,
+  };
 }
 
 export function stripHtml(html: string) {
