@@ -464,7 +464,12 @@ export function CalendarView({
                 n.kind === "notepad" ? "bg-card" : noteBg[n.color],
               )}
             >
-              <p className="text-sm font-medium leading-snug">{n.title || "Sem título"}</p>
+              <p className="text-sm font-medium leading-snug">
+                <span className="mr-1 tabular-nums text-muted-foreground">
+                  {formatTime(n.deadline!)}
+                </span>
+                {n.title || "Sem título"}
+              </p>
               <div className="mt-1 flex flex-wrap items-center gap-1">
                 {n.priority && <PriorityBadge priority={n.priority} />}
                 {n.deadline && <DeadlineBadge deadline={n.deadline} />}
