@@ -77,6 +77,10 @@ export function fromDateInput(value: string): number | null {
   return new Date(y, m - 1, d, 23, 59, 59).getTime();
 }
 
+export function formatTime(ts: number) {
+  return new Date(ts).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
 export function deadlineInfo(ts: number | null) {
   if (!ts) return null;
   const dayMs = 86_400_000;
@@ -85,13 +89,14 @@ export function deadlineInfo(ts: number | null) {
   const target = new Date(ts);
   target.setHours(0, 0, 0, 0);
   const diff = Math.round((target.getTime() - today.getTime()) / dayMs);
+  const time = formatTime(ts);
   const label =
     diff < 0
       ? `Atrasado ${Math.abs(diff)}d`
       : diff === 0
-        ? "Vence hoje"
+        ? `Vence hoje ${time}`
         : diff === 1
-          ? "Vence amanhã"
+          ? `Vence amanhã ${time}`
           : `Em ${diff} dias`;
   const tone =
     diff < 0
@@ -99,7 +104,13 @@ export function deadlineInfo(ts: number | null) {
       : diff <= 2
         ? "border-note-peach bg-note-peach"
         : "border-border bg-muted";
-  return { diff, label, tone, date: new Date(ts).toLocaleDateString("pt-BR") };
+  return {
+    diff,
+    label,
+    tone,
+    time,
+    date: `${new Date(ts).toLocaleDateString("pt-BR")} ${time}`,
+  };
 }
 
 export function stripHtml(html: string) {

@@ -1,11 +1,12 @@
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel, stripHtml } from "./note-style";
+import { formatTime, noteBg, noteLabel, stripHtml } from "./note-style";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const HOURS: number[] = Array.from({ length: 24 }, (_, i) => i);
 const MONTHS = [
   "Janeiro",
   "Fevereiro",
@@ -144,12 +145,31 @@ export function CalendarView({
         })
       : `${MONTHS[(view === "week" ? dateFromKey(selected) : cursor).getMonth()]} ${(view === "week" ? dateFromKey(selected) : cursor).getFullYear()}`;
 
-  const handleDrop = (k: string) => (e: React.DragEvent) => {
+  const slotTime = (k: string, hour: number | null) => {
+    const d = dateFromKey(k);
+    if (hour === null) d.setHours(23, 59, 0, 0);
+    else d.setHours(hour, 0, 0, 0);
+    return d.getTime();
+  };
+
+  const handleDrop = (k: string, hour: number | null = null) => (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragOverKey(null);
     setDragging(false);
     const id = e.dataTransfer.getData("text/note-id");
-    if (id) onSetDeadline(id, dateFromKey(k).getTime());
+    if (id) onSetDeadline(id, slotTime(k, hour));
+  };
+
+  const dragTargetLabel = () => {
+    if (!dragOverKey) return "Solte sobre um dia";
+    const [k, h] = dragOverKey.split("|");
+    const d = new Date(slotTime(k!, h === undefined ? null : Number(h)));
+    return `Prazo: ${d.toLocaleDateString("pt-BR", {
+      weekday: "short",
+      day: "2-digit",
+      month: "long",
+    })} · ${formatTime(d.getTime())}`;
   };
 
   const filterChip = (label: string, on: boolean, toggle: () => void) => (
@@ -199,7 +219,7 @@ export function CalendarView({
 
           <div className="ml-auto flex items-center gap-1">
             <button
-              onClick={() => onCreateNote(dateFromKey(selected).getTime())}
+              onClick={() => onCreateNote(slotTime(selected, null))}
               className="flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -231,88 +251,179 @@ export function CalendarView({
           </div>
         </div>
 
-        {view !== "day" && (
-          <div className={cn("grid gap-1 pb-1", "grid-cols-7")}>
-            {WEEKDAYS.map((w) => (
-              <div key={w} className="text-center text-[11px] font-medium text-muted-foreground">
-                {w}
-              </div>
-            ))}
-          </div>
-        )}
+        {view === "month" ? (
+          <>
+            <div className="grid grid-cols-7 gap-1 pb-1">
+              {WEEKDAYS.map((w) => (
+                <div key={w} className="text-center text-[11px] font-medium text-muted-foreground">
+                  {w}
+                </div>
+              ))}
+            </div>
 
-        <div
-          className={cn(
-            "scroll-thin grid min-h-0 flex-1 content-start gap-1 overflow-y-auto",
-            view === "day"
-              ? "grid-cols-1 auto-rows-[minmax(20rem,1fr)]"
-              : view === "week"
-                ? "grid-cols-7 auto-rows-[minmax(16rem,1fr)]"
-                : "grid-cols-7 auto-rows-[minmax(5.5rem,1fr)]",
-          )}
-        >
-          {days.map((d) => {
-            const k = dayKey(d);
-            const items = byDay.get(k) ?? [];
-            const outside = view === "month" && d.getMonth() !== cursor.getMonth();
-            const isToday = k === dayKey(today);
-            const limit = view === "month" ? 2 : 8;
-            return (
-              <button
-                key={k}
-                onClick={() => onSelectDay(k)}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOverKey(k);
-                }}
-                onDragLeave={() => setDragOverKey((c) => (c === k ? null : c))}
-                onDrop={handleDrop(k)}
-                className={cn(
-                  "flex min-h-[5rem] flex-col gap-1 rounded-md border border-border p-1.5 text-left transition-colors hover:bg-accent",
-                  outside && "opacity-40",
-                  selected === k && "border-primary bg-primary/5",
-                  dragOverKey === k &&
-                    "scale-[1.02] border-primary bg-primary/15 shadow-lg ring-2 ring-primary",
-                )}
-              >
-                <span
-                  className={cn(
-                    "inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium",
-                    isToday ? "bg-primary text-primary-foreground" : "text-muted-foreground",
-                  )}
-                >
-                  {d.getDate()}
-                </span>
-                {items.slice(0, limit).map((n) => (
-                  <span
-                    key={n.id}
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData("text/note-id", n.id);
-                      setDragging(true);
+            <div className="scroll-thin grid min-h-0 flex-1 auto-rows-[minmax(5.5rem,1fr)] grid-cols-7 content-start gap-1 overflow-y-auto">
+              {days.map((d) => {
+                const k = dayKey(d);
+                const items = (byDay.get(k) ?? []).sort(
+                  (a, b) => (a.deadline ?? 0) - (b.deadline ?? 0),
+                );
+                const outside = d.getMonth() !== cursor.getMonth();
+                const isToday = k === dayKey(today);
+                return (
+                  <button
+                    key={k}
+                    onClick={() => onSelectDay(k)}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverKey(k);
                     }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPreviewId(n.id);
-                    }}
-                    title={noteLabel[n.color]}
+                    onDragLeave={() => setDragOverKey((c) => (c === k ? null : c))}
+                    onDrop={handleDrop(k)}
                     className={cn(
-                      "cursor-grab truncate rounded border border-border/60 px-1 py-0.5 text-[10px] text-foreground active:cursor-grabbing",
-                      n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                      "flex min-h-[5rem] flex-col gap-1 rounded-md border border-border p-1.5 text-left transition-colors hover:bg-accent",
+                      outside && "opacity-40",
+                      selected === k && "border-primary bg-primary/5",
+                      dragOverKey === k &&
+                        "scale-[1.02] border-primary bg-primary/15 shadow-lg ring-2 ring-primary",
                     )}
                   >
-                    {n.title || "Sem título"}
-                  </span>
-                ))}
-                {items.length > limit && (
-                  <span className="text-[10px] text-muted-foreground">
-                    +{items.length - limit} mais
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+                    <span
+                      className={cn(
+                        "inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium",
+                        isToday ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+                      )}
+                    >
+                      {d.getDate()}
+                    </span>
+                    {items.slice(0, 2).map((n) => (
+                      <span
+                        key={n.id}
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/note-id", n.id);
+                          setDragging(true);
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewId(n.id);
+                        }}
+                        title={noteLabel[n.color]}
+                        className={cn(
+                          "cursor-grab truncate rounded border border-border/60 px-1 py-0.5 text-[10px] text-foreground active:cursor-grabbing",
+                          n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                        )}
+                      >
+                        <span className="font-medium tabular-nums">
+                          {formatTime(n.deadline!)}
+                        </span>{" "}
+                        {n.title || "Sem título"}
+                      </span>
+                    ))}
+                    {items.length > 2 && (
+                      <span className="text-[10px] text-muted-foreground">
+                        +{items.length - 2} mais
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <div className="scroll-thin min-h-0 flex-1 overflow-y-auto rounded-md border border-border">
+            <div
+              className="grid"
+              style={{ gridTemplateColumns: `4rem repeat(${days.length}, minmax(0, 1fr))` }}
+            >
+              <div className="sticky top-0 z-10 border-b border-border bg-background" />
+              {days.map((d) => {
+                const k = dayKey(d);
+                const isToday = k === dayKey(today);
+                return (
+                  <button
+                    key={`h-${k}`}
+                    onClick={() => onSelectDay(k)}
+                    className={cn(
+                      "sticky top-0 z-10 border-b border-l border-border bg-background px-2 py-1.5 text-center",
+                      selected === k && "bg-primary/5",
+                    )}
+                  >
+                    <span className="text-[11px] text-muted-foreground">
+                      {WEEKDAYS[d.getDay()]}
+                    </span>
+                    <span
+                      className={cn(
+                        "mx-auto mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium",
+                        isToday ? "bg-primary text-primary-foreground" : "text-foreground",
+                      )}
+                    >
+                      {d.getDate()}
+                    </span>
+                  </button>
+                );
+              })}
+
+              {HOURS.map((hour) => (
+                <Fragment key={hour}>
+                  <div className="h-14 border-b border-border pr-2 pt-1 text-right text-[10px] tabular-nums text-muted-foreground">
+                    {String(hour).padStart(2, "0")}:00
+                  </div>
+                  {days.map((d) => {
+                    const k = dayKey(d);
+                    const slotKey = `${k}|${hour}`;
+                    const items = (byDay.get(k) ?? []).filter(
+                      (n) => new Date(n.deadline!).getHours() === hour,
+                    );
+                    return (
+                      <div
+                        key={slotKey}
+                        onClick={() => onSelectDay(k)}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setDragOverKey(slotKey);
+                        }}
+                        onDragLeave={() =>
+                          setDragOverKey((c) => (c === slotKey ? null : c))
+                        }
+                        onDrop={handleDrop(k, hour)}
+                        className={cn(
+                          "h-14 space-y-0.5 overflow-hidden border-b border-l border-border p-0.5 transition-colors hover:bg-accent/50",
+                          selected === k && "bg-primary/5",
+                          dragOverKey === slotKey && "bg-primary/15 ring-2 ring-inset ring-primary",
+                        )}
+                      >
+                        {items.map((n) => (
+                          <div
+                            key={n.id}
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData("text/note-id", n.id);
+                              setDragging(true);
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPreviewId(n.id);
+                            }}
+                            title={`${formatTime(n.deadline!)} · ${n.title}`}
+                            className={cn(
+                              "cursor-grab truncate rounded border border-border/60 px-1 py-0.5 text-[10px] text-foreground active:cursor-grabbing",
+                              n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                            )}
+                          >
+                            <span className="font-medium tabular-nums">
+                              {formatTime(n.deadline!)}
+                            </span>{" "}
+                            {n.title || "Sem título"}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </Fragment>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <aside className="scroll-thin w-80 shrink-0 overflow-y-auto border-l border-border p-4">
@@ -328,7 +439,7 @@ export function CalendarView({
         </p>
 
         <button
-          onClick={() => onCreateNote(dateFromKey(selected).getTime())}
+          onClick={() => onCreateNote(slotTime(selected, null))}
           className="mt-3 flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-border py-2 text-xs text-muted-foreground hover:bg-accent"
         >
           <Plus className="h-3.5 w-3.5" />
@@ -353,7 +464,12 @@ export function CalendarView({
                 n.kind === "notepad" ? "bg-card" : noteBg[n.color],
               )}
             >
-              <p className="text-sm font-medium leading-snug">{n.title || "Sem título"}</p>
+              <p className="text-sm font-medium leading-snug">
+                <span className="mr-1 tabular-nums text-muted-foreground">
+                  {formatTime(n.deadline!)}
+                </span>
+                {n.title || "Sem título"}
+              </p>
               <div className="mt-1 flex flex-wrap items-center gap-1">
                 {n.priority && <PriorityBadge priority={n.priority} />}
                 {n.deadline && <DeadlineBadge deadline={n.deadline} />}
@@ -398,13 +514,7 @@ export function CalendarView({
           className="pointer-events-none fixed z-50 rounded-md border border-primary bg-popover px-2 py-1 text-[11px] font-medium text-foreground shadow-lg"
           style={{ left: pointer.x + 14, top: pointer.y + 14 }}
         >
-          {dragOverKey
-            ? `Prazo: ${dateFromKey(dragOverKey).toLocaleDateString("pt-BR", {
-                weekday: "short",
-                day: "2-digit",
-                month: "long",
-              })}`
-            : "Solte sobre um dia"}
+          {dragTargetLabel()}
         </div>
       )}
 

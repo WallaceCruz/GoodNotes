@@ -1,4 +1,4 @@
-import { CalendarClock, X } from "lucide-react";
+import { CalendarClock, Clock, X } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,10 +11,25 @@ const QUICK = [
   { label: "Em 7 dias", days: 7 },
 ];
 
-function endOfDay(d: Date) {
-  const x = new Date(d);
-  x.setHours(23, 59, 59, 0);
+const QUICK_TIMES = ["09:00", "12:00", "15:00", "18:00", "23:59"];
+
+const DEFAULT_TIME = { h: 23, m: 59 };
+
+function withTime(date: Date, h: number, m: number) {
+  const x = new Date(date);
+  x.setHours(h, m, 0, 0);
   return x.getTime();
+}
+
+function timeOf(value: number | null) {
+  if (!value) return DEFAULT_TIME;
+  const d = new Date(value);
+  return { h: d.getHours(), m: d.getMinutes() };
+}
+
+function toTimeInput(value: number | null) {
+  const { h, m } = timeOf(value);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 export function DeadlinePicker({
@@ -26,9 +41,16 @@ export function DeadlinePicker({
 }) {
   const [open, setOpen] = useState(false);
   const info = deadlineInfo(value);
+  const { h, m } = timeOf(value);
+
+  const setTime = (raw: string) => {
+    const [hh, mm] = raw.split(":").map(Number);
+    if (Number.isNaN(hh) || Number.isNaN(mm)) return;
+    onChange(withTime(value ? new Date(value) : new Date(), hh!, mm!));
+  };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
@@ -49,7 +71,7 @@ export function DeadlinePicker({
                 onClick={() => {
                   const d = new Date();
                   d.setDate(d.getDate() + q.days);
-                  onChange(endOfDay(d));
+                  onChange(withTime(d, h, m));
                   setOpen(false);
                 }}
                 className="rounded-full border border-border px-2 py-0.5 text-[11px] hover:bg-accent"
@@ -62,21 +84,57 @@ export function DeadlinePicker({
             mode="single"
             selected={value ? new Date(value) : undefined}
             onSelect={(d) => {
-              onChange(d ? endOfDay(d) : null);
+              onChange(d ? withTime(d, h, m) : null);
               setOpen(false);
             }}
             className="pointer-events-auto"
           />
+          <div className="mt-2 border-t border-border pt-2">
+            <div className="flex items-center gap-2">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="time"
+                aria-label="Horário do prazo"
+                value={toTimeInput(value)}
+                onChange={(e) => setTime(e.target.value)}
+                className="rounded-md border border-border bg-background px-2 py-1 text-xs"
+              />
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {QUICK_TIMES.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTime(t)}
+                  className={cn(
+                    "rounded-full border px-2 py-0.5 text-[11px] hover:bg-accent",
+                    toTimeInput(value) === t ? "border-primary bg-primary/10" : "border-border",
+                  )}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
         </PopoverContent>
       </Popover>
+
       {value && (
-        <button
-          aria-label="Remover prazo"
-          onClick={() => onChange(null)}
-          className="rounded-md border border-border p-1.5 text-muted-foreground hover:bg-accent"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
+        <>
+          <input
+            type="time"
+            aria-label="Horário do prazo"
+            value={toTimeInput(value)}
+            onChange={(e) => setTime(e.target.value)}
+            className="rounded-md border border-border bg-background px-2 py-1.5 text-xs"
+          />
+          <button
+            aria-label="Remover prazo"
+            onClick={() => onChange(null)}
+            className="rounded-md border border-border p-1.5 text-muted-foreground hover:bg-accent"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </>
       )}
     </div>
   );
