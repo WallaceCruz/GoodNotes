@@ -65,7 +65,11 @@ export function RichNoteEditor({
   onChangeRef.current = onChange;
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [swatchOpen, setSwatchOpen] = useState(false);
+  // Em cards compactos o editor só é montado ao interagir: evita dezenas de
+  // instâncias do Tiptap montando ao mesmo tempo (loop de forceUpdate).
+  const [mounted, setMounted] = useState(!compact);
   const fileRef = useRef<HTMLInputElement>(null);
+
 
   const editor = useEditor({
     extensions: [
