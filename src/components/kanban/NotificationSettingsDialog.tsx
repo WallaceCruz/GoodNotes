@@ -88,7 +88,7 @@ export function NotificationSettingsDialog({
               max={14}
               step={1}
               disabled={off}
-              onValueChange={([v]) => onChange({ daysBefore: v })}
+              onValueChange={(v) => onChange({ daysBefore: v[0] ?? 1 })}
             />
           </div>
 
