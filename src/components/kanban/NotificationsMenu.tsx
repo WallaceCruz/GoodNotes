@@ -18,7 +18,14 @@ export function NotificationsMenu({
 }) {
   const { settings, update, reset } = useNotificationSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
   const notified = useRef<Set<string>>(new Set());
+  const timeNotified = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   const alerts = useMemo(() => {
     if (!settings.enabled) return [];
@@ -32,6 +39,26 @@ export function NotificationsMenu({
       .sort((a, b) => a.info.diff - b.info.diff);
   }, [notes, settings]);
 
+  const imminent = useMemo(() => {
+    if (!settings.enabled || !settings.timeReminders) return [];
+    const windowMs = settings.minutesBefore * 60_000;
+    return alerts
+      .map((a) => ({ ...a, minutesLeft: Math.round((a.note.deadline! - now) / 60_000) }))
+      .filter((a) => a.note.deadline! - now >= 0 && a.note.deadline! - now <= windowMs)
+      .sort((a, b) => a.minutesLeft - b.minutesLeft);
+  }, [alerts, now, settings]);
+
+  useEffect(() => {
+    if (!settings.enabled || !settings.showToasts || settings.quietMode) return;
+    for (const a of imminent) {
+      if (timeNotified.current.has(a.note.id)) continue;
+      timeNotified.current.add(a.note.id);
+      toast.warning(`${a.note.title || "Nota"} — vence em ${a.minutesLeft} min`, {
+        description: `Horário: ${a.info.date}`,
+      });
+    }
+  }, [imminent, settings]);
+
   useEffect(() => {
     if (!settings.enabled || !settings.showToasts || settings.quietMode) return;
     for (const a of alerts) {
@@ -44,8 +71,10 @@ export function NotificationsMenu({
     }
   }, [alerts, settings]);
 
+  const imminentIds = new Set(imminent.map((a) => a.note.id));
   const overdue = alerts.filter((a) => a.info.diff < 0);
-  const upcoming = alerts.filter((a) => a.info.diff >= 0);
+  const upcoming = alerts.filter((a) => a.info.diff >= 0 && !imminentIds.has(a.note.id));
+
 
   const renderItem = ({ note }: { note: Note }) => (
     <button
