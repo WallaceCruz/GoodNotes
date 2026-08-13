@@ -292,6 +292,18 @@ export function RichNoteEditor({
         {btn(null, () => fileRef.current?.click(), ImagePlus, "Adicionar imagem")}
         {btn(null, () => setSwatchOpen((v) => !v), Highlighter, "Cor de realce", false, editor?.isActive("highlight") ?? false)}
         {btn("link", applyLink, Link2, "Inserir hiperlink")}
+        {btn(
+          null,
+          () =>
+            editor?.isActive("table")
+              ? editor.chain().focus().deleteTable().run()
+              : editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+          TableIcon,
+          editor?.isActive("table") ? "Excluir tabela" : "Inserir tabela",
+          false,
+          editor?.isActive("table") ?? false,
+        )}
+
 
         <input
           ref={fileRef}
