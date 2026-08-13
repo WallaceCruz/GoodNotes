@@ -28,6 +28,9 @@ export const defaultNotificationSettings: NotificationSettings = {
   quietMode: false,
   timeReminders: true,
   minutesBefore: 30,
+  channelApp: true,
+  channelEmail: false,
+  emailAddress: "",
 };
 
 
