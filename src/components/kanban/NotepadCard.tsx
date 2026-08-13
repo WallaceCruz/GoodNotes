@@ -61,11 +61,6 @@ export function NotepadCard({
         className="flex cursor-grab items-center gap-1.5 border-b border-border/70 bg-card px-2 py-1.5 active:cursor-grabbing"
       >
         <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
-        <NotebookPen className="h-3.5 w-3.5 text-foreground/60" />
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/60">
-          Bloco de notas
-        </span>
-        <span className="text-[11px] text-muted-foreground">· {timeAgo(note.updatedAt)}</span>
         <div className="ml-auto flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
           <button
             aria-label="Abrir detalhes"
@@ -152,7 +147,7 @@ export function NotepadCard({
         )}
       </div>
 
-      <footer className="flex flex-wrap items-center gap-2 border-t border-border px-3 py-2">
+      <footer className="flex flex-wrap items-center gap-2 border-t border-border px-3 py-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
         <AssigneeSelect value={note.assignee} onChange={(assignee) => onChange({ assignee })} />
         <div className="min-w-0 flex-1">
           <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} store={store} />

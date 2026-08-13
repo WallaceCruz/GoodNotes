@@ -64,20 +64,6 @@ export function StickyNoteCard({
         className="-mx-1 flex cursor-grab items-center gap-1 rounded px-1 pb-1.5 active:cursor-grabbing"
       >
         <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
-        <div className="flex flex-wrap items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
-          {NOTE_COLORS.map((c) => (
-            <button
-              key={c}
-              aria-label={`Cor ${noteLabel[c]}`}
-              onClick={() => onChange({ color: c })}
-              className={cn(
-                "h-3 w-3 rounded-full border border-border/70",
-                noteBg[c],
-                note.color === c && "ring-1 ring-ring",
-              )}
-            />
-          ))}
-        </div>
         <div
           className="ml-auto flex items-center gap-1"
           onPointerDown={(e) => e.stopPropagation()}
@@ -165,7 +151,7 @@ export function StickyNoteCard({
         </div>
       )}
 
-      <footer className="mt-2 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2">
+      <footer className="mt-2 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
         <AssigneeSelect
           value={note.assignee}
           onChange={(assignee) => onChange({ assignee })}
