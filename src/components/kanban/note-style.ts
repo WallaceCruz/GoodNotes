@@ -89,13 +89,14 @@ export function deadlineInfo(ts: number | null) {
   const target = new Date(ts);
   target.setHours(0, 0, 0, 0);
   const diff = Math.round((target.getTime() - today.getTime()) / dayMs);
+  const time = formatTime(ts);
   const label =
     diff < 0
       ? `Atrasado ${Math.abs(diff)}d`
       : diff === 0
-        ? "Vence hoje"
+        ? `Vence hoje ${time}`
         : diff === 1
-          ? "Vence amanhã"
+          ? `Vence amanhã ${time}`
           : `Em ${diff} dias`;
   const tone =
     diff < 0
