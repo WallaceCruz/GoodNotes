@@ -29,6 +29,7 @@ import {
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ImageLightbox } from "./ImageLightbox";
+import { TableMenu } from "./TableMenu";
 import { cn } from "@/lib/utils";
 
 const HIGHLIGHTS = [
