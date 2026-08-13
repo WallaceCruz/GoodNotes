@@ -78,9 +78,17 @@ export type NoteImage = {
   link: string;
 };
 
+export type NoteKind = "sticky" | "notepad";
+
+export const NOTE_KIND_LABEL: Record<NoteKind, string> = {
+  sticky: "Nota autoadesiva",
+  notepad: "Bloco de notas",
+};
+
 export type Note = {
   id: string;
   columnId: string;
+  kind: NoteKind;
   title: string;
   content: string;
   color: NoteColor;
