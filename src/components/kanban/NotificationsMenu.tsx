@@ -2,7 +2,7 @@ import { Bell, BellOff, CalendarClock, Settings2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useNotificationSettings } from "@/hooks/useNotificationSettings";
+import { minutesBeforeLabel, useNotificationSettings } from "@/hooks/useNotificationSettings";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { deadlineInfo } from "./note-style";
