@@ -122,25 +122,27 @@ export function NoteEditorPanel({
           </div>
         </div>
 
-        <div className="mt-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Cor da nota
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {NOTE_COLORS.map((c) => (
-              <button
-                key={c}
-                aria-label={noteLabel[c]}
-                onClick={() => onChange({ color: c })}
-                className={cn(
-                  "h-6 w-6 rounded-full border border-border",
-                  noteBg[c],
-                  note.color === c && "ring-2 ring-ring ring-offset-2 ring-offset-background",
-                )}
-              />
-            ))}
+        {note.kind !== "notepad" && (
+          <div className="mt-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Cor da nota
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {NOTE_COLORS.map((c) => (
+                <button
+                  key={c}
+                  aria-label={noteLabel[c]}
+                  onClick={() => onChange({ color: c })}
+                  className={cn(
+                    "h-6 w-6 rounded-full border border-border",
+                    noteBg[c],
+                    note.color === c && "ring-2 ring-ring ring-offset-2 ring-offset-background",
+                  )}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

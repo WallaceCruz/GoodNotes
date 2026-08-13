@@ -131,6 +131,7 @@ export function NotepadCard({
           onChange={(html) => onChange({ content: html })}
           minHeight="min-h-40"
           compact
+          showToolbar={false}
           checklistActive={note.showChecklist}
           onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
         />
