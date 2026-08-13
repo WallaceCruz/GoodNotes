@@ -567,6 +567,7 @@ export function CalendarView({
               className={cn(
                 "block w-full rounded-md border border-border/60 p-2 text-left transition-shadow hover:shadow-md",
                 n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                isConflict(n) && "border-destructive ring-1 ring-destructive",
               )}
             >
               <p className="text-sm font-medium leading-snug">
@@ -578,7 +579,14 @@ export function CalendarView({
               <div className="mt-1 flex flex-wrap items-center gap-1">
                 {n.priority && <PriorityBadge priority={n.priority} />}
                 {n.deadline && <DeadlineBadge deadline={n.deadline} />}
+                {isConflict(n) && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-destructive/50 bg-destructive/15 px-1.5 py-0.5 text-[10px] font-medium text-destructive">
+                    <AlertTriangle className="h-3 w-3" />
+                    Conflito de horário
+                  </span>
+                )}
               </div>
+
               <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                 {stripHtml(n.content)}
               </p>
