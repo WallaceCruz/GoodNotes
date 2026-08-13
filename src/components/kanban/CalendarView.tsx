@@ -261,6 +261,33 @@ export function CalendarView({
             {filterChip("Arquivadas", showArchived, () => setShowArchived((v) => !v))}
           </div>
 
+          {view !== "month" && (
+            <label className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground">
+              Snap
+              <select
+                value={snap}
+                onChange={(e) => changeSnap(Number(e.target.value))}
+                aria-label="Intervalo de snap do horário"
+                className="bg-transparent text-[11px] font-medium text-foreground outline-none"
+              >
+                {SNAPS.map((s) => (
+                  <option key={s} value={s}>
+                    {s} min
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {conflictKeys.size > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-destructive/50 bg-destructive/10 px-2 py-1 text-[11px] font-medium text-destructive">
+              <AlertTriangle className="h-3 w-3" />
+              {conflictKeys.size} conflito(s) de horário
+            </span>
+          )}
+
+
+
           <div className="ml-auto flex items-center gap-1">
             <button
               onClick={() => onCreateNote(slotTime(selected, null))}
