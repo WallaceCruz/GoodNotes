@@ -61,6 +61,7 @@ export function CalendarView({
   const [dragging, setDragging] = useState(false);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const previewNote = notes.find((n) => n.id === previewId) ?? null;
 
   useEffect(() => {
     if (!dragging) return;
