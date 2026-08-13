@@ -2,7 +2,7 @@ import { Bell, BellOff, CalendarClock, Settings2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useNotificationSettings } from "@/hooks/useNotificationSettings";
+import { minutesBeforeLabel, useNotificationSettings } from "@/hooks/useNotificationSettings";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { deadlineInfo } from "./note-style";
@@ -18,7 +18,14 @@ export function NotificationsMenu({
 }) {
   const { settings, update, reset } = useNotificationSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
   const notified = useRef<Set<string>>(new Set());
+  const timeNotified = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   const alerts = useMemo(() => {
     if (!settings.enabled) return [];
@@ -32,6 +39,26 @@ export function NotificationsMenu({
       .sort((a, b) => a.info.diff - b.info.diff);
   }, [notes, settings]);
 
+  const imminent = useMemo(() => {
+    if (!settings.enabled || !settings.timeReminders) return [];
+    const windowMs = settings.minutesBefore * 60_000;
+    return alerts
+      .map((a) => ({ ...a, minutesLeft: Math.round((a.note.deadline! - now) / 60_000) }))
+      .filter((a) => a.note.deadline! - now >= 0 && a.note.deadline! - now <= windowMs)
+      .sort((a, b) => a.minutesLeft - b.minutesLeft);
+  }, [alerts, now, settings]);
+
+  useEffect(() => {
+    if (!settings.enabled || !settings.showToasts || settings.quietMode) return;
+    for (const a of imminent) {
+      if (timeNotified.current.has(a.note.id)) continue;
+      timeNotified.current.add(a.note.id);
+      toast.warning(`${a.note.title || "Nota"} — vence em ${a.minutesLeft} min`, {
+        description: `Horário: ${a.info.date}`,
+      });
+    }
+  }, [imminent, settings]);
+
   useEffect(() => {
     if (!settings.enabled || !settings.showToasts || settings.quietMode) return;
     for (const a of alerts) {
@@ -44,8 +71,10 @@ export function NotificationsMenu({
     }
   }, [alerts, settings]);
 
+  const imminentIds = new Set(imminent.map((a) => a.note.id));
   const overdue = alerts.filter((a) => a.info.diff < 0);
-  const upcoming = alerts.filter((a) => a.info.diff >= 0);
+  const upcoming = alerts.filter((a) => a.info.diff >= 0 && !imminentIds.has(a.note.id));
+
 
   const renderItem = ({ note }: { note: Note }) => (
     <button
@@ -90,9 +119,14 @@ export function NotificationsMenu({
               <p className="text-sm font-semibold">Lembretes de prazo</p>
               <p className="text-[11px] text-muted-foreground">
                 {settings.enabled
-                  ? `Avisando ${settings.daysBefore} ${settings.daysBefore === 1 ? "dia" : "dias"} antes`
+                  ? `Avisando ${settings.daysBefore} ${settings.daysBefore === 1 ? "dia" : "dias"} antes${
+                      settings.timeReminders
+                        ? ` · ${minutesBeforeLabel(settings.minutesBefore)} antes do horário`
+                        : ""
+                    }`
                   : "Lembretes desativados"}
               </p>
+
             </div>
             <button
               onClick={() => setSettingsOpen(true)}
@@ -113,6 +147,30 @@ export function NotificationsMenu({
                 </p>
               </div>
             )}
+
+            {imminent.length > 0 && (
+              <>
+                <p className="px-2 pb-1 pt-1.5 text-[11px] font-medium uppercase tracking-wide text-primary">
+                  Agora ({imminent.length})
+                </p>
+                {imminent.map((a) => (
+                  <button
+                    key={a.note.id}
+                    onClick={() => onSelect(a.note.id)}
+                    className="flex w-full flex-col items-start gap-1 rounded-md px-2 py-2 text-left transition-colors hover:bg-accent"
+                  >
+                    <span className="line-clamp-1 text-sm font-medium">
+                      {a.note.title || "Sem título"}
+                    </span>
+                    <span className="rounded-full border border-primary/50 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium">
+                      Vence em {a.minutesLeft} min
+                    </span>
+                  </button>
+                ))}
+              </>
+            )}
+
+
 
             {overdue.length > 0 && (
               <>

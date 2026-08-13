@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
@@ -7,6 +7,9 @@ import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const HOURS: number[] = Array.from({ length: 24 }, (_, i) => i);
+const SNAPS = [5, 10, 15, 30, 60];
+const SNAP_KEY = "sticky-flow:calendar-snap";
+
 const MONTHS = [
   "Janeiro",
   "Fevereiro",
@@ -62,7 +65,23 @@ export function CalendarView({
   const [dragging, setDragging] = useState(false);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [snap, setSnap] = useState(15);
   const previewNote = notes.find((n) => n.id === previewId) ?? null;
+
+  useEffect(() => {
+    const raw = Number(localStorage.getItem(SNAP_KEY));
+    if (SNAPS.includes(raw)) setSnap(raw);
+  }, []);
+
+  const changeSnap = (v: number) => {
+    setSnap(v);
+    try {
+      localStorage.setItem(SNAP_KEY, String(v));
+    } catch {
+      /* ignore */
+    }
+  };
+
 
   useEffect(() => {
     if (!dragging) return;
@@ -97,6 +116,20 @@ export function CalendarView({
     }
     return map;
   }, [visible, showWith]);
+
+  const conflictKeys = useMemo(() => {
+    const count = new Map<number, number>();
+    for (const n of visible) {
+      if (!n.deadline) continue;
+      const k = Math.floor(n.deadline / 60_000);
+      count.set(k, (count.get(k) ?? 0) + 1);
+    }
+    return new Set([...count.entries()].filter(([, c]) => c > 1).map(([k]) => k));
+  }, [visible]);
+
+  const isConflict = (n: Note) =>
+    !!n.deadline && conflictKeys.has(Math.floor(n.deadline / 60_000));
+
 
   const days = useMemo(() => {
     if (view === "day") return [dateFromKey(selected)];
@@ -145,32 +178,43 @@ export function CalendarView({
         })
       : `${MONTHS[(view === "week" ? dateFromKey(selected) : cursor).getMonth()]} ${(view === "week" ? dateFromKey(selected) : cursor).getFullYear()}`;
 
-  const slotTime = (k: string, hour: number | null) => {
+  const slotTime = (k: string, hour: number | null, minute = 0) => {
     const d = dateFromKey(k);
     if (hour === null) d.setHours(23, 59, 0, 0);
-    else d.setHours(hour, 0, 0, 0);
+    else d.setHours(hour, minute, 0, 0);
     return d.getTime();
   };
 
+  const snapMinuteFrom = (e: React.DragEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const ratio = Math.min(0.999, Math.max(0, (e.clientY - rect.top) / rect.height));
+    const m = Math.round((ratio * 60) / snap) * snap;
+    return Math.min(60 - snap, Math.max(0, m));
+  };
+
   const handleDrop = (k: string, hour: number | null = null) => (e: React.DragEvent) => {
+    const minute = hour === null ? 0 : snapMinuteFrom(e);
     e.preventDefault();
     e.stopPropagation();
     setDragOverKey(null);
     setDragging(false);
     const id = e.dataTransfer.getData("text/note-id");
-    if (id) onSetDeadline(id, slotTime(k, hour));
+    if (id) onSetDeadline(id, slotTime(k, hour, minute));
   };
 
   const dragTargetLabel = () => {
     if (!dragOverKey) return "Solte sobre um dia";
-    const [k, h] = dragOverKey.split("|");
-    const d = new Date(slotTime(k!, h === undefined ? null : Number(h)));
+    const [k, h, m] = dragOverKey.split("|");
+    const d = new Date(
+      slotTime(k!, h === undefined ? null : Number(h), m === undefined ? 0 : Number(m)),
+    );
     return `Prazo: ${d.toLocaleDateString("pt-BR", {
       weekday: "short",
       day: "2-digit",
       month: "long",
     })} · ${formatTime(d.getTime())}`;
   };
+
 
   const filterChip = (label: string, on: boolean, toggle: () => void) => (
     <button
@@ -216,6 +260,33 @@ export function CalendarView({
             {filterChip("Sem prazo", showWithout, () => setShowWithout((v) => !v))}
             {filterChip("Arquivadas", showArchived, () => setShowArchived((v) => !v))}
           </div>
+
+          {view !== "month" && (
+            <label className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground">
+              Snap
+              <select
+                value={snap}
+                onChange={(e) => changeSnap(Number(e.target.value))}
+                aria-label="Intervalo de snap do horário"
+                className="bg-transparent text-[11px] font-medium text-foreground outline-none"
+              >
+                {SNAPS.map((s) => (
+                  <option key={s} value={s}>
+                    {s} min
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {conflictKeys.size > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-destructive/50 bg-destructive/10 px-2 py-1 text-[11px] font-medium text-destructive">
+              <AlertTriangle className="h-3 w-3" />
+              {conflictKeys.size} conflito(s) de horário
+            </span>
+          )}
+
+
 
           <div className="ml-auto flex items-center gap-1">
             <button
@@ -307,17 +378,26 @@ export function CalendarView({
                           e.stopPropagation();
                           setPreviewId(n.id);
                         }}
-                        title={noteLabel[n.color]}
+                        title={
+                          isConflict(n)
+                            ? `Conflito: outra nota com o mesmo horário (${formatTime(n.deadline!)})`
+                            : noteLabel[n.color]
+                        }
                         className={cn(
                           "cursor-grab truncate rounded border border-border/60 px-1 py-0.5 text-[10px] text-foreground active:cursor-grabbing",
                           n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                          isConflict(n) && "border-destructive ring-1 ring-destructive",
                         )}
                       >
+                        {isConflict(n) && (
+                          <AlertTriangle className="mr-0.5 inline h-2.5 w-2.5 text-destructive" />
+                        )}
                         <span className="font-medium tabular-nums">
                           {formatTime(n.deadline!)}
                         </span>{" "}
                         {n.title || "Sem título"}
                       </span>
+
                     ))}
                     {items.length > 2 && (
                       <span className="text-[10px] text-muted-foreground">
@@ -374,24 +454,40 @@ export function CalendarView({
                     const items = (byDay.get(k) ?? []).filter(
                       (n) => new Date(n.deadline!).getHours() === hour,
                     );
+                    const activeSnap =
+                      dragOverKey?.startsWith(`${slotKey}|`) ?? false;
+                    const activeMinute = activeSnap
+                      ? Number(dragOverKey!.split("|")[2] ?? 0)
+                      : 0;
                     return (
                       <div
                         key={slotKey}
                         onClick={() => onSelectDay(k)}
                         onDragOver={(e) => {
                           e.preventDefault();
-                          setDragOverKey(slotKey);
+                          setDragOverKey(`${slotKey}|${snapMinuteFrom(e)}`);
                         }}
                         onDragLeave={() =>
-                          setDragOverKey((c) => (c === slotKey ? null : c))
+                          setDragOverKey((c) => (c?.startsWith(`${slotKey}|`) ? null : c))
                         }
                         onDrop={handleDrop(k, hour)}
                         className={cn(
-                          "h-14 space-y-0.5 overflow-hidden border-b border-l border-border p-0.5 transition-colors hover:bg-accent/50",
+                          "relative h-14 space-y-0.5 overflow-hidden border-b border-l border-border p-0.5 transition-colors hover:bg-accent/50",
                           selected === k && "bg-primary/5",
-                          dragOverKey === slotKey && "bg-primary/15 ring-2 ring-inset ring-primary",
+                          activeSnap && "bg-primary/15 ring-2 ring-inset ring-primary",
                         )}
                       >
+                        {activeSnap && (
+                          <span
+                            className="pointer-events-none absolute inset-x-0 z-10 flex items-center gap-1 border-t-2 border-primary"
+                            style={{ top: `${(activeMinute / 60) * 100}%` }}
+                          >
+                            <span className="rounded-sm bg-primary px-1 text-[9px] font-semibold tabular-nums text-primary-foreground">
+                              {String(hour).padStart(2, "0")}:
+                              {String(activeMinute).padStart(2, "0")}
+                            </span>
+                          </span>
+                        )}
                         {items.map((n) => (
                           <div
                             key={n.id}
@@ -404,12 +500,20 @@ export function CalendarView({
                               e.stopPropagation();
                               setPreviewId(n.id);
                             }}
-                            title={`${formatTime(n.deadline!)} · ${n.title}`}
+                            title={
+                              isConflict(n)
+                                ? `Conflito de horário às ${formatTime(n.deadline!)}`
+                                : `${formatTime(n.deadline!)} · ${n.title}`
+                            }
                             className={cn(
                               "cursor-grab truncate rounded border border-border/60 px-1 py-0.5 text-[10px] text-foreground active:cursor-grabbing",
                               n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                              isConflict(n) && "border-destructive ring-1 ring-destructive",
                             )}
                           >
+                            {isConflict(n) && (
+                              <AlertTriangle className="mr-0.5 inline h-2.5 w-2.5 text-destructive" />
+                            )}
                             <span className="font-medium tabular-nums">
                               {formatTime(n.deadline!)}
                             </span>{" "}
@@ -417,6 +521,7 @@ export function CalendarView({
                           </div>
                         ))}
                       </div>
+
                     );
                   })}
                 </Fragment>
@@ -462,6 +567,7 @@ export function CalendarView({
               className={cn(
                 "block w-full rounded-md border border-border/60 p-2 text-left transition-shadow hover:shadow-md",
                 n.kind === "notepad" ? "bg-card" : noteBg[n.color],
+                isConflict(n) && "border-destructive ring-1 ring-destructive",
               )}
             >
               <p className="text-sm font-medium leading-snug">
@@ -473,7 +579,14 @@ export function CalendarView({
               <div className="mt-1 flex flex-wrap items-center gap-1">
                 {n.priority && <PriorityBadge priority={n.priority} />}
                 {n.deadline && <DeadlineBadge deadline={n.deadline} />}
+                {isConflict(n) && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-destructive/50 bg-destructive/15 px-1.5 py-0.5 text-[10px] font-medium text-destructive">
+                    <AlertTriangle className="h-3 w-3" />
+                    Conflito de horário
+                  </span>
+                )}
               </div>
+
               <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                 {stripHtml(n.content)}
               </p>
