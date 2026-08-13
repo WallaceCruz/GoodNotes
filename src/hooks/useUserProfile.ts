@@ -82,12 +82,14 @@ export function useUserProfile() {
   const update = useCallback((patch: Partial<UserProfile>) => {
     setProfile((prev) => {
       const next = { ...prev, ...patch };
-      try {
-        localStorage.setItem(KEY, JSON.stringify(next));
-      } catch {
-        /* ignore */
-      }
-      window.dispatchEvent(new Event(EVENT));
+      queueMicrotask(() => {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(next));
+        } catch {
+          /* ignore */
+        }
+        window.dispatchEvent(new Event(EVENT));
+      });
       return next;
     });
   }, []);
