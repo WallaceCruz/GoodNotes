@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { CircleHelp, CreditCard, LogOut, Settings, User } from "lucide-react";
 import { toast } from "sonner";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +39,9 @@ export function UserMenu({
           )}
         >
           <Avatar className="h-8 w-8">
+            {profile.avatar && (
+              <AvatarImage src={profile.avatar} alt={`Foto de ${profile.name}`} />
+            )}
             <AvatarFallback className="bg-primary text-[11px] font-semibold text-primary-foreground">
               {initials(profile.name) || "SF"}
             </AvatarFallback>
