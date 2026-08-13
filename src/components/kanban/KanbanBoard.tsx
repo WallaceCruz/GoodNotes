@@ -26,11 +26,13 @@ export function KanbanBoard({
   activeNoteId,
   onOpenNote,
   matches,
+  highlightIds,
 }: {
   store: BoardStore;
   activeNoteId: string | null;
   onOpenNote: (id: string) => void;
   matches: (note: Note) => boolean;
+  highlightIds?: Set<string>;
 }) {
   const file = store.file;
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -115,6 +117,7 @@ export function KanbanBoard({
               activeNoteId={activeNoteId}
               onAddNote={(kind) => store.addNote(c.id, kind)}
               onOpenNote={onOpenNote}
+              highlightIds={highlightIds}
             />
           ))}
           <button
