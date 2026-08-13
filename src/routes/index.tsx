@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronRight, FileText, Folder, Layers } from "lucide-react";
+import { ChevronRight, FileText, Folder, Layers, Zap } from "lucide-react";
 import { useState } from "react";
 import { AppSidebar } from "@/components/kanban/AppSidebar";
 import { AutomationsPanel } from "@/components/kanban/AutomationsPanel";
-import { BoardFilters, emptyFilters, type Filters } from "@/components/kanban/BoardFilters";
+import { FiltersMenu, emptyFilters, type Filters } from "@/components/kanban/FiltersMenu";
 import { InboxList } from "@/components/kanban/InboxList";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { NoteEditorPanel } from "@/components/kanban/NoteEditorPanel";
@@ -104,20 +104,22 @@ function Index() {
                   Vendo arquivadas
                 </span>
               )}
-              <div className="ml-auto flex items-center gap-1">
+              <div className="ml-auto flex items-center gap-1.5">
+                <FiltersMenu filters={filters} allTags={allTags} onChange={setFilters} />
+                <button
+                  onClick={() => setAutomationsOpen((v) => !v)}
+                  className={`flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent ${
+                    automationsOpen ? "bg-accent text-foreground" : ""
+                  }`}
+                >
+                  <Zap className="h-3.5 w-3.5" />
+                  Automações
+                </button>
                 <NotificationsMenu notes={allNotes} onSelect={setActiveNoteId} />
                 <UserMenu />
               </div>
             </header>
 
-
-            <BoardFilters
-              filters={filters}
-              allTags={allTags}
-              onChange={setFilters}
-              automationsOpen={automationsOpen}
-              onToggleAutomations={() => setAutomationsOpen((v) => !v)}
-            />
 
             {automationsOpen && <AutomationsPanel store={store} allTags={allTags} />}
 
