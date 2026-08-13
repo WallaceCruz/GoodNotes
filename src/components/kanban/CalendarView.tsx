@@ -58,6 +58,27 @@ export function CalendarView({
   const [showWithout, setShowWithout] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [pointer, setPointer] = useState({ x: 0, y: 0 });
+  const [previewId, setPreviewId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: DragEvent) => setPointer({ x: e.clientX, y: e.clientY });
+    const onEnd = () => {
+      setDragging(false);
+      setDragOverKey(null);
+    };
+    window.addEventListener("dragover", onMove);
+    window.addEventListener("dragend", onEnd);
+    window.addEventListener("drop", onEnd);
+    return () => {
+      window.removeEventListener("dragover", onMove);
+      window.removeEventListener("dragend", onEnd);
+      window.removeEventListener("drop", onEnd);
+    };
+  }, [dragging]);
+
 
   const visible = useMemo(
     () => notes.filter((n) => (n.archived ? showArchived : true)),
