@@ -7,7 +7,14 @@ export type NotificationSettings = {
   showToasts: boolean;
   onlyHighPriority: boolean;
   quietMode: boolean;
+  timeReminders: boolean;
+  minutesBefore: number;
 };
+
+export const MINUTES_BEFORE_OPTIONS = [5, 10, 15, 30, 60, 120, 1440];
+
+export const minutesBeforeLabel = (m: number) =>
+  m >= 1440 ? "1 dia" : m >= 60 ? `${m / 60} h` : `${m} min`;
 
 export const defaultNotificationSettings: NotificationSettings = {
   enabled: true,
@@ -16,7 +23,10 @@ export const defaultNotificationSettings: NotificationSettings = {
   showToasts: true,
   onlyHighPriority: false,
   quietMode: false,
+  timeReminders: true,
+  minutesBefore: 30,
 };
+
 
 const KEY = "sticky-flow:notifications";
 
