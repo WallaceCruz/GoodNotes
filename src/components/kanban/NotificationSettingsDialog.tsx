@@ -99,6 +99,40 @@ export function NotificationSettingsDialog({
           </div>
 
           <Row
+            title="Lembretes por horário"
+            description="Avisa também no horário exato do prazo, não só no dia."
+            checked={settings.timeReminders}
+            onCheckedChange={(v) => onChange({ timeReminders: v })}
+            disabled={off}
+          />
+
+          <div className="rounded-lg border border-border px-3 py-3">
+            <p className="text-sm font-medium">Avisar antes do horário</p>
+            <p className="mb-2 text-[11px] text-muted-foreground">
+              Quantos minutos antes do horário do prazo você quer ser avisado.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {MINUTES_BEFORE_OPTIONS.map((m) => (
+                <button
+                  key={m}
+                  disabled={off || !settings.timeReminders}
+                  onClick={() => onChange({ minutesBefore: m })}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-[11px] transition-colors disabled:opacity-50",
+                    settings.minutesBefore === m
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border text-muted-foreground hover:bg-accent",
+                  )}
+                >
+                  {minutesBeforeLabel(m)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+
+
+          <Row
             title="Avisar notas atrasadas"
             description="Mantém no topo as notas cujo prazo já venceu."
             checked={settings.notifyOverdue}
