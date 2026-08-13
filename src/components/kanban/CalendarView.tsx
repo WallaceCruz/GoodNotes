@@ -117,6 +117,20 @@ export function CalendarView({
     return map;
   }, [visible, showWith]);
 
+  const conflictKeys = useMemo(() => {
+    const count = new Map<number, number>();
+    for (const n of visible) {
+      if (!n.deadline) continue;
+      const k = Math.floor(n.deadline / 60_000);
+      count.set(k, (count.get(k) ?? 0) + 1);
+    }
+    return new Set([...count.entries()].filter(([, c]) => c > 1).map(([k]) => k));
+  }, [visible]);
+
+  const isConflict = (n: Note) =>
+    !!n.deadline && conflictKeys.has(Math.floor(n.deadline / 60_000));
+
+
   const days = useMemo(() => {
     if (view === "day") return [dateFromKey(selected)];
     const base = view === "week" ? dateFromKey(selected) : new Date(cursor);
