@@ -148,6 +148,30 @@ export function NotificationsMenu({
               </div>
             )}
 
+            {imminent.length > 0 && (
+              <>
+                <p className="px-2 pb-1 pt-1.5 text-[11px] font-medium uppercase tracking-wide text-primary">
+                  Agora ({imminent.length})
+                </p>
+                {imminent.map((a) => (
+                  <button
+                    key={a.note.id}
+                    onClick={() => onSelect(a.note.id)}
+                    className="flex w-full flex-col items-start gap-1 rounded-md px-2 py-2 text-left transition-colors hover:bg-accent"
+                  >
+                    <span className="line-clamp-1 text-sm font-medium">
+                      {a.note.title || "Sem título"}
+                    </span>
+                    <span className="rounded-full border border-primary/50 bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium">
+                      Vence em {a.minutesLeft} min
+                    </span>
+                  </button>
+                ))}
+              </>
+            )}
+
+
+
             {overdue.length > 0 && (
               <>
                 <p className="px-2 pb-1 pt-1.5 text-[11px] font-medium uppercase tracking-wide text-destructive">
