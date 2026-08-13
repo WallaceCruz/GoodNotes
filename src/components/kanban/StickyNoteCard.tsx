@@ -36,6 +36,7 @@ export function StickyNoteCard({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: note.id,
+    transition: { duration: 220, easing: "cubic-bezier(0.2, 0, 0, 1)" },
   });
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
   const showChecklist = note.showChecklist;
