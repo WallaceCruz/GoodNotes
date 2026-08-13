@@ -94,7 +94,9 @@ export type Note = {
   priority: Priority | null;
   deadline: number | null;
   archived: boolean;
+  order: number;
 };
+
 
 export type TagDef = {
   name: string;
