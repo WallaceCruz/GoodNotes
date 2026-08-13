@@ -23,7 +23,9 @@ export function NoteEditorPanel({
   return (
     <section className="flex w-[26rem] shrink-0 flex-col border-l border-border bg-background">
       <header className="flex items-center gap-2 border-b border-border px-3 py-2">
-        <span className="text-sm font-semibold">Nota</span>
+        <span className="text-sm font-semibold">
+          {note.kind === "notepad" ? "Bloco de notas" : "Nota"}
+        </span>
         <button
           onClick={() => store.setNoteArchived(note.id, !note.archived)}
           aria-label={note.archived ? "Restaurar nota" : "Arquivar nota"}
@@ -42,7 +44,12 @@ export function NoteEditorPanel({
       </header>
 
       <div className="scroll-thin flex-1 overflow-y-auto p-3">
-        <div className={cn("rounded-md border border-border/60 p-3 shadow-sm", noteBg[note.color])}>
+        <div
+          className={cn(
+            "rounded-md border border-border/60 p-3 shadow-sm",
+            note.kind === "notepad" ? "notepad-lines bg-card" : noteBg[note.color],
+          )}
+        >
           <input
             value={note.title}
             onChange={(e) => onChange({ title: e.target.value })}
