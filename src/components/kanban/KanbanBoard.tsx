@@ -13,13 +13,16 @@ import {
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { KanbanColumn } from "./KanbanColumn";
 import { noteBg, stripHtml } from "./note-style";
+
+// Mantém a posição do scroll do quadro ao abrir/fechar a página de detalhes.
+let savedBoardScroll = { top: 0, left: 0 };
 
 export function KanbanBoard({
   store,
@@ -35,6 +38,13 @@ export function KanbanBoard({
   highlightIds?: Set<string> | undefined;
 }) {
   const file = store.file;
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTop = savedBoardScroll.top;
+    el.scrollLeft = savedBoardScroll.left;
+  }, []);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -95,7 +105,16 @@ export function KanbanBoard({
   const dragging = file.notes.find((n) => n.id === draggingId);
 
   return (
-    <div className="scroll-thin flex-1 overflow-auto bg-canvas p-4">
+    <div
+      ref={scrollRef}
+      onScroll={(e) => {
+        savedBoardScroll = {
+          top: e.currentTarget.scrollTop,
+          left: e.currentTarget.scrollLeft,
+        };
+      }}
+      className="scroll-thin flex-1 overflow-auto bg-canvas p-4"
+    >
       <DndContext
         id="kanban-dnd"
         sensors={sensors}

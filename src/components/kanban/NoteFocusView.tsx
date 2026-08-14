@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Archive, ArchiveRestore, ArrowLeft, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
@@ -9,6 +9,9 @@ import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 import { cn } from "@/lib/utils";
 import { noteBg, noteLabel, priorityClass, timeAgo } from "./note-style";
+
+// Guarda a rolagem da página de detalhes por nota, para reabrir onde parou.
+const focusScroll = new Map<string, number>();
 
 export function NoteFocusView({
   note,
@@ -22,11 +25,32 @@ export function NoteFocusView({
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
   const isNotepad = note.kind === "notepad";
   const [closing, setClosing] = useState(false);
+  const closingRef = useRef(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const requestClose = () => {
-    if (closing) return;
+    if (closingRef.current) return;
+    closingRef.current = true;
     setClosing(true);
     window.setTimeout(onClose, 180);
   };
+
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = focusScroll.get(note.id) ?? 0;
+  }, [note.id]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[role='dialog']")) return;
+      requestClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
@@ -38,7 +62,15 @@ export function NoteFocusView({
       )}
     >
       {/* Canvas central em foco */}
-      <div className="scroll-thin min-w-0 flex-1 overflow-y-auto bg-muted/40 px-6 py-6">
+      <div
+        ref={scrollRef}
+        onScroll={(e) => focusScroll.set(note.id, e.currentTarget.scrollTop)}
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) requestClose();
+        }}
+        className="scroll-thin min-w-0 flex-1 overflow-y-auto bg-muted/40 px-6 py-6"
+      >
+
 
         <div className="mx-auto w-full max-w-3xl">
           <div className="mb-3 flex items-center gap-2">
@@ -72,8 +104,8 @@ export function NoteFocusView({
               <RichNoteEditor
                 content={note.content}
                 onChange={(html) => onChange({ content: html })}
-                minHeight="min-h-[45vh]"
-                maxHeight="max-h-[55vh]"
+                minHeight="min-h-[64vh]"
+                maxHeight="max-h-[72vh]"
                 checklistActive={note.showChecklist}
                 onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
               />
