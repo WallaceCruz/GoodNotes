@@ -126,28 +126,40 @@ export function NotepadCard({
           className="w-full bg-transparent text-[15px] font-bold leading-7 text-foreground outline-none"
         />
 
-        <RichNoteEditor
-          content={note.content}
-          onChange={(html) => onChange({ content: html })}
-          minHeight="min-h-40"
-          maxHeight="max-h-64"
-          compact
-          showToolbar={false}
-          checklistActive={note.showChecklist}
-          onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
-        />
+        <div
+          className="scroll-thin overflow-y-auto"
+          style={note.height ? { height: note.height } : undefined}
+        >
+          <RichNoteEditor
+            content={note.content}
+            onChange={(html) => onChange({ content: html })}
+            minHeight="min-h-40"
+            maxHeight={note.height ? "max-h-none" : "max-h-64"}
+            compact
+            showToolbar={false}
+            checklistActive={note.showChecklist}
+            onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
+          />
 
-        {note.showChecklist && (
-          <div className="mt-2">
-            <ChecklistEditor
-              items={note.checklist}
-              onAdd={(text) => store.addChecklistItem(note.id, text)}
-              onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
-              onRemove={(id) => store.removeChecklistItem(note.id, id)}
-            />
-          </div>
-        )}
+          {note.showChecklist && (
+            <div className="mt-2">
+              <ChecklistEditor
+                items={note.checklist}
+                onAdd={(text) => store.addChecklistItem(note.id, text)}
+                onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
+                onRemove={(id) => store.removeChecklistItem(note.id, id)}
+              />
+            </div>
+          )}
+        </div>
       </div>
+
+      <CardResizeHandle
+        height={note.height}
+        defaultHeight={256}
+        onChange={(h) => onChange({ height: h })}
+        onReset={() => onChange({ height: null })}
+      />
 
       <footer className="flex flex-wrap items-center gap-2 border-t border-border px-3 py-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
         <AssigneeSelect value={note.assignee} onChange={(assignee) => onChange({ assignee })} />
