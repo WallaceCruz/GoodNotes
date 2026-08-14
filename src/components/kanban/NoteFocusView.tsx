@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Archive, ArchiveRestore, ArrowLeft, X } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Pin, PinOff, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
 import { AssigneeSelect } from "./AssigneeSelect";
