@@ -164,7 +164,13 @@ function Index() {
             {automationsOpen && <AutomationsPanel store={store} allTags={allTags} />}
 
             <div className="flex min-h-0 flex-1">
-              {calendarView ? (
+              {activeNote ? (
+                <NoteFocusView
+                  note={activeNote}
+                  store={store}
+                  onClose={() => setActiveNoteId(null)}
+                />
+              ) : calendarView ? (
                 <CalendarView
                   notes={store.file?.notes ?? []}
                   onOpenNote={setActiveNoteId}
@@ -181,26 +187,20 @@ function Index() {
                 />
               ) : (
                 <>
-              {inboxOpen && (
-                <InboxList notes={inboxNotes} activeId={activeNoteId} onSelect={setActiveNoteId} />
-              )}
-              <KanbanBoard
-                store={store}
-                activeNoteId={activeNoteId}
-                onOpenNote={setActiveNoteId}
-                matches={matches}
-                highlightIds={highlightIds}
-              />
+                  {inboxOpen && (
+                    <InboxList notes={inboxNotes} activeId={activeNoteId} onSelect={setActiveNoteId} />
+                  )}
+                  <KanbanBoard
+                    store={store}
+                    activeNoteId={activeNoteId}
+                    onOpenNote={setActiveNoteId}
+                    matches={matches}
+                    highlightIds={highlightIds}
+                  />
                 </>
               )}
-              {activeNote && (
-                <NoteEditorPanel
-                  note={activeNote}
-                  store={store}
-                  onClose={() => setActiveNoteId(null)}
-                />
-              )}
             </div>
+
           </div>
         </>
       )}
