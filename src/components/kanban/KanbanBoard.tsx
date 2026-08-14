@@ -2,6 +2,7 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
+  MeasuringStrategy,
   PointerSensor,
   closestCorners,
   defaultDropAnimationSideEffects,
@@ -137,6 +138,8 @@ export function KanbanBoard({
         id="kanban-dnd"
         sensors={sensors}
         collisionDetection={closestCorners}
+        // Mede as colunas apenas durante o arraste: evita loop de remedição do dnd-kit.
+        measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
         onDragStart={(e: DragStartEvent) => setDraggingId(String(e.active.id))}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
