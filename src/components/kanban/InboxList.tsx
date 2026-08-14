@@ -105,7 +105,7 @@ export function InboxList({
             </button>
           ))}
         </div>
-
+      </div>
 
       <div className="scroll-thin flex-1 overflow-y-auto">
         {filtered.length === 0 && (
