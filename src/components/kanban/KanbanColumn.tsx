@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, type Column, type Note, type NoteKind } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel } from "./note-style";
+import { noteBg, noteHeaderBg, noteLabel } from "./note-style";
 import { NotepadCard } from "./NotepadCard";
 import { StickyNoteCard } from "./StickyNoteCard";
 
