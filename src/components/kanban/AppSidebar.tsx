@@ -185,19 +185,19 @@ export function AppSidebar({
       <div className="scroll-thin mt-1 flex-1 overflow-y-auto px-2 pb-4">
         {projects.map((p) => (
           <div key={p.id} className={cn("mt-1", p.archived && "opacity-60")}>
-            <div className="group flex items-center gap-1 rounded-md px-2 py-1.5 hover:bg-sidebar-accent">
+            <div className="group flex items-center gap-2 rounded-md px-2 py-2 hover:bg-sidebar-accent">
               <button
                 onClick={() => setOpen((o) => ({ ...o, [p.id]: !isOpen(p.id) }))}
                 aria-label="Expandir projeto"
-                className="text-muted-foreground"
+                className="flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground"
               >
                 {isOpen(p.id) ? (
-                  <ChevronDown className="h-3.5 w-3.5" />
+                  <ChevronDown className="h-4 w-4" />
                 ) : (
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-4 w-4" />
                 )}
               </button>
-              <Folder className="h-4 w-4 text-muted-foreground" />
+              <Folder className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
               <input
                 value={p.name}
                 onChange={(e) => store.renameProject(p.id, e.target.value)}
@@ -238,12 +238,12 @@ export function AppSidebar({
                     key={f.id}
                     onClick={() => store.selectFile(p.id, f.id)}
                     className={cn(
-                      "group ml-6 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent",
+                      "group ml-7 flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-sidebar-accent",
                       store.file?.id === f.id && "bg-sidebar-accent font-medium",
                       f.archived && "opacity-60",
                     )}
                   >
-                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <FileText className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
                     <input
                       value={f.name}
                       onChange={(e) => store.renameFile(p.id, f.id, e.target.value)}
