@@ -351,7 +351,11 @@ export function RichNoteEditor({
 
       <div
         ref={proseRef}
-        className={cn("note-prose relative py-1.5", compact ? "text-xs" : "text-sm")}
+        className={cn(
+          "note-prose scroll-thin relative py-1.5",
+          compact ? "text-xs" : "text-sm",
+          maxHeight && `${maxHeight} overflow-y-auto`,
+        )}
         onMouseMove={(e) => {
           const target = e.target as HTMLElement;
           if (target.tagName === "IMG") showImageTools(target as HTMLImageElement);
