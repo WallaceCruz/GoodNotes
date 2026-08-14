@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CircleHelp, CreditCard, LogOut, Settings, User } from "lucide-react";
+import { CircleHelp, CreditCard, LogOut, Moon, Settings, Sun, User } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -10,6 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
+import { useTheme } from "@/hooks/useTheme";
 import { initials, useUserProfile } from "@/hooks/useUserProfile";
 import { cn } from "@/lib/utils";
 
