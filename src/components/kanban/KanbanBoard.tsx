@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { Plus } from "lucide-react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import type { Note } from "@/lib/board-types";
@@ -50,6 +50,24 @@ export function KanbanBoard({
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
+
+  // Memoizado: arrays estáveis evitam remedições em loop do dnd-kit.
+  const notesByColumn = useMemo(() => {
+    const map = new Map<string, Note[]>();
+    for (const c of file?.columns ?? []) {
+      map.set(
+        c.id,
+        (file?.notes ?? [])
+          .filter((n) => n.columnId === c.id && matches(n))
+          .sort(
+            (a, b) =>
+              Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || a.order - b.order,
+          ),
+      );
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file?.columns, file?.notes, matches]);
 
   if (!file) {
     return (
