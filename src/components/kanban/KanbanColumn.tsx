@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Copy, MoreHorizontal, NotebookPen, Plus, StickyNote, Trash2 } from "lucide-react";
+import { Copy, Lock, MoreHorizontal, NotebookPen, Plus, StickyNote, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, type Column, type Note, type NoteKind } from "@/lib/board-types";
@@ -45,6 +45,7 @@ export function KanbanColumn({
   highlightIds?: Set<string> | undefined;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
+  const isNative = Boolean(column.native);
 
   return (
     <div className="flex max-h-full w-96 shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-card/70 backdrop-blur-sm">
@@ -55,11 +56,21 @@ export function KanbanColumn({
           column.color && noteHeaderBg[column.color],
         )}
       >
-        <input
-          value={column.title}
-          onChange={(e) => store.renameColumn(column.id, e.target.value)}
-          className="w-full bg-transparent text-sm font-semibold outline-none"
-        />
+        {isNative ? (
+          <span
+            title="Coluna nativa do fluxo — não pode ser renomeada ou excluída"
+            className="flex w-full items-center gap-1.5 truncate text-sm font-semibold"
+          >
+            <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />
+            {column.title}
+          </span>
+        ) : (
+          <input
+            value={column.title}
+            onChange={(e) => store.renameColumn(column.id, e.target.value)}
+            className="w-full bg-transparent text-sm font-semibold outline-none"
+          />
+        )}
         <span className="rounded bg-muted px-1.5 text-[11px] text-muted-foreground">
           {notes.length}
         </span>
@@ -124,15 +135,22 @@ export function KanbanColumn({
                 <Copy className="mr-2 h-4 w-4" />
                 Duplicar coluna
               </DropdownMenuItem>
-              <AlertDialogTrigger asChild>
-                <DropdownMenuItem
-                  onSelect={(e) => e.preventDefault()}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Excluir coluna
+              {isNative ? (
+                <DropdownMenuItem disabled>
+                  <Lock className="mr-2 h-4 w-4" />
+                  Coluna nativa (não excluível)
                 </DropdownMenuItem>
-              </AlertDialogTrigger>
+              ) : (
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Excluir coluna
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
           <AlertDialogContent>

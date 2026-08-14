@@ -15,6 +15,8 @@ import {
   type Project,
   type TagDef,
   collectTags,
+  ensureNativeColumns,
+  nativeColumns,
 } from "@/lib/board-types";
 
 const STORAGE_KEY = "sticky-kanban-v1";
@@ -53,6 +55,7 @@ function normalize(s: BoardState): BoardState {
       files: (p.files ?? []).map((f) => ({
         ...f,
         archived: f.archived ?? false,
+        columns: ensureNativeColumns(f.columns ?? []),
         automations: f.automations ?? [],
         tags: collectTags(
           (f.notes ?? []).flatMap((n) => n.tags ?? []),
@@ -177,11 +180,7 @@ export function useBoardStore() {
         const newFile: BoardFile = {
           id: uid(),
           name: "Novo arquivo",
-          columns: [
-            { id: uid(), title: "Backlog" },
-            { id: uid(), title: "Fazendo" },
-            { id: uid(), title: "Feito" },
-          ],
+          columns: nativeColumns(),
           notes: [],
           tags: [],
           automations: [],
@@ -238,7 +237,12 @@ export function useBoardStore() {
           const index = f.columns.findIndex((c) => c.id === cid);
           const source = f.columns[index];
           if (!source) return f;
-          const clone: Column = { ...source, id: uid(), title: `${source.title} (cópia)` };
+          const clone: Column = {
+            ...source,
+            id: uid(),
+            native: null,
+            title: `${source.title} (cópia)`,
+          };
           const columns = [...f.columns];
           columns.splice(index + 1, 0, clone);
           const copies = f.notes
@@ -247,12 +251,16 @@ export function useBoardStore() {
           return { ...f, columns, notes: reindex([...f.notes, ...copies]) };
         }),
       removeColumn: (cid: string) =>
-        updateFile((f) => ({
+        updateFile((f) => {
+          const target = f.columns.find((c) => c.id === cid);
+          if (!target || target.native) return f;
+          return {
           ...f,
           columns: f.columns.filter((c) => c.id !== cid),
           notes: f.notes.filter((n) => n.columnId !== cid),
           automations: f.automations.filter((a) => a.columnId !== cid),
-        })),
+          };
+        }),
 
       addAutomation: (type: AutomationType, value: string, columnId: string) =>
         updateFile((f) => ({
