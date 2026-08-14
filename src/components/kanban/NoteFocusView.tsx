@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Archive, ArchiveRestore, ArrowLeft, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
@@ -42,7 +43,7 @@ export function NoteFocusView({
         <div className="mx-auto w-full max-w-3xl">
           <div className="mb-3 flex items-center gap-2">
             <button
-              onClick={onClose}
+              onClick={requestClose}
               className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
@@ -72,6 +73,7 @@ export function NoteFocusView({
                 content={note.content}
                 onChange={(html) => onChange({ content: html })}
                 minHeight="min-h-[45vh]"
+                maxHeight="max-h-[55vh]"
                 checklistActive={note.showChecklist}
                 onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
               />
@@ -106,7 +108,7 @@ export function NoteFocusView({
             )}
             {note.archived ? "Restaurar" : "Arquivar"}
           </button>
-          <button onClick={onClose} aria-label="Fechar nota" className="text-muted-foreground">
+          <button onClick={requestClose} aria-label="Fechar nota" className="text-muted-foreground">
             <X className="h-4 w-4" />
           </button>
         </header>
