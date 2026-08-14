@@ -265,6 +265,21 @@
   .note-prose p {
     margin: 0.2rem 0;
   }
+  .note-prose,
+  .note-prose .tiptap {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+  .note-prose * {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-width: 100%;
+  }
+  .note-prose pre,
+  .note-prose code {
+    white-space: pre-wrap;
+  }
+
   .note-prose .tiptap:focus {
     outline: none;
   }
