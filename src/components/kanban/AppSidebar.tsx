@@ -6,6 +6,7 @@ import {
   ChevronRight,
   FileText,
   Folder,
+  FolderOpen,
   Home,
   Inbox,
   Layers,
@@ -15,10 +16,27 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
 
+const ICON = "h-[18px] w-[18px] shrink-0";
+const ROW =
+  "group flex min-h-9 w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors";
+const ACTION =
+  "flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-sidebar-accent hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100";
+
+function NameTooltip({ name, children }: { name: string; children: React.ReactNode }) {
+  return (
+    <Tooltip delayDuration={400}>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side="right" className="max-w-64 break-words">
+        {name || "Sem nome"}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 export function AppSidebar({
   store,
@@ -50,55 +68,58 @@ export function AppSidebar({
 
   if (collapsed) {
     return (
-      <aside className="flex w-14 shrink-0 flex-col items-center gap-3 border-r border-border bg-sidebar py-3">
+      <aside className="flex w-14 shrink-0 flex-col items-center gap-2 border-r border-border bg-sidebar py-3">
         <button
           onClick={onToggleCollapsed}
           aria-label="Expandir menu lateral"
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
         >
-          <PanelLeftOpen className="h-4 w-4" />
+          <PanelLeftOpen className={ICON} />
         </button>
-        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Layers className="h-4 w-4" />
+        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <Layers className={ICON} />
         </span>
         <button
           onClick={onGoHome}
           aria-label="Home (kanban)"
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent"
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
+            !archivedView && !calendarView && "bg-sidebar-accent text-foreground",
+          )}
         >
-          <Home className="h-4 w-4" />
+          <Home className={ICON} />
         </button>
         <button
           onClick={onToggleInbox}
           aria-label={inboxOpen ? "Recolher inbox" : "Expandir inbox"}
           className={cn(
-            "rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent",
+            "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
             inboxOpen && "bg-sidebar-accent text-foreground",
           )}
         >
-          <Inbox className="h-4 w-4" />
+          <Inbox className={ICON} />
         </button>
         <button
           onClick={onToggleCalendarView}
           aria-label="Calendário"
           className={cn(
-            "rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent",
+            "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
             calendarView && "bg-sidebar-accent text-foreground",
           )}
         >
-          <CalendarDays className="h-4 w-4" />
+          <CalendarDays className={ICON} />
         </button>
         <button
           onClick={onToggleArchivedView}
           aria-label="Arquivados"
           className={cn(
-            "rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent",
+            "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
             archivedView && "bg-sidebar-accent text-foreground",
           )}
         >
-          <Archive className="h-4 w-4" />
+          <Archive className={ICON} />
         </button>
-        <Folder className="h-4 w-4 text-muted-foreground" />
+        <Folder className={cn(ICON, "text-muted-foreground")} />
         <div className="mt-auto">
           <UserMenu />
         </div>
@@ -106,183 +127,217 @@ export function AppSidebar({
     );
   }
 
-
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-sidebar">
-      <div className="flex items-center gap-2 px-3 py-3">
-        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Layers className="h-4 w-4" />
-        </span>
-        <span className="text-sm font-semibold">Sticky Flow</span>
-        <button
-          onClick={onToggleCollapsed}
-          aria-label="Recolher menu lateral"
-          className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-sidebar-accent"
-        >
-          <PanelLeftClose className="h-4 w-4" />
-        </button>
-      </div>
-
-      <nav className="space-y-1 px-2">
-        <button
-          onClick={onGoHome}
-          className={cn(
-            "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
-            !archivedView && !calendarView && "bg-sidebar-accent font-medium",
-          )}
-        >
-          <Home className="h-4 w-4 text-muted-foreground" />
-          Home
-        </button>
-        <button
-          onClick={onToggleInbox}
-          className={cn(
-            "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
-            inboxOpen && "bg-sidebar-accent font-medium",
-          )}
-        >
-          <Inbox className="h-4 w-4 text-muted-foreground" />
-          Inbox
-          <span className="ml-auto text-[11px] text-muted-foreground">
-            {inboxOpen ? "Ocultar" : "Mostrar"}
+    <TooltipProvider>
+      <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-sidebar">
+        <div className="flex items-center gap-2 px-3 py-3">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Layers className={ICON} />
           </span>
-        </button>
-        <button
-          onClick={onToggleCalendarView}
-          className={cn(
-            "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
-            calendarView && "bg-sidebar-accent font-medium",
-          )}
-        >
-          <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          Calendário
-        </button>
-        <button
-          onClick={onToggleArchivedView}
-          className={cn(
-            "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent",
-            showArchived && "bg-sidebar-accent font-medium",
-          )}
-        >
-          <Archive className="h-4 w-4 text-muted-foreground" />
-          Arquivados
-        </button>
-      </nav>
+          <span className="text-sm font-semibold">Sticky Flow</span>
+          <button
+            onClick={onToggleCollapsed}
+            aria-label="Recolher menu lateral"
+            className="ml-auto flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+          </button>
+        </div>
 
-      <div className="mt-6 flex items-center justify-between px-4">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Meus projetos
-        </span>
-        <button
-          onClick={store.addProject}
-          aria-label="Adicionar projeto"
-          className="rounded p-1 text-muted-foreground hover:bg-sidebar-accent"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-      </div>
+        <nav className="space-y-0.5 px-2">
+          <button
+            onClick={onGoHome}
+            className={cn(
+              ROW,
+              "text-sidebar-foreground hover:bg-sidebar-accent",
+              !archivedView && !calendarView && "bg-sidebar-accent font-medium text-foreground",
+            )}
+          >
+            <Home className={cn(ICON, "text-muted-foreground")} />
+            Home
+          </button>
+          <button
+            onClick={onToggleInbox}
+            className={cn(
+              ROW,
+              "text-sidebar-foreground hover:bg-sidebar-accent",
+              inboxOpen && "bg-sidebar-accent font-medium text-foreground",
+            )}
+          >
+            <Inbox className={cn(ICON, "text-muted-foreground")} />
+            Inbox
+            <span className="ml-auto text-[11px] text-muted-foreground">
+              {inboxOpen ? "Ocultar" : "Mostrar"}
+            </span>
+          </button>
+          <button
+            onClick={onToggleCalendarView}
+            className={cn(
+              ROW,
+              "text-sidebar-foreground hover:bg-sidebar-accent",
+              calendarView && "bg-sidebar-accent font-medium text-foreground",
+            )}
+          >
+            <CalendarDays className={cn(ICON, "text-muted-foreground")} />
+            Calendário
+          </button>
+          <button
+            onClick={onToggleArchivedView}
+            className={cn(
+              ROW,
+              "text-sidebar-foreground hover:bg-sidebar-accent",
+              showArchived && "bg-sidebar-accent font-medium text-foreground",
+            )}
+          >
+            <Archive className={cn(ICON, "text-muted-foreground")} />
+            Arquivados
+          </button>
+        </nav>
 
-      <div className="scroll-thin mt-1 flex-1 overflow-y-auto px-2 pb-4">
-        {projects.map((p) => (
-          <div key={p.id} className={cn("mt-1", p.archived && "opacity-60")}>
-            <div className="group flex items-center gap-2 rounded-md px-2 py-2 hover:bg-sidebar-accent">
-              <button
-                onClick={() => setOpen((o) => ({ ...o, [p.id]: !isOpen(p.id) }))}
-                aria-label="Expandir projeto"
-                className="flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground"
-              >
-                {isOpen(p.id) ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-              </button>
-              <Folder className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
-              <input
-                value={p.name}
-                onChange={(e) => store.renameProject(p.id, e.target.value)}
-                className="w-full bg-transparent text-sm font-medium outline-none"
-              />
-              <button
-                onClick={() => store.addFile(p.id)}
-                aria-label="Adicionar arquivo"
-                className="opacity-0 group-hover:opacity-100"
-              >
-                <Plus className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
-              <button
-                onClick={() => store.setProjectArchived(p.id, !p.archived)}
-                aria-label={p.archived ? "Restaurar projeto" : "Arquivar projeto"}
-                className="opacity-0 group-hover:opacity-100"
-              >
-                {p.archived ? (
-                  <ArchiveRestore className="h-3.5 w-3.5 text-muted-foreground" />
-                ) : (
-                  <Archive className="h-3.5 w-3.5 text-muted-foreground" />
-                )}
-              </button>
-              <button
-                onClick={() => store.removeProject(p.id)}
-                aria-label="Excluir projeto"
-                className="opacity-0 group-hover:opacity-100"
-              >
-                <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
-            </div>
+        <div className="mt-5 flex items-center justify-between px-4">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Meus projetos
+          </span>
+          <button
+            onClick={store.addProject}
+            aria-label="Adicionar projeto"
+            className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
 
-            {isOpen(p.id) &&
-              p.files
-                .filter((f) => showArchived || !f.archived)
-                .map((f) => (
-                  <div
-                    key={f.id}
-                    onClick={() => store.selectFile(p.id, f.id)}
-                    className={cn(
-                      "group ml-7 flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-sidebar-accent",
-                      store.file?.id === f.id && "bg-sidebar-accent font-medium",
-                      f.archived && "opacity-60",
-                    )}
+        <div className="scroll-thin mt-1 flex-1 overflow-y-auto px-2 pb-4">
+          {projects.map((p) => {
+            const expanded = isOpen(p.id);
+            const hasActiveFile = p.files.some((f) => store.file?.id === f.id);
+            return (
+              <div key={p.id} className={cn("mt-0.5", p.archived && "opacity-60")}>
+                <div
+                  className={cn(
+                    ROW,
+                    "hover:bg-sidebar-accent/70",
+                    hasActiveFile && "bg-sidebar-accent/40",
+                  )}
+                >
+                  <button
+                    onClick={() => setOpen((o) => ({ ...o, [p.id]: !expanded }))}
+                    aria-label={expanded ? "Recolher projeto" : "Expandir projeto"}
+                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <FileText className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
+                    {expanded ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </button>
+                  {expanded ? (
+                    <FolderOpen className={cn(ICON, "text-muted-foreground")} />
+                  ) : (
+                    <Folder className={cn(ICON, "text-muted-foreground")} />
+                  )}
+                  <NameTooltip name={p.name}>
                     <input
-                      value={f.name}
-                      onChange={(e) => store.renameFile(p.id, f.id, e.target.value)}
-                      className="w-full bg-transparent outline-none"
+                      value={p.name}
+                      onChange={(e) => store.renameProject(p.id, e.target.value)}
+                      title={p.name}
+                      className="min-w-0 flex-1 truncate bg-transparent text-sm font-medium outline-none"
                     />
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        store.setFileArchived(p.id, f.id, !f.archived);
-                      }}
-                      aria-label={f.archived ? "Restaurar arquivo" : "Arquivar arquivo"}
-                      className="opacity-0 group-hover:opacity-100"
-                    >
-                      {f.archived ? (
-                        <ArchiveRestore className="h-3.5 w-3.5 text-muted-foreground" />
-                      ) : (
-                        <Archive className="h-3.5 w-3.5 text-muted-foreground" />
-                      )}
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        store.removeFile(p.id, f.id);
-                      }}
-                      aria-label="Excluir arquivo"
-                      className="opacity-0 group-hover:opacity-100"
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                    </button>
-                  </div>
-                ))}
-          </div>
-        ))}
-      </div>
+                  </NameTooltip>
+                  <button
+                    onClick={() => store.addFile(p.id)}
+                    aria-label="Adicionar arquivo"
+                    className={ACTION}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => store.setProjectArchived(p.id, !p.archived)}
+                    aria-label={p.archived ? "Restaurar projeto" : "Arquivar projeto"}
+                    className={ACTION}
+                  >
+                    {p.archived ? (
+                      <ArchiveRestore className="h-3.5 w-3.5" />
+                    ) : (
+                      <Archive className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => store.removeProject(p.id)}
+                    aria-label="Excluir projeto"
+                    className={ACTION}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
 
-      <div className="border-t border-border p-2">
-        <UserMenu variant="full" className="w-full" />
-      </div>
-    </aside>
+                {expanded &&
+                  p.files
+                    .filter((f) => showArchived || !f.archived)
+                    .map((f) => {
+                      const selected = store.file?.id === f.id;
+                      return (
+                        <div
+                          key={f.id}
+                          onClick={() => store.selectFile(p.id, f.id)}
+                          className={cn(
+                            ROW,
+                            "relative ml-6 w-[calc(100%-1.5rem)] cursor-pointer hover:bg-sidebar-accent/70",
+                            selected &&
+                              "bg-sidebar-accent font-medium text-foreground before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5 before:rounded-full before:bg-primary",
+                            f.archived && "opacity-60",
+                          )}
+                        >
+                          <FileText
+                            className={cn(
+                              ICON,
+                              selected ? "text-primary" : "text-muted-foreground",
+                            )}
+                          />
+                          <NameTooltip name={f.name}>
+                            <input
+                              value={f.name}
+                              onChange={(e) => store.renameFile(p.id, f.id, e.target.value)}
+                              title={f.name}
+                              className="min-w-0 flex-1 truncate bg-transparent outline-none"
+                            />
+                          </NameTooltip>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              store.setFileArchived(p.id, f.id, !f.archived);
+                            }}
+                            aria-label={f.archived ? "Restaurar arquivo" : "Arquivar arquivo"}
+                            className={ACTION}
+                          >
+                            {f.archived ? (
+                              <ArchiveRestore className="h-3.5 w-3.5" />
+                            ) : (
+                              <Archive className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              store.removeFile(p.id, f.id);
+                            }}
+                            aria-label="Excluir arquivo"
+                            className={ACTION}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="border-t border-border p-2">
+          <UserMenu variant="full" className="w-full" />
+        </div>
+      </aside>
+    </TooltipProvider>
   );
 }
-
