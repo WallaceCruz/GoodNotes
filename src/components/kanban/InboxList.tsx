@@ -46,6 +46,22 @@ export function InboxList({
       <header className="flex items-center gap-2 border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold">Inbox</h2>
         <span className="text-xs text-muted-foreground">{filtered.length}</span>
+        <div className="ml-auto flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
+          {(Object.keys(STATUS_LABEL) as Status[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatus(s)}
+              className={cn(
+                "rounded-md px-2 py-0.5 text-[11px] font-medium transition-colors",
+                status === s
+                  ? "bg-background text-foreground shadow"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {STATUS_LABEL[s]}
+            </button>
+          ))}
+        </div>
       </header>
 
       <div className="space-y-2 border-b border-border px-3 py-2">
@@ -86,21 +102,6 @@ export function InboxList({
               )}
             >
               {PRIORITY_ICON[p]} {PRIORITY_LABEL[p]}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-1">
-          {(Object.keys(STATUS_LABEL) as Status[]).map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatus(s)}
-              className={cn(
-                "rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-accent",
-                status === s && "border-primary bg-primary/10 text-foreground",
-              )}
-            >
-              {STATUS_LABEL[s]}
             </button>
           ))}
         </div>
