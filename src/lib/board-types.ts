@@ -118,11 +118,69 @@ export function tagColorOf(tags: TagDef[], name: string): NoteColor {
   return tags.find((t) => t.name === name)?.color ?? "slate";
 }
 
+export type NativeColumnKey =
+  | "backlog"
+  | "research"
+  | "discovery"
+  | "doing"
+  | "validation"
+  | "done";
+
+export const NATIVE_COLUMNS: Array<{ key: NativeColumnKey; title: string }> = [
+  { key: "backlog", title: "Backlog" },
+  { key: "research", title: "Research" },
+  { key: "discovery", title: "Discovery" },
+  { key: "doing", title: "Em andamento" },
+  { key: "validation", title: "Validação" },
+  { key: "done", title: "Concluído" },
+];
+
+// Títulos antigos que devem ser reaproveitados como colunas nativas.
+const LEGACY_TITLE_MAP: Record<string, NativeColumnKey> = {
+  backlog: "backlog",
+  research: "research",
+  discovery: "discovery",
+  fazendo: "doing",
+  "em andamento": "doing",
+  "doing": "doing",
+  "validação": "validation",
+  validacao: "validation",
+  feito: "done",
+  concluído: "done",
+  concluido: "done",
+  "concluído (done)": "done",
+  done: "done",
+};
+
 export type Column = {
   id: string;
   title: string;
   color?: NoteColor | null;
+  native?: NativeColumnKey | null;
 };
+
+export const nativeColumns = (): Column[] =>
+  NATIVE_COLUMNS.map((c) => ({ id: uid(), title: c.title, native: c.key }));
+
+// Garante que todo quadro tenha as colunas nativas (não excluíveis), na ordem correta.
+export function ensureNativeColumns(columns: Column[]): Column[] {
+  const taken = new Set<NativeColumnKey>();
+  const marked = columns.map((c) => {
+    const key = c.native ?? LEGACY_TITLE_MAP[c.title.trim().toLowerCase()];
+    if (key && !taken.has(key)) {
+      taken.add(key);
+      const def = NATIVE_COLUMNS.find((n) => n.key === key)!;
+      return { ...c, native: key, title: def.title };
+    }
+    return { ...c, native: null };
+  });
+  const natives: Column[] = NATIVE_COLUMNS.map(
+    (def) =>
+      marked.find((c) => c.native === def.key) ?? { id: uid(), title: def.title, native: def.key },
+  );
+  const others = marked.filter((c) => !c.native);
+  return [...natives, ...others];
+}
 
 export type AutomationType = "tag" | "priority" | "checklist-done";
 
@@ -166,11 +224,7 @@ export const uid = () => Math.random().toString(36).slice(2, 10);
 const minutes = (m: number) => Date.now() - m * 60_000;
 const days = (d: number) => Date.now() + d * 86_400_000;
 
-const defaultColumns = (): Column[] => [
-  { id: uid(), title: "Backlog" },
-  { id: uid(), title: "Fazendo" },
-  { id: uid(), title: "Feito" },
-];
+const defaultColumns = (): Column[] => nativeColumns();
 
 export function matchesAutomation(rule: Automation, note: Note): boolean {
   switch (rule.type) {
