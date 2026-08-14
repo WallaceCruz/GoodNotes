@@ -7,7 +7,7 @@ import { CalendarView } from "@/components/kanban/CalendarView";
 import { FiltersMenu, emptyFilters, type Filters } from "@/components/kanban/FiltersMenu";
 import { InboxList } from "@/components/kanban/InboxList";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
-import { NoteEditorPanel } from "@/components/kanban/NoteEditorPanel";
+import { NoteFocusView } from "@/components/kanban/NoteFocusView";
 import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { UserMenu } from "@/components/kanban/UserMenu";
 import { useBoardStore } from "@/hooks/useBoardStore";
