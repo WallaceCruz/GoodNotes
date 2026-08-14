@@ -18,10 +18,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Copy, Lock, MoreHorizontal, NotebookPen, Plus, StickyNote, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Compass,
+  Copy,
+  FlaskConical,
+  Inbox,
+  Loader,
+  MoreHorizontal,
+  NotebookPen,
+  Plus,
+  StickyNote,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import { NOTE_COLORS, type Column, type Note, type NoteKind } from "@/lib/board-types";
+import { NOTE_COLORS, type Column, type NativeColumnKey, type Note, type NoteKind } from "@/lib/board-types";
+
+const NATIVE_ICON: Record<NativeColumnKey, typeof Inbox> = {
+  backlog: Inbox,
+  research: FlaskConical,
+  discovery: Compass,
+  doing: Loader,
+  validation: CheckCircle2,
+  done: CheckCircle2,
+};
 import { cn } from "@/lib/utils";
 import { noteBg, noteHeaderBg, noteLabel } from "./note-style";
 import { NotepadCard } from "./NotepadCard";
@@ -56,15 +77,18 @@ export function KanbanColumn({
           column.color && noteHeaderBg[column.color],
         )}
       >
-        {isNative ? (
-          <span
-            title="Coluna nativa do fluxo — não pode ser renomeada ou excluída"
-            className="flex w-full items-center gap-1.5 truncate text-sm font-semibold"
-          >
-            <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />
-            {column.title}
-          </span>
-        ) : (
+        {isNative ? (() => {
+          const Icon = NATIVE_ICON[column.native!];
+          return (
+            <span
+              title="Coluna nativa do fluxo"
+              className="flex w-full items-center gap-1.5 truncate text-sm font-semibold"
+            >
+              <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+              {column.title}
+            </span>
+          );
+        })() : (
           <input
             value={column.title}
             onChange={(e) => store.renameColumn(column.id, e.target.value)}
@@ -136,9 +160,9 @@ export function KanbanColumn({
                 Duplicar coluna
               </DropdownMenuItem>
               {isNative ? (
-                <DropdownMenuItem disabled>
-                  <Lock className="mr-2 h-4 w-4" />
-                  Coluna nativa (não excluível)
+                <DropdownMenuItem disabled className="text-muted-foreground">
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Coluna nativa do fluxo (não excluível)
                 </DropdownMenuItem>
               ) : (
                 <AlertDialogTrigger asChild>
