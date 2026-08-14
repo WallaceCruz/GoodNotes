@@ -160,9 +160,9 @@ export function KanbanColumn({
                 Duplicar coluna
               </DropdownMenuItem>
               {isNative ? (
-                <DropdownMenuItem disabled>
-                  <Lock className="mr-2 h-4 w-4" />
-                  Coluna nativa (não excluível)
+                <DropdownMenuItem disabled className="text-muted-foreground">
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Coluna nativa do fluxo (não excluível)
                 </DropdownMenuItem>
               ) : (
                 <AlertDialogTrigger asChild>
