@@ -1,11 +1,11 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export function CardResizeHandle({
   height,
   defaultHeight,
-  min = 96,
-  max = 900,
+  min = 120,
+  max = 1200,
   onChange,
   onReset,
   className,
@@ -19,11 +19,13 @@ export function CardResizeHandle({
   className?: string;
 }) {
   const start = useRef<{ y: number; h: number } | null>(null);
+  const [resizing, setResizing] = useState(false);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     start.current = { y: e.clientY, h: height ?? defaultHeight };
+    setResizing(true);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
@@ -34,7 +36,9 @@ export function CardResizeHandle({
   };
 
   const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!start.current) return;
     start.current = null;
+    setResizing(false);
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
@@ -42,21 +46,31 @@ export function CardResizeHandle({
     <div
       role="separator"
       aria-label="Redimensionar altura do card"
-      title="Arraste para redimensionar (duplo clique para restaurar)"
+      title="Arraste a ponta para redimensionar (duplo clique para restaurar)"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
+      onClick={(e) => e.stopPropagation()}
       onDoubleClick={(e) => {
         e.stopPropagation();
         onReset();
       }}
       className={cn(
-        "flex h-3 cursor-ns-resize items-center justify-center opacity-0 transition-opacity group-hover:opacity-100",
+        "absolute bottom-0 right-0 z-20 flex h-5 w-5 cursor-nwse-resize items-end justify-end rounded-br-lg p-[3px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100",
+        resizing && "opacity-100",
         className,
       )}
     >
-      <span className="h-1 w-10 rounded-full bg-foreground/20" />
+      <svg viewBox="0 0 10 10" className="h-full w-full text-foreground/35" aria-hidden>
+        <path
+          d="M9 1 L1 9 M9 5 L5 9"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
     </div>
   );
 }
