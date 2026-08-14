@@ -64,6 +64,7 @@ export function RichNoteEditor({
   content,
   onChange,
   minHeight = "min-h-16",
+  maxHeight,
   compact = false,
   showToolbar = true,
   onToggleChecklist,
@@ -72,6 +73,7 @@ export function RichNoteEditor({
   content: string;
   onChange: (html: string) => void;
   minHeight?: string;
+  maxHeight?: string;
   compact?: boolean;
   showToolbar?: boolean;
   onToggleChecklist?: () => void;
