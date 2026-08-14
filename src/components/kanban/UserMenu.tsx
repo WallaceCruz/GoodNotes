@@ -29,6 +29,7 @@ export function UserMenu({
   className?: string;
 }) {
   const { profile } = useUserProfile();
+  const { isDark, setTheme } = useTheme();
   const CURRENT_USER = profile;
   return (
     <DropdownMenu>
