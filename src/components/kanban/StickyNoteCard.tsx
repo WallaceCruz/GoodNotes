@@ -135,6 +135,7 @@ export function StickyNoteCard({
         content={note.content}
         onChange={(html) => onChange({ content: html })}
         minHeight="min-h-14"
+        maxHeight="max-h-56"
         compact
         showToolbar={false}
         checklistActive={showChecklist}

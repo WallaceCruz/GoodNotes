@@ -130,6 +130,7 @@ export function NotepadCard({
           content={note.content}
           onChange={(html) => onChange({ content: html })}
           minHeight="min-h-40"
+          maxHeight="max-h-64"
           compact
           showToolbar={false}
           checklistActive={note.showChecklist}
