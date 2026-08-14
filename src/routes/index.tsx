@@ -7,7 +7,7 @@ import { CalendarView } from "@/components/kanban/CalendarView";
 import { FiltersMenu, emptyFilters, type Filters } from "@/components/kanban/FiltersMenu";
 import { InboxList } from "@/components/kanban/InboxList";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
-import { NoteEditorPanel } from "@/components/kanban/NoteEditorPanel";
+import { NoteFocusView } from "@/components/kanban/NoteFocusView";
 import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { UserMenu } from "@/components/kanban/UserMenu";
 import { useBoardStore } from "@/hooks/useBoardStore";
@@ -164,7 +164,13 @@ function Index() {
             {automationsOpen && <AutomationsPanel store={store} allTags={allTags} />}
 
             <div className="flex min-h-0 flex-1">
-              {calendarView ? (
+              {activeNote ? (
+                <NoteFocusView
+                  note={activeNote}
+                  store={store}
+                  onClose={() => setActiveNoteId(null)}
+                />
+              ) : calendarView ? (
                 <CalendarView
                   notes={store.file?.notes ?? []}
                   onOpenNote={setActiveNoteId}
@@ -181,26 +187,20 @@ function Index() {
                 />
               ) : (
                 <>
-              {inboxOpen && (
-                <InboxList notes={inboxNotes} activeId={activeNoteId} onSelect={setActiveNoteId} />
-              )}
-              <KanbanBoard
-                store={store}
-                activeNoteId={activeNoteId}
-                onOpenNote={setActiveNoteId}
-                matches={matches}
-                highlightIds={highlightIds}
-              />
+                  {inboxOpen && (
+                    <InboxList notes={inboxNotes} activeId={activeNoteId} onSelect={setActiveNoteId} />
+                  )}
+                  <KanbanBoard
+                    store={store}
+                    activeNoteId={activeNoteId}
+                    onOpenNote={setActiveNoteId}
+                    matches={matches}
+                    highlightIds={highlightIds}
+                  />
                 </>
               )}
-              {activeNote && (
-                <NoteEditorPanel
-                  note={activeNote}
-                  store={store}
-                  onClose={() => setActiveNoteId(null)}
-                />
-              )}
             </div>
+
           </div>
         </>
       )}
