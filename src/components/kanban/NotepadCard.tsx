@@ -50,7 +50,7 @@ export function NotepadCard({
         zIndex: isDragging ? 30 : undefined,
       }}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-lg border border-border/80 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_14px_-6px_rgba(0,0,0,0.10)] transition-shadow duration-200 hover:shadow-[0_2px_4px_rgba(0,0,0,0.05),0_10px_24px_-10px_rgba(0,0,0,0.16)]",
+        "group relative flex flex-col overflow-hidden rounded-lg border border-border/80 bg-card shadow-card transition-shadow duration-200 hover:shadow-card-hover",
         !note.height && "min-h-[22rem]",
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",

@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, type Column, type Note, type NoteKind } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel } from "./note-style";
+import { noteBg, noteHeaderBg, noteLabel } from "./note-style";
 import { NotepadCard } from "./NotepadCard";
 import { StickyNoteCard } from "./StickyNoteCard";
 
@@ -52,7 +52,7 @@ export function KanbanColumn({
       <div
         className={cn(
           "flex items-center gap-1 border-b border-border px-3 py-2",
-          column.color && `${noteBg[column.color]}/40`,
+          column.color && noteHeaderBg[column.color],
         )}
       >
         <input

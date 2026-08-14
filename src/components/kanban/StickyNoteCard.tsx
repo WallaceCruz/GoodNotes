@@ -52,7 +52,7 @@ export function StickyNoteCard({
         zIndex: isDragging ? 30 : undefined,
       }}
       className={cn(
-        "group relative overflow-hidden rounded-lg border border-border/60 p-3 shadow-sm transition-shadow duration-200 hover:shadow-md",
+        "group relative overflow-hidden rounded-lg border border-border/60 p-3 text-note-foreground shadow-card transition-shadow duration-200 hover:shadow-card-hover",
         noteBg[note.color],
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",

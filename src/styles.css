@@ -73,6 +73,11 @@
   --color-note-slate: var(--note-slate);
   --color-canvas: var(--canvas);
   --color-canvas-dot: var(--canvas-dot);
+  --color-note-foreground: var(--note-foreground);
+  --color-link: var(--link);
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-focus: var(--shadow-focus);
 }
 
 :root {
@@ -123,6 +128,11 @@
   --note-mint: oklch(0.93 0.06 165);
   --note-coral: oklch(0.89 0.07 25);
   --note-slate: oklch(0.92 0.012 250);
+  --note-foreground: oklch(0.24 0.012 275);
+  --link: oklch(0.5 0.19 262);
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.05), 0 4px 14px -6px oklch(0 0 0 / 0.12);
+  --shadow-card-hover: 0 2px 5px oklch(0 0 0 / 0.07), 0 10px 24px -10px oklch(0 0 0 / 0.18);
+  --shadow-focus: 0 1px 2px oklch(0 0 0 / 0.05), 0 24px 60px -30px oklch(0 0 0 / 0.35);
 }
 
 .dark {
@@ -172,6 +182,11 @@
   --note-mint: oklch(0.42 0.06 165);
   --note-coral: oklch(0.42 0.08 25);
   --note-slate: oklch(0.38 0.01 250);
+  --note-foreground: oklch(0.965 0 0);
+  --link: oklch(0.78 0.12 250);
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.5), 0 4px 14px -6px oklch(0 0 0 / 0.6);
+  --shadow-card-hover: 0 2px 6px oklch(0 0 0 / 0.55), 0 12px 28px -10px oklch(0 0 0 / 0.7);
+  --shadow-focus: 0 2px 6px oklch(0 0 0 / 0.5), 0 28px 70px -30px oklch(0 0 0 / 0.85);
 }
 
 @utility canvas-dots {
@@ -292,9 +307,9 @@
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
-    color: #1d4ed8;
-    background-color: color-mix(in oklab, #2563eb 12%, transparent);
-    border: 1px solid color-mix(in oklab, #2563eb 45%, transparent);
+    color: var(--color-link);
+    background-color: color-mix(in oklab, var(--color-link) 14%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-link) 45%, transparent);
     border-radius: 9999px;
     padding: 0 0.4rem;
     font-weight: 500;
@@ -302,7 +317,7 @@
     cursor: pointer;
   }
   .note-prose a:hover {
-    background-color: color-mix(in oklab, #2563eb 22%, transparent);
+    background-color: color-mix(in oklab, var(--color-link) 24%, transparent);
   }
   .note-prose img {
     display: block;
