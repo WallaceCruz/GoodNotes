@@ -103,6 +103,7 @@ export type Note = {
   deadline: number | null;
   archived: boolean;
   order: number;
+  height?: number | null;
 };
 
 
