@@ -17,6 +17,7 @@ import type { BoardStore } from "@/hooks/useBoardStore";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { AssigneeSelect } from "./AssigneeSelect";
+import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
 
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
@@ -49,7 +50,8 @@ export function NotepadCard({
         zIndex: isDragging ? 30 : undefined,
       }}
       className={cn(
-        "group flex min-h-[22rem] flex-col overflow-hidden rounded-lg border border-border/80 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_14px_-6px_rgba(0,0,0,0.10)] transition-shadow duration-200 hover:shadow-[0_2px_4px_rgba(0,0,0,0.05),0_10px_24px_-10px_rgba(0,0,0,0.16)]",
+        "group flex flex-col overflow-hidden rounded-lg border border-border/80 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_14px_-6px_rgba(0,0,0,0.10)] transition-shadow duration-200 hover:shadow-[0_2px_4px_rgba(0,0,0,0.05),0_10px_24px_-10px_rgba(0,0,0,0.16)]",
+        !note.height && "min-h-[22rem]",
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",
         active && "ring-2 ring-ring",
@@ -126,28 +128,40 @@ export function NotepadCard({
           className="w-full bg-transparent text-[15px] font-bold leading-7 text-foreground outline-none"
         />
 
-        <RichNoteEditor
-          content={note.content}
-          onChange={(html) => onChange({ content: html })}
-          minHeight="min-h-40"
-          maxHeight="max-h-64"
-          compact
-          showToolbar={false}
-          checklistActive={note.showChecklist}
-          onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
-        />
+        <div
+          className="scroll-thin overflow-y-auto"
+          style={note.height ? { height: note.height } : undefined}
+        >
+          <RichNoteEditor
+            content={note.content}
+            onChange={(html) => onChange({ content: html })}
+            minHeight="min-h-40"
+            maxHeight={note.height ? "max-h-none" : "max-h-64"}
+            compact
+            showToolbar={false}
+            checklistActive={note.showChecklist}
+            onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
+          />
 
-        {note.showChecklist && (
-          <div className="mt-2">
-            <ChecklistEditor
-              items={note.checklist}
-              onAdd={(text) => store.addChecklistItem(note.id, text)}
-              onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
-              onRemove={(id) => store.removeChecklistItem(note.id, id)}
-            />
-          </div>
-        )}
+          {note.showChecklist && (
+            <div className="mt-2">
+              <ChecklistEditor
+                items={note.checklist}
+                onAdd={(text) => store.addChecklistItem(note.id, text)}
+                onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
+                onRemove={(id) => store.removeChecklistItem(note.id, id)}
+              />
+            </div>
+          )}
+        </div>
       </div>
+
+      <CardResizeHandle
+        height={note.height}
+        defaultHeight={256}
+        onChange={(h) => onChange({ height: h })}
+        onReset={() => onChange({ height: null })}
+      />
 
       <footer className="flex flex-wrap items-center gap-2 border-t border-border px-3 py-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
         <AssigneeSelect value={note.assignee} onChange={(assignee) => onChange({ assignee })} />

@@ -17,6 +17,7 @@ import type { BoardStore } from "@/hooks/useBoardStore";
 import { type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { AssigneeSelect } from "./AssigneeSelect";
+import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
 import { noteBg } from "./note-style";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
@@ -131,29 +132,41 @@ export function StickyNoteCard({
         className="w-full bg-transparent text-[15px] font-semibold leading-snug text-foreground outline-none"
       />
 
-      <RichNoteEditor
-        content={note.content}
-        onChange={(html) => onChange({ content: html })}
-        minHeight="min-h-14"
-        maxHeight="max-h-56"
-        compact
-        showToolbar={false}
-        checklistActive={showChecklist}
-        onToggleChecklist={() => onChange({ showChecklist: !showChecklist })}
+      <div
+        className="scroll-thin overflow-y-auto"
+        style={note.height ? { height: note.height } : undefined}
+      >
+        <RichNoteEditor
+          content={note.content}
+          onChange={(html) => onChange({ content: html })}
+          minHeight="min-h-14"
+          maxHeight={note.height ? "max-h-none" : "max-h-56"}
+          compact
+          showToolbar={false}
+          checklistActive={showChecklist}
+          onToggleChecklist={() => onChange({ showChecklist: !showChecklist })}
+        />
+
+        {showChecklist && (
+          <div className="mt-2">
+            <ChecklistEditor
+              items={note.checklist}
+              onAdd={(text) => store.addChecklistItem(note.id, text)}
+              onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
+              onRemove={(id) => store.removeChecklistItem(note.id, id)}
+            />
+          </div>
+        )}
+      </div>
+
+      <CardResizeHandle
+        height={note.height}
+        defaultHeight={160}
+        onChange={(h) => onChange({ height: h })}
+        onReset={() => onChange({ height: null })}
       />
 
-      {showChecklist && (
-        <div className="mt-2">
-          <ChecklistEditor
-            items={note.checklist}
-            onAdd={(text) => store.addChecklistItem(note.id, text)}
-            onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
-            onRemove={(id) => store.removeChecklistItem(note.id, id)}
-          />
-        </div>
-      )}
-
-      <footer className="mt-2 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+      <footer className="mt-1 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
         <AssigneeSelect
           value={note.assignee}
           onChange={(assignee) => onChange({ assignee })}
