@@ -69,6 +69,7 @@ function normalize(s: BoardState): BoardState {
           priority: n.priority ?? null,
           deadline: n.deadline ?? null,
           archived: n.archived ?? false,
+          pinned: n.pinned ?? false,
           kind: n.kind ?? "sticky",
           assignee: n.assignee ?? n.author ?? null,
           showChecklist: n.showChecklist ?? (n.checklist?.length ?? 0) > 0,
@@ -306,6 +307,11 @@ export function useBoardStore() {
         updateFile((f) => ({
           ...f,
           notes: f.notes.map((n) => (n.id === noteId ? { ...n, archived } : n)),
+        })),
+      setNotePinned: (noteId: string, pinned: boolean) =>
+        updateFile((f) => ({
+          ...f,
+          notes: f.notes.map((n) => (n.id === noteId ? { ...n, pinned } : n)),
         })),
       removeNote: (noteId: string) =>
         updateFile((f) => ({ ...f, notes: f.notes.filter((n) => n.id !== noteId) })),

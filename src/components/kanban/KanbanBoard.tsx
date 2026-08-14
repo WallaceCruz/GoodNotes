@@ -132,7 +132,10 @@ export function KanbanBoard({
               store={store}
               notes={file.notes
                 .filter((n) => n.columnId === c.id && matches(n))
-                .sort((a, b) => a.order - b.order)}
+                .sort(
+                  (a, b) =>
+                    Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || a.order - b.order,
+                )}
               activeNoteId={activeNoteId}
               onAddNote={(kind) => store.addNote(c.id, kind)}
               onOpenNote={onOpenNote}

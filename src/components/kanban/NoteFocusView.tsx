@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Archive, ArchiveRestore, ArrowLeft, X } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Pin, PinOff, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
 import { AssigneeSelect } from "./AssigneeSelect";
@@ -130,8 +130,18 @@ export function NoteFocusView({
         <header className="flex items-center gap-2 border-b border-border px-3 py-2">
           <span className="text-sm font-semibold">Detalhes</span>
           <button
+            onClick={() => store.setNotePinned(note.id, !note.pinned)}
+            className={cn(
+              "ml-auto flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:bg-accent",
+              note.pinned ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
+            {note.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+            {note.pinned ? "Desafixar" : "Fixar"}
+          </button>
+          <button
             onClick={() => store.setNoteArchived(note.id, !note.archived)}
-            className="ml-auto flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent"
+            className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent"
           >
             {note.archived ? (
               <ArchiveRestore className="h-3.5 w-3.5" />

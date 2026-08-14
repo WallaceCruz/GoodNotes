@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Archive, ArchiveRestore, GripVertical, Maximize2, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, GripVertical, Maximize2, Pin, PinOff, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -63,7 +63,19 @@ export function NotepadCard({
         className="flex cursor-grab items-center gap-1.5 border-b border-border/70 bg-card px-2 py-1.5 active:cursor-grabbing"
       >
         <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
+        {note.pinned && <Pin className="h-3.5 w-3.5 text-foreground/70" />}
         <div className="ml-auto flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
+          <button
+            aria-label={note.pinned ? "Desafixar bloco" : "Fixar bloco no topo"}
+            onClick={() => store.setNotePinned(note.id, !note.pinned)}
+            className={cn("group-hover:opacity-100", note.pinned ? "opacity-100" : "opacity-0")}
+          >
+            {note.pinned ? (
+              <PinOff className="h-3.5 w-3.5 text-foreground/50" />
+            ) : (
+              <Pin className="h-3.5 w-3.5 text-foreground/50" />
+            )}
+          </button>
           <button
             aria-label="Abrir detalhes"
             onClick={onOpen}
