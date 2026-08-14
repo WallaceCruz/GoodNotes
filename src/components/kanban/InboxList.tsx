@@ -106,21 +106,6 @@ export function InboxList({
           ))}
         </div>
 
-        <div className="flex items-center gap-1">
-          {(Object.keys(STATUS_LABEL) as Status[]).map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatus(s)}
-              className={cn(
-                "rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-accent",
-                status === s && "border-primary bg-primary/10 text-foreground",
-              )}
-            >
-              {STATUS_LABEL[s]}
-            </button>
-          ))}
-        </div>
-      </div>
 
       <div className="scroll-thin flex-1 overflow-y-auto">
         {filtered.length === 0 && (
