@@ -308,6 +308,11 @@ export function useBoardStore() {
           ...f,
           notes: f.notes.map((n) => (n.id === noteId ? { ...n, archived } : n)),
         })),
+      setNotePinned: (noteId: string, pinned: boolean) =>
+        updateFile((f) => ({
+          ...f,
+          notes: f.notes.map((n) => (n.id === noteId ? { ...n, pinned } : n)),
+        })),
       removeNote: (noteId: string) =>
         updateFile((f) => ({ ...f, notes: f.notes.filter((n) => n.id !== noteId) })),
       restoreNote: (note: Note) =>
