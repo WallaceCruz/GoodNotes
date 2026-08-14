@@ -18,10 +18,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Copy, Lock, MoreHorizontal, NotebookPen, Plus, StickyNote, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Compass,
+  Copy,
+  FlaskConical,
+  Inbox,
+  Loader,
+  MoreHorizontal,
+  NotebookPen,
+  Plus,
+  StickyNote,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import { NOTE_COLORS, type Column, type Note, type NoteKind } from "@/lib/board-types";
+import { NOTE_COLORS, type Column, type NativeColumnKey, type Note, type NoteKind } from "@/lib/board-types";
+
+const NATIVE_ICON: Record<NativeColumnKey, typeof Inbox> = {
+  backlog: Inbox,
+  research: FlaskConical,
+  discovery: Compass,
+  doing: Loader,
+  validation: CheckCircle2,
+  done: CheckCircle2,
+};
 import { cn } from "@/lib/utils";
 import { noteBg, noteHeaderBg, noteLabel } from "./note-style";
 import { NotepadCard } from "./NotepadCard";
