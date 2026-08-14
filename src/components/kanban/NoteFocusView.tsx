@@ -104,8 +104,8 @@ export function NoteFocusView({
               <RichNoteEditor
                 content={note.content}
                 onChange={(html) => onChange({ content: html })}
-                minHeight="min-h-[45vh]"
-                maxHeight="max-h-[55vh]"
+                minHeight="min-h-[64vh]"
+                maxHeight="max-h-[72vh]"
                 checklistActive={note.showChecklist}
                 onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
               />
