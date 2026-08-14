@@ -52,7 +52,7 @@ export function StickyNoteCard({
         zIndex: isDragging ? 30 : undefined,
       }}
       className={cn(
-        "group rounded-lg border border-border/60 p-3 shadow-sm transition-shadow duration-200 hover:shadow-md",
+        "group relative overflow-hidden rounded-lg border border-border/60 p-3 shadow-sm transition-shadow duration-200 hover:shadow-md",
         noteBg[note.color],
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",
@@ -133,14 +133,13 @@ export function StickyNoteCard({
       />
 
       <div
-        className="scroll-thin overflow-y-auto"
+        className="overflow-hidden"
         style={note.height ? { height: note.height } : undefined}
       >
         <RichNoteEditor
           content={note.content}
           onChange={(html) => onChange({ content: html })}
           minHeight="min-h-14"
-          maxHeight={note.height ? "max-h-none" : "max-h-56"}
           compact
           showToolbar={false}
           checklistActive={showChecklist}
@@ -162,6 +161,7 @@ export function StickyNoteCard({
       <CardResizeHandle
         height={note.height}
         defaultHeight={160}
+        min={96}
         onChange={(h) => onChange({ height: h })}
         onReset={() => onChange({ height: null })}
       />
