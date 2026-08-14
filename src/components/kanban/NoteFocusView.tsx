@@ -88,8 +88,8 @@ export function NoteFocusView({
 
           <article
             className={cn(
-              "rounded-2xl border border-border/70 p-8 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_24px_60px_-30px_rgba(0,0,0,0.35)]",
-              isNotepad ? "bg-card" : noteBg[note.color],
+              "rounded-2xl border border-border/70 p-8 shadow-focus",
+              isNotepad ? "bg-card" : cn(noteBg[note.color], "text-note-foreground"),
             )}
           >
             <input

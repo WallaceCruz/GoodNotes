@@ -52,7 +52,7 @@ export function KanbanColumn({
       <div
         className={cn(
           "flex items-center gap-1 border-b border-border px-3 py-2",
-          column.color && `${noteBg[column.color]}/40`,
+          column.color && noteHeaderBg[column.color],
         )}
       >
         <input
