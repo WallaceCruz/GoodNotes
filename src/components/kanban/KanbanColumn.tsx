@@ -77,15 +77,18 @@ export function KanbanColumn({
           column.color && noteHeaderBg[column.color],
         )}
       >
-        {isNative ? (
-          <span
-            title="Coluna nativa do fluxo — não pode ser renomeada ou excluída"
-            className="flex w-full items-center gap-1.5 truncate text-sm font-semibold"
-          >
-            <Lock className="h-3 w-3 shrink-0 text-muted-foreground" />
-            {column.title}
-          </span>
-        ) : (
+        {isNative ? (() => {
+          const Icon = NATIVE_ICON[column.native!];
+          return (
+            <span
+              title="Coluna nativa do fluxo"
+              className="flex w-full items-center gap-1.5 truncate text-sm font-semibold"
+            >
+              <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+              {column.title}
+            </span>
+          );
+        })() : (
           <input
             value={column.title}
             onChange={(e) => store.renameColumn(column.id, e.target.value)}
