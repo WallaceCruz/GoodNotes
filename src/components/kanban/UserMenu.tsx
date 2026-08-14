@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CircleHelp, CreditCard, LogOut, Settings, User } from "lucide-react";
+import { CircleHelp, CreditCard, LogOut, Moon, Settings, Sun, User } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -10,6 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
+import { useTheme } from "@/hooks/useTheme";
 import { initials, useUserProfile } from "@/hooks/useUserProfile";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +29,7 @@ export function UserMenu({
   className?: string;
 }) {
   const { profile } = useUserProfile();
+  const { isDark, setTheme } = useTheme();
   const CURRENT_USER = profile;
   return (
     <DropdownMenu>
@@ -72,6 +75,22 @@ export function UserMenu({
             </Link>
           </DropdownMenuItem>
         ))}
+        <DropdownMenuSeparator />
+        <div
+          className="flex items-center justify-between gap-2 px-2 py-1.5 text-sm"
+          onClick={(e) => e.preventDefault()}
+        >
+          <span className="flex items-center gap-2">
+            {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            Modo escuro
+          </span>
+          <Switch
+            checked={isDark}
+            onCheckedChange={(v) => setTheme(v ? "dark" : "light")}
+            aria-label="Alternar modo escuro"
+          />
+        </div>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => toast("Ajuda em breve")}>
           <CircleHelp className="h-4 w-4" />
           Ajuda
