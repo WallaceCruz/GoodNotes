@@ -102,6 +102,7 @@ export type Note = {
   priority: Priority | null;
   deadline: number | null;
   archived: boolean;
+  pinned?: boolean;
   order: number;
   height?: number | null;
 };
