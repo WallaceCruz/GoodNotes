@@ -238,12 +238,12 @@ export function AppSidebar({
                     key={f.id}
                     onClick={() => store.selectFile(p.id, f.id)}
                     className={cn(
-                      "group ml-6 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-sidebar-accent",
+                      "group ml-7 flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-sidebar-accent",
                       store.file?.id === f.id && "bg-sidebar-accent font-medium",
                       f.archived && "opacity-60",
                     )}
                   >
-                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <FileText className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
                     <input
                       value={f.name}
                       onChange={(e) => store.renameFile(p.id, f.id, e.target.value)}
