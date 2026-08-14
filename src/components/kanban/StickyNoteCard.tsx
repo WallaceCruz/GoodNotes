@@ -17,6 +17,7 @@ import type { BoardStore } from "@/hooks/useBoardStore";
 import { type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { AssigneeSelect } from "./AssigneeSelect";
+import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
 import { noteBg } from "./note-style";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
