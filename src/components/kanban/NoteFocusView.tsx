@@ -20,11 +20,25 @@ export function NoteFocusView({
 }) {
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
   const isNotepad = note.kind === "notepad";
+  const [closing, setClosing] = useState(false);
+  const requestClose = () => {
+    if (closing) return;
+    setClosing(true);
+    window.setTimeout(onClose, 180);
+  };
 
   return (
-    <div className="flex min-h-0 flex-1">
+    <div
+      className={cn(
+        "flex min-h-0 flex-1",
+        closing
+          ? "animate-out fade-out-0 zoom-out-95 duration-150 ease-in"
+          : "animate-in fade-in-0 zoom-in-[0.98] duration-200 ease-out",
+      )}
+    >
       {/* Canvas central em foco */}
       <div className="scroll-thin min-w-0 flex-1 overflow-y-auto bg-muted/40 px-6 py-6">
+
         <div className="mx-auto w-full max-w-3xl">
           <div className="mb-3 flex items-center gap-2">
             <button
