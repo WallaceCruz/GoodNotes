@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronRight, FileText, Folder, Layers, Zap } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AppSidebar } from "@/components/kanban/AppSidebar";
 import { AutomationsPanel } from "@/components/kanban/AutomationsPanel";
 import { CalendarView } from "@/components/kanban/CalendarView";
@@ -58,7 +58,7 @@ function Index() {
 
   const allNotes = (store.project?.files ?? []).flatMap((f) => f.notes);
 
-  const matches = (n: Note) => {
+  const matches = useCallback((n: Note) => {
     if (archivedView) {
       if (!n.archived) return false;
     } else if (!filters.showArchived && n.archived) return false;
@@ -70,13 +70,13 @@ function Index() {
       return false;
     if (filters.tags.length > 0 && !filters.tags.every((t) => n.tags.includes(t))) return false;
     return true;
-  };
+  }, [archivedView, filters]);
 
   const inboxNotes = allNotes
     .filter(matches)
     .sort((a, b) => b.updatedAt - a.updatedAt);
 
-  const highlightIds = selectedDay
+  const highlightIds = useMemo(() => selectedDay
     ? new Set(
         allNotes
           .filter((n) => {
@@ -86,7 +86,7 @@ function Index() {
           })
           .map((n) => n.id),
       )
-    : undefined;
+    : undefined, [selectedDay, allNotes]);
 
   const activeNote = allNotes.find((n) => n.id === activeNoteId) ?? null;
 
