@@ -47,6 +47,8 @@ export function KanbanBoard({
     el.scrollLeft = savedBoardScroll.left;
   }, []);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const lastOver = useRef<string | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
