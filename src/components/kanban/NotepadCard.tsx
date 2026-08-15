@@ -44,19 +44,20 @@ function NotepadCardBase({
     transition: { duration: 220, easing: "cubic-bezier(0.2, 0, 0, 1)" },
   });
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
-  const { appearance } = useNoteAppearance();
+  const { appearance } = useNoteAppearance(store.project?.id);
   const surface = notepadSurface(appearance);
 
   return (
     <div
       ref={setNodeRef}
       style={{
+        ...surface.style,
         transform: CSS.Transform.toString(transform),
         transition,
         zIndex: isDragging ? 30 : undefined,
       }}
       className={cn(
-        "group relative flex flex-col overflow-hidden border border-border/80 bg-card transition-all duration-200",
+        "group relative flex flex-col overflow-hidden border border-border/80 transition-all duration-200",
         surface.className,
         !note.height && "min-h-[22rem]",
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
@@ -67,7 +68,7 @@ function NotepadCardBase({
       <div
         {...attributes}
         {...listeners}
-        className="flex cursor-grab items-center gap-1.5 border-b border-border/70 bg-card px-2 py-1.5 active:cursor-grabbing"
+        className="flex cursor-grab items-center gap-1.5 border-b border-border/70 bg-transparent px-2 py-1.5 active:cursor-grabbing"
       >
         <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
         {note.pinned && <Pin className="h-3.5 w-3.5 text-foreground/70" />}
@@ -132,7 +133,7 @@ function NotepadCardBase({
         </div>
       </div>
 
-      <div className="flex-1 bg-card px-3 pb-2 pt-2">
+      <div className="flex-1 px-3 pb-2 pt-2">
         {(note.priority || note.deadline) && (
           <div className="flex flex-wrap items-center gap-1 pb-1">
             {note.priority && <PriorityBadge priority={note.priority} />}
@@ -144,7 +145,7 @@ function NotepadCardBase({
           value={note.title}
           onChange={(e) => onChange({ title: e.target.value })}
           aria-label="Título do bloco"
-          className="w-full bg-transparent text-[15px] font-bold leading-7 text-foreground outline-none"
+          className="note-title-color w-full bg-transparent text-[1.15em] font-bold leading-7 outline-none"
         />
 
         <div
