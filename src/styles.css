@@ -445,3 +445,79 @@
     transform: rotate(0deg);
   }
 }
+
+@utility note-size-sm {
+  font-size: 12px;
+  padding: 0.5rem;
+}
+
+@utility note-size-md {
+  font-size: 13px;
+  padding: 0.75rem;
+}
+
+@utility note-size-lg {
+  font-size: 15px;
+  padding: 1.05rem;
+}
+
+@utility note-align-center {
+  text-align: center;
+  & input {
+    text-align: center;
+  }
+}
+
+@utility note-title-color {
+  color: var(--note-title, inherit);
+}
+
+@utility notepad-surface-plain {
+  background-color: var(--note-tint);
+}
+
+@utility notepad-surface-lined {
+  background-color: var(--note-tint);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 25px,
+    color-mix(in oklab, var(--color-foreground) 10%, transparent) 25px 26px
+  );
+}
+
+@utility notepad-surface-grid {
+  background-color: var(--note-tint);
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 22px,
+      color-mix(in oklab, var(--color-foreground) 8%, transparent) 22px 23px
+    ),
+    repeating-linear-gradient(
+      to right,
+      transparent 0 22px,
+      color-mix(in oklab, var(--color-foreground) 8%, transparent) 22px 23px
+    );
+}
+
+@utility notepad-surface-dotted {
+  background-color: var(--note-tint);
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--color-foreground) 16%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 14px 14px;
+}
+
+@utility notepad-surface-paper {
+  background-color: var(--note-tint);
+  background-image:
+    radial-gradient(color-mix(in oklab, var(--color-foreground) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(180deg, color-mix(in oklab, var(--color-background) 25%, transparent), transparent 45%);
+  background-size: 8px 8px, 100% 100%;
+}
+
+@utility notepad-surface-accent {
+  background-color: var(--note-tint);
+  box-shadow: inset 5px 0 0 0 var(--note-accent, var(--color-primary));
+}
