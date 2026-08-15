@@ -424,7 +424,7 @@
   &::before {
     content: "";
     position: absolute;
-    top: -6px;
+    top: 3px;
     left: 50%;
     width: 74px;
     height: 16px;
