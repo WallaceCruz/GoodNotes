@@ -91,11 +91,16 @@ export function KanbanBoard({
     const { active, over } = event;
     if (!over) return;
     const noteId = String(active.id);
-    const target = resolveTarget(noteId, String(over.id));
+    const overId = String(over.id);
+    // Evita reprocessar o mesmo alvo a cada frame do arraste (gargalo de measureRect).
+    if (lastOver.current === `${noteId}:${overId}`) return;
+    lastOver.current = `${noteId}:${overId}`;
+    const target = resolveTarget(noteId, overId);
     const note = file.notes.find((n) => n.id === noteId);
     if (!target || !note) return;
     if (note.columnId !== target.columnId) store.moveNote(noteId, target.columnId, target.beforeId);
   };
+
 
   const handleDragEnd = (event: DragEndEvent) => {
     setDraggingId(null);
