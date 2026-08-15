@@ -106,6 +106,7 @@ export function KanbanBoard({
 
   const handleDragEnd = (event: DragEndEvent) => {
     setDraggingId(null);
+    lastOver.current = null;
     const { active, over } = event;
     if (!over) return;
     const noteId = String(active.id);
@@ -147,7 +148,10 @@ export function KanbanBoard({
         collisionDetection={closestCorners}
         // Mede as colunas apenas durante o arraste: evita loop de remedição do dnd-kit.
         measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
-        onDragStart={(e: DragStartEvent) => setDraggingId(String(e.active.id))}
+        onDragStart={(e: DragStartEvent) => {
+          lastOver.current = null;
+          setDraggingId(String(e.active.id));
+        }}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
         onDragCancel={() => setDraggingId(null)}
