@@ -1,4 +1,5 @@
 import { useSortable } from "@dnd-kit/sortable";
+import { memo } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +17,7 @@ import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
+import { sameStoreView } from "./memo-compare";
 import { AssigneeSelect } from "./AssigneeSelect";
 import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
@@ -24,7 +26,7 @@ import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 
-export function StickyNoteCard({
+function StickyNoteCardBase({
   note,
   active,
   store,
@@ -190,3 +192,7 @@ export function StickyNoteCard({
     </div>
   );
 }
+
+export const StickyNoteCard = memo(StickyNoteCardBase, (prev, next) =>
+  prev.note === next.note && prev.active === next.active && sameStoreView(prev.store, next.store),
+);
