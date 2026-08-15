@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { AccountLayout } from "@/components/account/AccountLayout";
+import { NoteAppearanceSection } from "@/components/account/NoteAppearanceSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,6 +65,8 @@ function ConfiguracoesPage() {
 
   return (
     <AccountLayout title="Configurações" description="Notificações, lembretes e preferências.">
+      <NoteAppearanceSection />
+
       <section className="rounded-lg border border-border bg-background px-6 py-2">
         <Row label="Notificações" hint="Ativar avisos de prazos e lembretes.">
           <Switch

@@ -23,6 +23,8 @@ import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
 
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
+import { notepadSurface } from "./note-appearance";
+import { useNoteAppearance } from "@/hooks/useNoteAppearance";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 
@@ -42,6 +44,8 @@ function NotepadCardBase({
     transition: { duration: 220, easing: "cubic-bezier(0.2, 0, 0, 1)" },
   });
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
+  const { appearance } = useNoteAppearance();
+  const surface = notepadSurface(appearance);
 
   return (
     <div
@@ -52,7 +56,8 @@ function NotepadCardBase({
         zIndex: isDragging ? 30 : undefined,
       }}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-lg border border-border/80 bg-card shadow-card transition-shadow duration-200 hover:shadow-card-hover",
+        "group relative flex flex-col overflow-hidden border border-border/80 bg-card transition-all duration-200",
+        surface.className,
         !note.height && "min-h-[22rem]",
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",

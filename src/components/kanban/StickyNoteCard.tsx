@@ -22,6 +22,8 @@ import { AssigneeSelect } from "./AssigneeSelect";
 import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
 import { noteBg } from "./note-style";
+import { noteSurface } from "./note-appearance";
+import { useNoteAppearance } from "@/hooks/useNoteAppearance";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
@@ -43,19 +45,23 @@ function StickyNoteCardBase({
   });
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
   const showChecklist = note.showChecklist;
+  const { appearance } = useNoteAppearance();
+  const surface = noteSurface(appearance, note.color);
 
 
   return (
     <div
       ref={setNodeRef}
       style={{
+        ...surface.style,
         transform: CSS.Transform.toString(transform),
         transition,
         zIndex: isDragging ? 30 : undefined,
       }}
       className={cn(
-        "group relative overflow-hidden rounded-lg border border-border/60 p-3 text-note-foreground shadow-card transition-shadow duration-200 hover:shadow-card-hover",
-        noteBg[note.color],
+        "group relative overflow-hidden border border-border/60 p-3 text-note-foreground transition-all duration-200",
+        appearance.style === "classic" && noteBg[note.color],
+        surface.className,
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",
         active && "ring-2 ring-ring",
