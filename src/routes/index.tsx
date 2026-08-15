@@ -56,7 +56,8 @@ function Index() {
   ).sort();
 
 
-  const allNotes = (store.project?.files ?? []).flatMap((f) => f.notes);
+  const projectFiles = store.project?.files;
+  const allNotes = useMemo(() => (projectFiles ?? []).flatMap((f) => f.notes), [projectFiles]);
 
   const matches = useCallback((n: Note) => {
     if (archivedView) {
@@ -72,9 +73,10 @@ function Index() {
     return true;
   }, [archivedView, filters]);
 
-  const inboxNotes = allNotes
-    .filter(matches)
-    .sort((a, b) => b.updatedAt - a.updatedAt);
+  const inboxNotes = useMemo(
+    () => allNotes.filter(matches).sort((a, b) => b.updatedAt - a.updatedAt),
+    [allNotes, matches],
+  );
 
   const highlightIds = useMemo(() => selectedDay
     ? new Set(
