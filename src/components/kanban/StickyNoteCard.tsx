@@ -45,7 +45,7 @@ function StickyNoteCardBase({
   });
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
   const showChecklist = note.showChecklist;
-  const { appearance } = useNoteAppearance();
+  const { appearance } = useNoteAppearance(store.project?.id);
   const surface = noteSurface(appearance, note.color);
 
 
@@ -59,8 +59,8 @@ function StickyNoteCardBase({
         zIndex: isDragging ? 30 : undefined,
       }}
       className={cn(
-        "group relative overflow-hidden border border-border/60 p-3 text-note-foreground transition-all duration-200",
-        appearance.style === "classic" && noteBg[note.color],
+        "group relative overflow-hidden border border-border/60 text-note-foreground transition-all duration-200",
+        appearance.style === "classic" && !appearance.bgColor && noteBg[note.color],
         surface.className,
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",
@@ -149,7 +149,7 @@ function StickyNoteCardBase({
         value={note.title}
         onChange={(e) => onChange({ title: e.target.value })}
         aria-label="Título da nota"
-        className="w-full bg-transparent text-[15px] font-semibold leading-snug text-foreground outline-none"
+        className="note-title-color w-full bg-transparent text-[1.15em] font-semibold leading-snug outline-none"
       />
 
       <div
