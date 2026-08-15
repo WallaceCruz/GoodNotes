@@ -1,4 +1,5 @@
 import { useSortable } from "@dnd-kit/sortable";
+import { memo } from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { Archive, ArchiveRestore, GripVertical, Maximize2, Pin, PinOff, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +17,7 @@ import {
 import type { BoardStore } from "@/hooks/useBoardStore";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
+import { sameStoreView } from "./memo-compare";
 import { AssigneeSelect } from "./AssigneeSelect";
 import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
@@ -24,7 +26,7 @@ import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 
-export function NotepadCard({
+function NotepadCardBase({
   note,
   active,
   store,
@@ -183,3 +185,7 @@ export function NotepadCard({
     </div>
   );
 }
+
+export const NotepadCard = memo(NotepadCardBase, (prev, next) =>
+  prev.note === next.note && prev.active === next.active && sameStoreView(prev.store, next.store),
+);

@@ -47,6 +47,8 @@ export function KanbanBoard({
     el.scrollLeft = savedBoardScroll.left;
   }, []);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const lastOver = useRef<string | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -91,14 +93,20 @@ export function KanbanBoard({
     const { active, over } = event;
     if (!over) return;
     const noteId = String(active.id);
-    const target = resolveTarget(noteId, String(over.id));
+    const overId = String(over.id);
+    // Evita reprocessar o mesmo alvo a cada frame do arraste (gargalo de measureRect).
+    if (lastOver.current === `${noteId}:${overId}`) return;
+    lastOver.current = `${noteId}:${overId}`;
+    const target = resolveTarget(noteId, overId);
     const note = file.notes.find((n) => n.id === noteId);
     if (!target || !note) return;
     if (note.columnId !== target.columnId) store.moveNote(noteId, target.columnId, target.beforeId);
   };
 
+
   const handleDragEnd = (event: DragEndEvent) => {
     setDraggingId(null);
+    lastOver.current = null;
     const { active, over } = event;
     if (!over) return;
     const noteId = String(active.id);
@@ -140,7 +148,10 @@ export function KanbanBoard({
         collisionDetection={closestCorners}
         // Mede as colunas apenas durante o arraste: evita loop de remedição do dnd-kit.
         measuring={{ droppable: { strategy: MeasuringStrategy.WhileDragging } }}
-        onDragStart={(e: DragStartEvent) => setDraggingId(String(e.active.id))}
+        onDragStart={(e: DragStartEvent) => {
+          lastOver.current = null;
+          setDraggingId(String(e.active.id));
+        }}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
         onDragCancel={() => setDraggingId(null)}

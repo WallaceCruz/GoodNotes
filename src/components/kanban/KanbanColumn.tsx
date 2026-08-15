@@ -1,4 +1,5 @@
 import { useDroppable } from "@dnd-kit/core";
+import { memo, useMemo, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,11 +45,14 @@ const NATIVE_ICON: Record<NativeColumnKey, typeof Inbox> = {
   done: CheckCircle2,
 };
 import { cn } from "@/lib/utils";
+import { sameStoreView } from "./memo-compare";
 import { noteBg, noteHeaderBg, noteLabel } from "./note-style";
 import { NotepadCard } from "./NotepadCard";
 import { StickyNoteCard } from "./StickyNoteCard";
 
-export function KanbanColumn({
+const PAGE = 30;
+
+function KanbanColumnBase({
   column,
   notes,
   activeNoteId,
@@ -66,6 +70,10 @@ export function KanbanColumn({
   highlightIds?: Set<string> | undefined;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
+  // Limite de render: listas grandes só montam os primeiros cards.
+  const [limit, setLimit] = useState(PAGE);
+  const visible = useMemo(() => notes.slice(0, limit), [notes, limit]);
+  const sortableIds = useMemo(() => visible.map((n) => n.id), [visible]);
   const isNative = Boolean(column.native);
 
   return (
@@ -217,8 +225,8 @@ export function KanbanColumn({
           isOver ? "bg-accent/60 ring-2 ring-inset ring-ring/50" : ""
         }`}
       >
-        <SortableContext items={notes.map((n) => n.id)} strategy={verticalListSortingStrategy}>
-          {notes.map((n) => {
+        <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+          {visible.map((n) => {
             const Card = n.kind === "notepad" ? NotepadCard : StickyNoteCard;
             return (
               <div
@@ -239,6 +247,14 @@ export function KanbanColumn({
             );
           })}
         </SortableContext>
+        {notes.length > visible.length && (
+          <button
+            onClick={() => setLimit((l) => l + PAGE)}
+            className="shrink-0 rounded-lg border border-dashed border-border py-2 text-xs text-muted-foreground hover:bg-accent"
+          >
+            Mostrar mais {Math.min(PAGE, notes.length - visible.length)} de {notes.length - visible.length}
+          </button>
+        )}
         {isOver && (
           <div className="h-16 shrink-0 rounded-lg border-2 border-dashed border-ring/60 bg-background/40" />
         )}
@@ -246,3 +262,13 @@ export function KanbanColumn({
     </div>
   );
 }
+
+export const KanbanColumn = memo(
+  KanbanColumnBase,
+  (prev, next) =>
+    prev.column === next.column &&
+    prev.notes === next.notes &&
+    prev.activeNoteId === next.activeNoteId &&
+    prev.highlightIds === next.highlightIds &&
+    sameStoreView(prev.store, next.store),
+);
