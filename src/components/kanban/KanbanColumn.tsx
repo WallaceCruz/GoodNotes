@@ -97,7 +97,7 @@ function KanbanColumnBase({
       )}
       style={
         accent
-          ? { borderColor: `${accent}66`, backgroundColor: `${accent}1a` }
+          ? { borderColor: `${accent}99`, backgroundColor: `${accent}26` }
           : undefined
       }
     >
