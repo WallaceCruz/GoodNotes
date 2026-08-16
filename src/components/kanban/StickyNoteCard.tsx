@@ -107,6 +107,16 @@ function StickyNoteCardBase({
               <Archive className="h-3.5 w-3.5 text-foreground/50" />
             )}
           </button>
+          <button
+            aria-label="Duplicar nota"
+            onClick={() => {
+              store.duplicateNote(note.id);
+              toast.success("Nota duplicada");
+            }}
+            className="opacity-0 group-hover:opacity-100"
+          >
+            <Copy className="h-3.5 w-3.5 text-foreground/50" />
+          </button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <button aria-label="Excluir nota" className="opacity-0 group-hover:opacity-100">
