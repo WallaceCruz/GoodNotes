@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { NativeColumnKey } from "@/lib/board-types";
 
 export type NoteStyle = "classic" | "soft" | "gradient" | "outline" | "glass" | "tape";
 export type NotepadStyle = "plain" | "soft" | "outline" | "glass" | "accent" | "header";
@@ -23,6 +24,17 @@ export type NoteAppearance = {
   accentColor: string | null;
   /** Colore as colunas nativas do Kanban com a paleta do fluxo */
   nativeColumnColors: boolean;
+  /** Cor (hex) de cada coluna nativa quando o modo colorido está ligado */
+  columnColors: Record<NativeColumnKey, string>;
+};
+
+export const DEFAULT_COLUMN_COLORS: Record<NativeColumnKey, string> = {
+  backlog: "#9ca3af",
+  research: "#f472b6",
+  discovery: "#a855f7",
+  doing: "#3b82f6",
+  validation: "#f59e0b",
+  done: "#22c55e",
 };
 
 export const defaultNoteAppearance: NoteAppearance = {
@@ -38,6 +50,7 @@ export const defaultNoteAppearance: NoteAppearance = {
   titleColor: null,
   accentColor: null,
   nativeColumnColors: false,
+  columnColors: DEFAULT_COLUMN_COLORS,
 };
 
 export const NOTE_STYLE_OPTIONS: { value: NoteStyle; label: string; hint: string }[] = [
@@ -103,7 +116,13 @@ function readAccount(): NoteAppearance {
   if (typeof window === "undefined") return defaultNoteAppearance;
   try {
     const raw = window.localStorage.getItem(KEY);
-    return raw ? { ...defaultNoteAppearance, ...JSON.parse(raw) } : defaultNoteAppearance;
+    if (!raw) return defaultNoteAppearance;
+    const parsed = JSON.parse(raw) as Partial<NoteAppearance>;
+    return {
+      ...defaultNoteAppearance,
+      ...parsed,
+      columnColors: { ...DEFAULT_COLUMN_COLORS, ...(parsed.columnColors ?? {}) },
+    };
   } catch {
     return defaultNoteAppearance;
   }
@@ -115,7 +134,14 @@ function readProjects(): Record<string, NoteAppearance> {
     const raw = window.localStorage.getItem(PROJECT_KEY);
     const parsed = raw ? (JSON.parse(raw) as Record<string, Partial<NoteAppearance>>) : {};
     return Object.fromEntries(
-      Object.entries(parsed).map(([k, v]) => [k, { ...defaultNoteAppearance, ...v }]),
+      Object.entries(parsed).map(([k, v]) => [
+        k,
+        {
+          ...defaultNoteAppearance,
+          ...v,
+          columnColors: { ...DEFAULT_COLUMN_COLORS, ...(v.columnColors ?? {}) },
+        },
+      ]),
     );
   } catch {
     return {};

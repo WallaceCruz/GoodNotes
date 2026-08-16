@@ -20,9 +20,11 @@ import {
   NOTE_SIZE_OPTIONS,
   NOTE_STYLE_OPTIONS,
   NOTEPAD_STYLE_OPTIONS,
+  DEFAULT_COLUMN_COLORS,
   useNoteAppearance,
   type NoteAppearance,
 } from "@/hooks/useNoteAppearance";
+import { NATIVE_COLUMNS } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 
 const ACCOUNT = "__account__";
@@ -370,6 +372,51 @@ export function NoteAppearanceSection() {
           onCheckedChange={(nativeColumnColors) => set({ nativeColumnColors })}
         />
       </div>
+
+      {appearance.nativeColumnColors && (
+        <div className="rounded-lg border border-border p-4">
+          <Label className="text-sm font-medium">Cores das colunas nativas</Label>
+          <p className="mt-0.5 mb-3 text-xs text-muted-foreground">
+            Ajuste a cor de cada coluna do fluxo.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {NATIVE_COLUMNS.map((c) => {
+              const value = appearance.columnColors[c.key] ?? DEFAULT_COLUMN_COLORS[c.key];
+              return (
+                <div key={c.key} className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    aria-label={`Cor da coluna ${c.title}`}
+                    value={value}
+                    onChange={(e) =>
+                      set({
+                        columnColors: { ...appearance.columnColors, [c.key]: e.target.value },
+                      })
+                    }
+                    className="h-8 w-10 shrink-0 cursor-pointer rounded border border-border bg-transparent p-0.5"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-medium">{c.title}</p>
+                    <p className="text-[11px] text-muted-foreground">{value}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-3 flex justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                set({ columnColors: { ...DEFAULT_COLUMN_COLORS } });
+                toast("Cores das colunas restauradas");
+              }}
+            >
+              Restaurar cores das colunas
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end">
         <Button
