@@ -357,6 +357,20 @@ export function NoteAppearanceSection() {
         <Switch checked={appearance.tilt} onCheckedChange={(tilt) => set({ tilt })} />
       </div>
 
+      <div className="flex items-center justify-between border-t border-border pt-4">
+        <div>
+          <Label className="text-sm font-medium">Colunas nativas coloridas</Label>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Backlog cinza, Research rosa, Discovery roxo, Em andamento azul, Em revisão âmbar e
+            Concluído verde. Desligado, as colunas ficam sem cor.
+          </p>
+        </div>
+        <Switch
+          checked={appearance.nativeColumnColors}
+          onCheckedChange={(nativeColumnColors) => set({ nativeColumnColors })}
+        />
+      </div>
+
       <div className="flex justify-end">
         <Button
           variant="outline"
