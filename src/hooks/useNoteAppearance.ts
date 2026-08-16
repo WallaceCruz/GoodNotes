@@ -21,6 +21,8 @@ export type NoteAppearance = {
   bgColor: string | null;
   titleColor: string | null;
   accentColor: string | null;
+  /** Colore as colunas nativas do Kanban com a paleta do fluxo */
+  nativeColumnColors: boolean;
 };
 
 export const defaultNoteAppearance: NoteAppearance = {
@@ -35,6 +37,7 @@ export const defaultNoteAppearance: NoteAppearance = {
   bgColor: null,
   titleColor: null,
   accentColor: null,
+  nativeColumnColors: false,
 };
 
 export const NOTE_STYLE_OPTIONS: { value: NoteStyle; label: string; hint: string }[] = [
