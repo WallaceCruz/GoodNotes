@@ -97,13 +97,13 @@ function KanbanColumnBase({
       )}
       style={
         accent
-          ? { borderColor: `${accent}4d`, backgroundColor: `${accent}0f` }
+          ? { borderColor: `${accent}66`, backgroundColor: `${accent}1a` }
           : undefined
       }
     >
       <div
         className={cn("h-1.5 w-full", column.color ? noteBg[column.color] : "bg-transparent")}
-        style={!column.color && accent ? { backgroundColor: `${accent}66` } : undefined}
+        style={!column.color && accent ? { backgroundColor: accent } : undefined}
       />
 
       <div
