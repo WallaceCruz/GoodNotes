@@ -27,6 +27,7 @@ import {
   Inbox,
   Loader,
   MoreHorizontal,
+  Eye,
   NotebookPen,
   Plus,
   StickyNote,
@@ -34,14 +35,22 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import { NOTE_COLORS, type Column, type NativeColumnKey, type Note, type NoteKind } from "@/lib/board-types";
+import {
+  NATIVE_COLUMN_THEME,
+  NOTE_COLORS,
+  type Column,
+  type NativeColumnKey,
+  type Note,
+  type NoteKind,
+} from "@/lib/board-types";
+import { useNoteAppearance } from "@/hooks/useNoteAppearance";
 
 const NATIVE_ICON: Record<NativeColumnKey, typeof Inbox> = {
   backlog: Inbox,
   research: FlaskConical,
   discovery: Compass,
   doing: Loader,
-  validation: CheckCircle2,
+  validation: Eye,
   done: CheckCircle2,
 };
 import { cn } from "@/lib/utils";
@@ -75,14 +84,28 @@ function KanbanColumnBase({
   const visible = useMemo(() => notes.slice(0, limit), [notes, limit]);
   const sortableIds = useMemo(() => visible.map((n) => n.id), [visible]);
   const isNative = Boolean(column.native);
+  const { appearance } = useNoteAppearance(store.project?.id);
+  const theme =
+    column.native && appearance.nativeColumnColors ? NATIVE_COLUMN_THEME[column.native] : null;
 
   return (
-    <div className="flex max-h-full w-96 shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-card/70 backdrop-blur-sm">
-      <div className={cn("h-1.5 w-full", column.color ? noteBg[column.color] : "bg-transparent")} />
+    <div
+      className={cn(
+        "flex max-h-full w-96 shrink-0 flex-col overflow-hidden rounded-lg border bg-card/70 backdrop-blur-sm",
+        theme ? cn(theme.border, theme.body) : "border-border",
+      )}
+    >
       <div
         className={cn(
-          "flex items-center gap-1 border-b border-border px-3 py-2",
-          column.color && noteHeaderBg[column.color],
+          "h-1.5 w-full",
+          column.color ? noteBg[column.color] : theme ? theme.bar : "bg-transparent",
+        )}
+      />
+      <div
+        className={cn(
+          "flex items-center gap-1 border-b px-3 py-2",
+          theme ? theme.border : "border-border",
+          column.color ? noteHeaderBg[column.color] : theme?.header,
         )}
       >
         {isNative ? (() => {
@@ -92,7 +115,7 @@ function KanbanColumnBase({
               title="Coluna nativa do fluxo"
               className="flex w-full items-center gap-1.5 truncate text-sm font-semibold"
             >
-              <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <Icon className={cn("h-4 w-4 shrink-0", theme ? theme.icon : "text-muted-foreground")} />
               {column.title}
             </span>
           );
