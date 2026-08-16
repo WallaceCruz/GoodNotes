@@ -317,6 +317,28 @@ export function useBoardStore() {
         updateFile((f) => ({ ...f, notes: f.notes.filter((n) => n.id !== noteId) })),
       restoreNote: (note: Note) =>
         updateFile((f) => ({ ...f, notes: reindex([note, ...f.notes]) })),
+      duplicateNote: (noteId: string) => {
+        let newId: string | null = null;
+        updateFile((f) => {
+          const source = f.notes.find((n) => n.id === noteId);
+          if (!source) return f;
+          const clone: Note = {
+            ...source,
+            id: uid(),
+            title: `${source.title || "Nota"} (cópia)`,
+            pinned: false,
+            updatedAt: Date.now(),
+            order: -1,
+          };
+          newId = clone.id;
+          const siblings = f.notes.filter((n) => n.columnId === source.columnId);
+          const others = f.notes.filter((n) => n.columnId !== source.columnId);
+          const idx = siblings.findIndex((n) => n.id === noteId);
+          siblings.splice(idx + 1, 0, clone);
+          return { ...f, notes: [...others, ...siblings].map((n, i) => ({ ...n, order: i })) };
+        });
+        return newId;
+      },
 
       addTag: (name: string, color: NoteColor) =>
         updateFile((f) => {
