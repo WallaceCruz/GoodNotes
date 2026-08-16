@@ -36,21 +36,47 @@ function NotFoundComponent() {
   );
 }
 
+const RELOAD_FLAG = "sticky-flow:chunk-reload";
+
+/** Erros de carregamento de chunk acontecem quando o bundle muda (deploy/HMR). */
+function isChunkLoadError(error: unknown) {
+  const message = error instanceof Error ? `${error.name} ${error.message}` : String(error);
+  return /dynamically imported module|Importing a module script failed|ChunkLoadError|Loading chunk|Failed to fetch dynamically/i.test(
+    message,
+  );
+}
+
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
+
+  // Recupera automaticamente de bundles desatualizados ao mudar de rota.
+  useEffect(() => {
+    if (typeof window === "undefined" || !isChunkLoadError(error)) return;
+    if (window.sessionStorage.getItem(RELOAD_FLAG)) return;
+    window.sessionStorage.setItem(RELOAD_FLAG, "1");
+    window.location.reload();
+  }, [error]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const id = window.setTimeout(() => window.sessionStorage.removeItem(RELOAD_FLAG), 5000);
+    return () => window.clearTimeout(id);
+  }, []);
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          Esta página não carregou
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          Tente novamente ou volte para o quadro.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -60,19 +86,20 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            Tentar novamente
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            Ir para o início
           </a>
         </div>
       </div>
     </div>
   );
 }
+
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
