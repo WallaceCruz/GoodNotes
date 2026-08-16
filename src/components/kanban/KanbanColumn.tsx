@@ -103,8 +103,9 @@ function KanbanColumnBase({
     >
       <div
         className={cn("h-1.5 w-full", column.color ? noteBg[column.color] : "bg-transparent")}
-        style={!column.color && accent ? { backgroundColor: accent } : undefined}
+        style={!column.color && accent ? { backgroundColor: `${accent}66` } : undefined}
       />
+
       <div
         className={cn(
           "flex items-center gap-1 border-b px-3 py-2",
