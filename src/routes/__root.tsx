@@ -63,11 +63,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const id = window.setTimeout(() => window.sessionStorage.removeItem(RELOAD_FLAG), 5000);
-      return () => window.clearTimeout(id);
-    }
+    if (typeof window === "undefined") return undefined;
+    const id = window.setTimeout(() => window.sessionStorage.removeItem(RELOAD_FLAG), 5000);
+    return () => window.clearTimeout(id);
   }, []);
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
