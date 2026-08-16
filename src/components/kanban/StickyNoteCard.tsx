@@ -12,7 +12,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CSS } from "@dnd-kit/utilities";
-import { Archive, ArchiveRestore, GripVertical, Maximize2, Pin, PinOff, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, Copy, GripVertical, Maximize2, Pin, PinOff, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { type Note } from "@/lib/board-types";
