@@ -12,7 +12,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CSS } from "@dnd-kit/utilities";
-import { Archive, ArchiveRestore, GripVertical, Maximize2, Pin, PinOff, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, Copy, GripVertical, Maximize2, Pin, PinOff, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { type Note } from "@/lib/board-types";
@@ -106,6 +106,16 @@ function StickyNoteCardBase({
             ) : (
               <Archive className="h-3.5 w-3.5 text-foreground/50" />
             )}
+          </button>
+          <button
+            aria-label="Duplicar nota"
+            onClick={() => {
+              store.duplicateNote(note.id);
+              toast.success("Nota duplicada");
+            }}
+            className="opacity-0 group-hover:opacity-100"
+          >
+            <Copy className="h-3.5 w-3.5 text-foreground/50" />
           </button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
