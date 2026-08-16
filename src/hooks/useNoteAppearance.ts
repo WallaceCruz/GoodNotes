@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-export type NoteStyle = "classic" | "paper" | "gradient" | "outline" | "glass" | "tape";
-export type NotepadStyle = "plain" | "lined" | "grid" | "dotted" | "paper" | "accent";
-export type NoteCorners = "soft" | "rounded" | "sharp";
+export type NoteStyle = "classic" | "soft" | "gradient" | "outline" | "glass" | "tape";
+export type NotepadStyle = "plain" | "soft" | "outline" | "glass" | "accent" | "header";
+export type NoteCorners = "sharp" | "soft" | "rounded" | "xl" | "pill" | "notched";
 export type NoteShadow = "none" | "soft" | "strong";
 export type NoteFont = "sans" | "serif" | "mono";
 export type NoteSize = "sm" | "md" | "lg";
@@ -39,7 +39,7 @@ export const defaultNoteAppearance: NoteAppearance = {
 
 export const NOTE_STYLE_OPTIONS: { value: NoteStyle; label: string; hint: string }[] = [
   { value: "classic", label: "Clássica", hint: "Cor sólida com borda discreta" },
-  { value: "paper", label: "Papel", hint: "Textura sutil e canto dobrado" },
+  { value: "soft", label: "Suave", hint: "Degradê discreto de cima para baixo" },
   { value: "gradient", label: "Degradê", hint: "Transição suave da cor" },
   { value: "outline", label: "Contorno", hint: "Fundo claro com borda colorida" },
   { value: "glass", label: "Vidro", hint: "Translúcida com desfoque" },
@@ -48,17 +48,20 @@ export const NOTE_STYLE_OPTIONS: { value: NoteStyle; label: string; hint: string
 
 export const NOTEPAD_STYLE_OPTIONS: { value: NotepadStyle; label: string; hint: string }[] = [
   { value: "plain", label: "Limpo", hint: "Fundo sólido, sem textura" },
-  { value: "lined", label: "Pautado", hint: "Linhas horizontais de caderno" },
-  { value: "grid", label: "Quadriculado", hint: "Malha quadriculada leve" },
-  { value: "dotted", label: "Pontilhado", hint: "Grade de pontos discreta" },
-  { value: "paper", label: "Papel", hint: "Textura de papel com sombra" },
+  { value: "soft", label: "Suave", hint: "Degradê muito discreto" },
+  { value: "outline", label: "Contorno", hint: "Fundo neutro com borda colorida" },
+  { value: "glass", label: "Vidro", hint: "Translúcido com desfoque" },
   { value: "accent", label: "Margem", hint: "Faixa colorida na lateral" },
+  { value: "header", label: "Topo", hint: "Faixa colorida no topo" },
 ];
 
 export const NOTE_CORNER_OPTIONS: { value: NoteCorners; label: string }[] = [
+  { value: "sharp", label: "Reta" },
   { value: "soft", label: "Suave" },
   { value: "rounded", label: "Arredondada" },
-  { value: "sharp", label: "Reta" },
+  { value: "xl", label: "Extra" },
+  { value: "pill", label: "Cápsula" },
+  { value: "notched", label: "Chanfrada" },
 ];
 
 export const NOTE_SHADOW_OPTIONS: { value: NoteShadow; label: string }[] = [

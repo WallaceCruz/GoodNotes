@@ -19,7 +19,7 @@ export const noteTintVar: Record<NoteColor, string> = {
 
 const surface: Record<NoteAppearance["style"], string> = {
   classic: "note-surface-classic",
-  paper: "note-surface-paper",
+  soft: "note-surface-soft",
   gradient: "note-surface-gradient",
   outline: "note-surface-outline",
   glass: "note-surface-glass",
@@ -28,17 +28,20 @@ const surface: Record<NoteAppearance["style"], string> = {
 
 const notepad: Record<NoteAppearance["notepadStyle"], string> = {
   plain: "notepad-surface-plain",
-  lined: "notepad-surface-lined",
-  grid: "notepad-surface-grid",
-  dotted: "notepad-surface-dotted",
-  paper: "notepad-surface-paper",
+  soft: "notepad-surface-soft",
+  outline: "notepad-surface-outline",
+  glass: "notepad-surface-glass",
   accent: "notepad-surface-accent",
+  header: "notepad-surface-header",
 };
 
 const corners: Record<NoteAppearance["corners"], string> = {
+  sharp: "rounded-none",
   soft: "rounded-lg",
   rounded: "rounded-2xl",
-  sharp: "rounded-none",
+  xl: "note-corner-xl",
+  pill: "note-corner-pill",
+  notched: "note-corner-notched",
 };
 
 const shadow: Record<NoteAppearance["shadow"], string> = {
@@ -73,11 +76,11 @@ function colorVars(appearance: NoteAppearance, tint: string): CSSProperties {
 
 function shared(appearance: NoteAppearance): string[] {
   return [
-    corners[appearance.corners],
-    shadow[appearance.shadow],
-    font[appearance.font],
-    size[appearance.size],
-    align[appearance.align],
+    corners[appearance.corners] ?? corners.soft,
+    shadow[appearance.shadow] ?? shadow.soft,
+    font[appearance.font] ?? font.sans,
+    size[appearance.size] ?? size.md,
+    align[appearance.align] ?? align.left,
   ];
 }
 
@@ -86,7 +89,7 @@ export function noteSurface(
   color: NoteColor,
   opts: { tilt?: boolean } = {},
 ): { className: string; style: CSSProperties } {
-  const classes = [surface[appearance.style], ...shared(appearance)];
+  const classes = [surface[appearance.style] ?? surface.classic, ...shared(appearance)];
   if (appearance.tilt && opts.tilt !== false) classes.push("note-tilt");
   return {
     className: classes.join(" "),
@@ -98,7 +101,7 @@ export function notepadSurface(
   appearance: NoteAppearance,
   opts: { tilt?: boolean } = {},
 ): { className: string; style: CSSProperties } {
-  const classes = [notepad[appearance.notepadStyle], ...shared(appearance)];
+  const classes = [notepad[appearance.notepadStyle] ?? notepad.plain, ...shared(appearance)];
   if (appearance.tilt && opts.tilt !== false) classes.push("note-tilt");
   return {
     className: classes.join(" "),
