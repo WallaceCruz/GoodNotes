@@ -36,14 +36,13 @@ import {
 import { toast } from "sonner";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import {
-  NATIVE_COLUMN_THEME,
   NOTE_COLORS,
   type Column,
   type NativeColumnKey,
   type Note,
   type NoteKind,
 } from "@/lib/board-types";
-import { useNoteAppearance } from "@/hooks/useNoteAppearance";
+import { DEFAULT_COLUMN_COLORS, useNoteAppearance } from "@/hooks/useNoteAppearance";
 
 const NATIVE_ICON: Record<NativeColumnKey, typeof Inbox> = {
   backlog: Inbox,
@@ -85,28 +84,34 @@ function KanbanColumnBase({
   const sortableIds = useMemo(() => visible.map((n) => n.id), [visible]);
   const isNative = Boolean(column.native);
   const { appearance } = useNoteAppearance(store.project?.id);
-  const theme =
-    column.native && appearance.nativeColumnColors ? NATIVE_COLUMN_THEME[column.native] : null;
+  const accent =
+    column.native && appearance.nativeColumnColors
+      ? (appearance.columnColors[column.native] ?? DEFAULT_COLUMN_COLORS[column.native])
+      : null;
 
   return (
     <div
       className={cn(
         "flex max-h-full w-96 shrink-0 flex-col overflow-hidden rounded-lg border bg-card/70 backdrop-blur-sm",
-        theme ? cn(theme.border, theme.body) : "border-border",
+        !accent && "border-border",
       )}
+      style={
+        accent
+          ? { borderColor: `${accent}4d`, backgroundColor: `${accent}0f` }
+          : undefined
+      }
     >
       <div
-        className={cn(
-          "h-1.5 w-full",
-          column.color ? noteBg[column.color] : theme ? theme.bar : "bg-transparent",
-        )}
+        className={cn("h-1.5 w-full", column.color ? noteBg[column.color] : "bg-transparent")}
+        style={!column.color && accent ? { backgroundColor: accent } : undefined}
       />
       <div
         className={cn(
           "flex items-center gap-1 border-b px-3 py-2",
-          theme ? theme.border : "border-border",
-          column.color ? noteHeaderBg[column.color] : theme?.header,
+          !accent && "border-border",
+          column.color ? noteHeaderBg[column.color] : undefined,
         )}
+        style={accent ? { borderColor: `${accent}4d` } : undefined}
       >
         {isNative ? (() => {
           const Icon = NATIVE_ICON[column.native!];
@@ -115,7 +120,10 @@ function KanbanColumnBase({
               title="Coluna nativa do fluxo"
               className="flex w-full items-center gap-1.5 truncate text-sm font-semibold"
             >
-              <Icon className={cn("h-4 w-4 shrink-0", theme ? theme.icon : "text-muted-foreground")} />
+              <Icon
+                className={cn("h-4 w-4 shrink-0", !accent && "text-muted-foreground")}
+                style={accent ? { color: accent } : undefined}
+              />
               {column.title}
             </span>
           );
