@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { memo } from "react";
 import { CSS } from "@dnd-kit/utilities";
-import { Archive, ArchiveRestore, GripVertical, Maximize2, Pin, PinOff, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, Copy, GripVertical, Maximize2, Pin, PinOff, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
