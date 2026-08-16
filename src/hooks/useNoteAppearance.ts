@@ -23,6 +23,17 @@ export type NoteAppearance = {
   accentColor: string | null;
   /** Colore as colunas nativas do Kanban com a paleta do fluxo */
   nativeColumnColors: boolean;
+  /** Cor (hex) de cada coluna nativa quando o modo colorido está ligado */
+  columnColors: Record<NativeColumnKey, string>;
+};
+
+export const DEFAULT_COLUMN_COLORS: Record<NativeColumnKey, string> = {
+  backlog: "#9ca3af",
+  research: "#f472b6",
+  discovery: "#a855f7",
+  doing: "#3b82f6",
+  validation: "#f59e0b",
+  done: "#22c55e",
 };
 
 export const defaultNoteAppearance: NoteAppearance = {
