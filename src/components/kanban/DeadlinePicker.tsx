@@ -89,44 +89,37 @@ export function DeadlinePicker({
             }}
             className="pointer-events-auto"
           />
-          <div className="mt-2 border-t border-border pt-2">
-            <div className="flex items-center gap-2">
-              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                type="time"
-                aria-label="Horário do prazo"
-                value={toTimeInput(value)}
-                onChange={(e) => setTime(e.target.value)}
-                className="rounded-md border border-border bg-background px-2 py-1 text-xs"
-              />
-            </div>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {QUICK_TIMES.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTime(t)}
-                  className={cn(
-                    "rounded-full border px-2 py-0.5 text-[11px] hover:bg-accent",
-                    toTimeInput(value) === t ? "border-primary bg-primary/10" : "border-border",
-                  )}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
         </PopoverContent>
       </Popover>
 
+      <div className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1">
+        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+        <input
+          type="time"
+          aria-label="Horário do prazo"
+          value={toTimeInput(value)}
+          onChange={(e) => setTime(e.target.value)}
+          className="w-[4.5rem] bg-transparent text-xs outline-none"
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-1">
+        {QUICK_TIMES.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTime(t)}
+            className={cn(
+              "rounded-full border px-2 py-0.5 text-[11px] hover:bg-accent",
+              toTimeInput(value) === t ? "border-primary bg-primary/10" : "border-border",
+            )}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
       {value && (
         <>
-          <input
-            type="time"
-            aria-label="Horário do prazo"
-            value={toTimeInput(value)}
-            onChange={(e) => setTime(e.target.value)}
-            className="rounded-md border border-border bg-background px-2 py-1.5 text-xs"
-          />
           <button
             aria-label="Remover prazo"
             onClick={() => onChange(null)}

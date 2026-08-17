@@ -25,6 +25,9 @@ import { noteBg } from "./note-style";
 import { noteSurface } from "./note-appearance";
 import { useNoteAppearance } from "@/hooks/useNoteAppearance";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
+import { StatusBadge } from "./StatusSelect";
+import { CategoryBadge } from "./CategorySelect";
+import { PomodoroMini } from "./PomodoroTimer";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 
@@ -148,12 +151,13 @@ function StickyNoteCardBase({
         </div>
       </div>
 
-      {(note.priority || note.deadline) && (
-        <div className="flex flex-wrap items-center gap-1 pb-1">
-          {note.priority && <PriorityBadge priority={note.priority} />}
-          {note.deadline && <DeadlineBadge deadline={note.deadline} />}
-        </div>
-      )}
+      <div className="flex flex-wrap items-center gap-1 pb-1" onPointerDown={(e) => e.stopPropagation()}>
+        {note.status && <StatusBadge status={note.status} />}
+        {note.category && <CategoryBadge category={note.category} />}
+        {note.priority && <PriorityBadge priority={note.priority} />}
+        {note.deadline && <DeadlineBadge deadline={note.deadline} />}
+        <PomodoroMini noteId={note.id} />
+      </div>
 
       <input
         value={note.title}
