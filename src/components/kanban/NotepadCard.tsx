@@ -23,6 +23,8 @@ import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
 
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
+import { StatusBadge } from "./StatusSelect";
+import { PomodoroMini } from "./PomodoroTimer";
 import { notepadSurface } from "./note-appearance";
 import { useNoteAppearance } from "@/hooks/useNoteAppearance";
 import { RichNoteEditor } from "./RichNoteEditor";
@@ -144,12 +146,12 @@ function NotepadCardBase({
       </div>
 
       <div className="flex-1 px-3 pb-2 pt-2">
-        {(note.priority || note.deadline) && (
-          <div className="flex flex-wrap items-center gap-1 pb-1">
-            {note.priority && <PriorityBadge priority={note.priority} />}
-            {note.deadline && <DeadlineBadge deadline={note.deadline} />}
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-1 pb-1">
+          {note.status && <StatusBadge status={note.status} />}
+          {note.priority && <PriorityBadge priority={note.priority} />}
+          {note.deadline && <DeadlineBadge deadline={note.deadline} />}
+          <PomodoroMini noteId={note.id} />
+        </div>
 
         <input
           value={note.title}

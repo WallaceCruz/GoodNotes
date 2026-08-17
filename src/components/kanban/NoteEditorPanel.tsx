@@ -6,6 +6,9 @@ import { ChecklistEditor } from "./ChecklistEditor";
 import { DeadlinePicker } from "./DeadlinePicker";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
+import { StatusSelect } from "./StatusSelect";
+import { CategorySelect } from "./CategorySelect";
+import { PomodoroTimer } from "./PomodoroTimer";
 import { cn } from "@/lib/utils";
 import { noteBg, noteLabel, priorityClass } from "./note-style";
 
@@ -86,6 +89,35 @@ export function NoteEditorPanel({
               <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} store={store} size="md" />
             </div>
           </footer>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Status
+          </p>
+          <div className="mt-2">
+            <StatusSelect value={note.status} onChange={(status) => onChange({ status })} />
+          </div>
+        </div>
+
+        {note.kind !== "notepad" && (
+          <div className="mt-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Categoria
+            </p>
+            <div className="mt-2">
+              <CategorySelect value={note.category} onChange={(category) => onChange({ category })} />
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Pomodoro
+          </p>
+          <div className="mt-2">
+            <PomodoroTimer noteId={note.id} />
+          </div>
         </div>
 
         <div className="mt-4">
