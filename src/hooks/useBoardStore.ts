@@ -297,6 +297,8 @@ export function useBoardStore() {
           showChecklist: false,
           images: [],
           priority: null,
+          status: null,
+          category: null,
           deadline: null,
           archived: false,
           order: -1,
