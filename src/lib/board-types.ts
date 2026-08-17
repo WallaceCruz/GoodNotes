@@ -45,6 +45,59 @@ export const PRIORITY_ICON: Record<Priority, string> = {
   low: "🌱",
 };
 
+export type NoteStatus = "done" | "doing" | "pending" | "undone" | "rescheduled";
+
+export const NOTE_STATUSES: NoteStatus[] = ["pending", "doing", "done", "undone", "rescheduled"];
+
+export const STATUS_LABEL: Record<NoteStatus, string> = {
+  done: "Concluído",
+  doing: "Em andamento",
+  pending: "Pendente",
+  undone: "Não concluído",
+  rescheduled: "Reagendado",
+};
+
+export const STATUS_HINT: Record<NoteStatus, string> = {
+  done: "Tarefa finalizada",
+  doing: "Começou, mas ainda não terminou",
+  pending: "Ainda não iniciada",
+  undone: "Não foi realizada",
+  rescheduled: "Passou para outro horário/dia",
+};
+
+export const STATUS_CLASS: Record<NoteStatus, string> = {
+  done: "border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  doing: "border-blue-500/50 bg-blue-500/15 text-blue-700 dark:text-blue-300",
+  pending: "border-amber-500/50 bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  undone: "border-destructive/50 bg-destructive/15 text-destructive",
+  rescheduled: "border-purple-500/50 bg-purple-500/15 text-purple-700 dark:text-purple-300",
+};
+
+export type CategoryDef = { id: string; emoji: string; name: string };
+
+export const DEFAULT_CATEGORIES: CategoryDef[] = [
+  { id: "casa", emoji: "🏠", name: "Casa" },
+  { id: "trabalho", emoji: "💼", name: "Trabalho" },
+  { id: "estudos", emoji: "📚", name: "Estudos" },
+  { id: "autocuidado", emoji: "🧘", name: "Autocuidado" },
+  { id: "exercicio", emoji: "🏃", name: "Exercício" },
+  { id: "alimentacao", emoji: "🍎", name: "Alimentação" },
+  { id: "sono", emoji: "😴", name: "Sono" },
+  { id: "saude", emoji: "💊", name: "Saúde" },
+  { id: "social", emoji: "👥", name: "Social" },
+  { id: "relacionamentos", emoji: "❤️", name: "Relacionamentos" },
+  { id: "familia", emoji: "👨‍👩‍👧", name: "Família" },
+  { id: "compras", emoji: "🛒", name: "Compras" },
+  { id: "transporte", emoji: "🚗", name: "Transporte" },
+  { id: "financas", emoji: "💰", name: "Finanças" },
+  { id: "domesticas", emoji: "🧹", name: "Tarefas domésticas" },
+  { id: "criatividade", emoji: "🎨", name: "Criatividade" },
+  { id: "lazer", emoji: "🎮", name: "Lazer" },
+  { id: "tecnologia", emoji: "📱", name: "Tecnologia" },
+  { id: "externas", emoji: "🌳", name: "Atividades externas" },
+  { id: "relaxamento", emoji: "🧘‍♂️", name: "Relaxamento" },
+];
+
 export type Member = { id: string; name: string };
 
 export const MEMBERS: Member[] = [
@@ -100,6 +153,8 @@ export type Note = {
   showChecklist: boolean;
   images: NoteImage[];
   priority: Priority | null;
+  status: NoteStatus | null;
+  category: string | null;
   deadline: number | null;
   archived: boolean;
   pinned?: boolean;
@@ -327,6 +382,8 @@ function makeFile(name: string, seed: Array<Partial<Note>>): BoardFile {
       showChecklist: (n.checklist?.length ?? 0) > 0,
       images: n.images ?? [],
       priority: n.priority ?? null,
+      status: n.status ?? null,
+      category: n.category ?? null,
       deadline: n.deadline ?? null,
       archived: n.archived ?? false,
       order: i,

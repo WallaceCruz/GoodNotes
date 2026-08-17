@@ -67,6 +67,8 @@ function normalize(s: BoardState): BoardState {
           checklist: n.checklist ?? [],
           images: n.images ?? [],
           priority: n.priority ?? null,
+          status: n.status ?? null,
+          category: n.category ?? null,
           deadline: n.deadline ?? null,
           archived: n.archived ?? false,
           pinned: n.pinned ?? false,
