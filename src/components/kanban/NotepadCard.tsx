@@ -1,30 +1,18 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { memo } from "react";
 import { CSS } from "@dnd-kit/utilities";
-import { Archive, ArchiveRestore, Copy, GripVertical, Maximize2, Pin, PinOff, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { GripVertical, Maximize2, Pin } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { sameStoreView } from "./memo-compare";
+import { NoteOptionsMenu } from "./NoteOptionsMenu";
 import { AssigneeSelect } from "./AssigneeSelect";
 import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
 
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 import { StatusBadge } from "./StatusSelect";
-import { PomodoroMini } from "./PomodoroTimer";
 import { notepadSurface } from "./note-appearance";
 import { useNoteAppearance } from "@/hooks/useNoteAppearance";
 import { RichNoteEditor } from "./RichNoteEditor";
@@ -76,72 +64,14 @@ function NotepadCardBase({
         {note.pinned && <Pin className="h-3.5 w-3.5 text-foreground/70" />}
         <div className="ml-auto flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
           <button
-            aria-label={note.pinned ? "Desafixar bloco" : "Fixar bloco no topo"}
-            onClick={() => store.setNotePinned(note.id, !note.pinned)}
-            className={cn("group-hover:opacity-100", note.pinned ? "opacity-100" : "opacity-0")}
-          >
-            {note.pinned ? (
-              <PinOff className="h-3.5 w-3.5 text-foreground/50" />
-            ) : (
-              <Pin className="h-3.5 w-3.5 text-foreground/50" />
-            )}
-          </button>
-          <button
-            aria-label="Abrir detalhes"
+            aria-label="Expandir bloco"
+            title="Expandir bloco"
             onClick={onOpen}
-            className="opacity-0 group-hover:opacity-100"
+            className="flex h-6 w-6 items-center justify-center rounded text-foreground/60 opacity-0 transition-opacity hover:bg-foreground/10 hover:text-foreground group-hover:opacity-100"
           >
-            <Maximize2 className="h-3.5 w-3.5 text-foreground/50" />
+            <Maximize2 className="h-3.5 w-3.5" />
           </button>
-          <button
-            aria-label={note.archived ? "Restaurar bloco" : "Arquivar bloco"}
-            onClick={() => store.setNoteArchived(note.id, !note.archived)}
-            className="opacity-0 group-hover:opacity-100"
-          >
-            {note.archived ? (
-              <ArchiveRestore className="h-3.5 w-3.5 text-foreground/50" />
-            ) : (
-              <Archive className="h-3.5 w-3.5 text-foreground/50" />
-            )}
-          </button>
-          <button
-            aria-label="Duplicar bloco"
-            onClick={() => {
-              store.duplicateNote(note.id);
-              toast.success("Bloco de notas duplicado");
-            }}
-            className="opacity-0 group-hover:opacity-100"
-          >
-            <Copy className="h-3.5 w-3.5 text-foreground/50" />
-          </button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button aria-label="Excluir bloco" className="opacity-0 group-hover:opacity-100">
-                <Trash2 className="h-3.5 w-3.5 text-foreground/50" />
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Excluir "{note.title || "Bloco de notas"}"?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  O bloco será removido do quadro. Você poderá desfazer logo em seguida.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    store.removeNote(note.id);
-                    toast.success(`"${note.title || "Bloco de notas"}" excluído`, {
-                      action: { label: "Desfazer", onClick: () => store.restoreNote(note) },
-                    });
-                  }}
-                >
-                  Excluir
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <NoteOptionsMenu note={note} store={store} onOpen={onOpen} />
         </div>
       </div>
 
@@ -150,7 +80,6 @@ function NotepadCardBase({
           {note.status && <StatusBadge status={note.status} />}
           {note.priority && <PriorityBadge priority={note.priority} />}
           {note.deadline && <DeadlineBadge deadline={note.deadline} />}
-          <PomodoroMini noteId={note.id} />
         </div>
 
         <input

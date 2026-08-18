@@ -11,8 +11,6 @@ const QUICK = [
   { label: "Em 7 dias", days: 7 },
 ];
 
-const QUICK_TIMES = ["09:00", "12:00", "15:00", "18:00", "23:59"];
-
 const DEFAULT_TIME = { h: 23, m: 59 };
 
 function withTime(date: Date, h: number, m: number) {
@@ -101,21 +99,6 @@ export function DeadlinePicker({
           onChange={(e) => setTime(e.target.value)}
           className="w-[4.5rem] bg-transparent text-xs outline-none"
         />
-      </div>
-
-      <div className="flex flex-wrap gap-1">
-        {QUICK_TIMES.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTime(t)}
-            className={cn(
-              "rounded-full border px-2 py-0.5 text-[11px] hover:bg-accent",
-              toTimeInput(value) === t ? "border-primary bg-primary/10" : "border-border",
-            )}
-          >
-            {t}
-          </button>
-        ))}
       </div>
 
       {value && (

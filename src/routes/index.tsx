@@ -166,13 +166,7 @@ function Index() {
             {automationsOpen && <AutomationsPanel store={store} allTags={allTags} />}
 
             <div className="flex min-h-0 flex-1">
-              {activeNote ? (
-                <NoteFocusView
-                  note={activeNote}
-                  store={store}
-                  onClose={() => setActiveNoteId(null)}
-                />
-              ) : calendarView ? (
+              {calendarView ? (
                 <CalendarView
                   notes={store.file?.notes ?? []}
                   onOpenNote={setActiveNoteId}
@@ -203,6 +197,13 @@ function Index() {
               )}
             </div>
 
+            {activeNote && (
+              <NoteFocusView
+                note={activeNote}
+                store={store}
+                onClose={() => setActiveNoteId(null)}
+              />
+            )}
           </div>
         </>
       )}

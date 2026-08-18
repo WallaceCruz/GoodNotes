@@ -9,7 +9,6 @@ import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 import { StatusSelect } from "./StatusSelect";
 import { CategorySelect } from "./CategorySelect";
-import { PomodoroTimer } from "./PomodoroTimer";
 import { cn } from "@/lib/utils";
 import { noteBg, noteLabel, priorityClass, timeAgo } from "./note-style";
 
@@ -57,20 +56,28 @@ export function NoteFocusView({
 
   return (
     <div
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) requestClose();
+      }}
       className={cn(
-        "flex min-h-0 flex-1",
+        "fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm sm:p-8",
         closing
-          ? "animate-out fade-out-0 zoom-out-95 duration-150 ease-in"
-          : "animate-in fade-in-0 zoom-in-[0.98] duration-200 ease-out",
+          ? "animate-out fade-out-0 duration-150 ease-in"
+          : "animate-in fade-in-0 duration-200 ease-out",
       )}
     >
+      <div
+        className={cn(
+          "flex h-[92vh] w-full max-w-[80rem] overflow-hidden rounded-2xl border border-border bg-background shadow-2xl",
+          closing
+            ? "animate-out zoom-out-95 duration-150 ease-in"
+            : "animate-in zoom-in-95 duration-200 ease-out",
+        )}
+      >
       {/* Canvas central em foco */}
       <div
         ref={scrollRef}
         onScroll={(e) => focusScroll.set(note.id, e.currentTarget.scrollTop)}
-        onMouseDown={(e) => {
-          if (e.target === e.currentTarget) requestClose();
-        }}
         className="scroll-thin min-w-0 flex-1 overflow-y-auto bg-muted/40 px-6 py-6"
       >
 
@@ -206,15 +213,6 @@ export function NoteFocusView({
 
           <section>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Pomodoro
-            </p>
-            <div className="mt-2">
-              <PomodoroTimer noteId={note.id} />
-            </div>
-          </section>
-
-          <section>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Prioridade
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -267,6 +265,7 @@ export function NoteFocusView({
           )}
         </div>
       </aside>
+      </div>
     </div>
   );
 }

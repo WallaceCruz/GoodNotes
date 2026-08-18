@@ -337,12 +337,17 @@
   .note-prose .tiptap img {
     cursor: grab;
   }
+  .note-prose .tableWrapper {
+    overflow-x: auto;
+    margin: 0.4rem 0;
+  }
   .note-prose table {
     width: 100%;
     border-collapse: collapse;
-    margin: 0.4rem 0;
     table-layout: fixed;
-    overflow: hidden;
+  }
+  .note-prose table p {
+    margin: 0;
   }
   .note-prose th,
   .note-prose td {
