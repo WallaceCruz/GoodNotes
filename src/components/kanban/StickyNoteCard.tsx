@@ -1,23 +1,12 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { memo } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { CSS } from "@dnd-kit/utilities";
-import { Archive, ArchiveRestore, Copy, GripVertical, Maximize2, Pin, PinOff, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { GripVertical, Maximize2, Pin } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { sameStoreView } from "./memo-compare";
+import { NoteOptionsMenu } from "./NoteOptionsMenu";
 import { AssigneeSelect } from "./AssigneeSelect";
 import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
@@ -81,72 +70,14 @@ function StickyNoteCardBase({
           onPointerDown={(e) => e.stopPropagation()}
         >
           <button
-            aria-label={note.pinned ? "Desafixar nota" : "Fixar nota no topo"}
-            onClick={() => store.setNotePinned(note.id, !note.pinned)}
-            className={cn("group-hover:opacity-100", note.pinned ? "opacity-100" : "opacity-0")}
-          >
-            {note.pinned ? (
-              <PinOff className="h-3.5 w-3.5 text-foreground/50" />
-            ) : (
-              <Pin className="h-3.5 w-3.5 text-foreground/50" />
-            )}
-          </button>
-          <button
-            aria-label="Abrir detalhes"
+            aria-label="Expandir nota"
+            title="Expandir nota"
             onClick={onOpen}
-            className="opacity-0 group-hover:opacity-100"
+            className="flex h-6 w-6 items-center justify-center rounded text-foreground/60 opacity-0 transition-opacity hover:bg-foreground/10 hover:text-foreground group-hover:opacity-100"
           >
-            <Maximize2 className="h-3.5 w-3.5 text-foreground/50" />
+            <Maximize2 className="h-3.5 w-3.5" />
           </button>
-          <button
-            aria-label={note.archived ? "Restaurar nota" : "Arquivar nota"}
-            onClick={() => store.setNoteArchived(note.id, !note.archived)}
-            className="opacity-0 group-hover:opacity-100"
-          >
-            {note.archived ? (
-              <ArchiveRestore className="h-3.5 w-3.5 text-foreground/50" />
-            ) : (
-              <Archive className="h-3.5 w-3.5 text-foreground/50" />
-            )}
-          </button>
-          <button
-            aria-label="Duplicar nota"
-            onClick={() => {
-              store.duplicateNote(note.id);
-              toast.success("Nota duplicada");
-            }}
-            className="opacity-0 group-hover:opacity-100"
-          >
-            <Copy className="h-3.5 w-3.5 text-foreground/50" />
-          </button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button aria-label="Excluir nota" className="opacity-0 group-hover:opacity-100">
-                <Trash2 className="h-3.5 w-3.5 text-foreground/50" />
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Excluir "{note.title || "Nota"}"?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  A nota será removida do quadro. Você poderá desfazer logo em seguida.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    store.removeNote(note.id);
-                    toast.success(`"${note.title || "Nota"}" excluída`, {
-                      action: { label: "Desfazer", onClick: () => store.restoreNote(note) },
-                    });
-                  }}
-                >
-                  Excluir
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <NoteOptionsMenu note={note} store={store} onOpen={onOpen} />
         </div>
       </div>
 
