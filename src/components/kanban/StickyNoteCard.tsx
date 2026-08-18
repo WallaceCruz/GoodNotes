@@ -27,7 +27,6 @@ import { useNoteAppearance } from "@/hooks/useNoteAppearance";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 import { StatusBadge } from "./StatusSelect";
 import { CategoryBadge } from "./CategorySelect";
-import { PomodoroMini } from "./PomodoroTimer";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 
@@ -156,7 +155,6 @@ function StickyNoteCardBase({
         {note.category && <CategoryBadge category={note.category} />}
         {note.priority && <PriorityBadge priority={note.priority} />}
         {note.deadline && <DeadlineBadge deadline={note.deadline} />}
-        <PomodoroMini noteId={note.id} />
       </div>
 
       <input

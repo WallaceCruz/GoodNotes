@@ -9,7 +9,6 @@ import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 import { StatusSelect } from "./StatusSelect";
 import { CategorySelect } from "./CategorySelect";
-import { PomodoroTimer } from "./PomodoroTimer";
 import { cn } from "@/lib/utils";
 import { noteBg, noteLabel, priorityClass, timeAgo } from "./note-style";
 
@@ -203,15 +202,6 @@ export function NoteFocusView({
               </div>
             </section>
           )}
-
-          <section>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Pomodoro
-            </p>
-            <div className="mt-2">
-              <PomodoroTimer noteId={note.id} />
-            </div>
-          </section>
 
           <section>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">

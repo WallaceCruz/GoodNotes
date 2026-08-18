@@ -24,7 +24,6 @@ import { ChecklistEditor } from "./ChecklistEditor";
 
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 import { StatusBadge } from "./StatusSelect";
-import { PomodoroMini } from "./PomodoroTimer";
 import { notepadSurface } from "./note-appearance";
 import { useNoteAppearance } from "@/hooks/useNoteAppearance";
 import { RichNoteEditor } from "./RichNoteEditor";
@@ -150,7 +149,6 @@ function NotepadCardBase({
           {note.status && <StatusBadge status={note.status} />}
           {note.priority && <PriorityBadge priority={note.priority} />}
           {note.deadline && <DeadlineBadge deadline={note.deadline} />}
-          <PomodoroMini noteId={note.id} />
         </div>
 
         <input
