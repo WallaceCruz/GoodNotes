@@ -268,6 +268,7 @@ export function NoteFocusView({
           )}
         </div>
       </aside>
+      </div>
     </div>
   );
 }
