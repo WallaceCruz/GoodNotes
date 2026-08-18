@@ -83,6 +83,8 @@ export function RichNoteEditor({
   onChangeRef.current = onChange;
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [swatchOpen, setSwatchOpen] = useState(false);
+  const [tableOpen, setTableOpen] = useState(false);
+  const [grid, setGrid] = useState<{ r: number; c: number } | null>(null);
   const [hovered, setHovered] = useState<{ src: string; top: number; left: number } | null>(null);
   const proseRef = useRef<HTMLDivElement>(null);
   const replaceRef = useRef<HTMLInputElement>(null);
@@ -215,6 +217,14 @@ export function RichNoteEditor({
     );
   };
 
+  const insertTable = (rows: number, cols: number) => {
+    const ed = editorRef.current;
+    setTableOpen(false);
+    setGrid(null);
+    if (!ed || ed.isDestroyed) return;
+    ed.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
+  };
+
   const applyLink = () => {
     if (!editor || editor.isDestroyed) return;
     if (editor.isActive("link")) {
@@ -295,18 +305,61 @@ export function RichNoteEditor({
         {btn(null, () => fileRef.current?.click(), ImagePlus, "Adicionar imagem")}
         {btn(null, () => setSwatchOpen((v) => !v), Highlighter, "Cor de realce", false, editor?.isActive("highlight") ?? false)}
         {btn("link", applyLink, Link2, "Inserir hiperlink")}
-        {btn(
-          null,
-          () =>
-            editor?.isActive("table")
-              ? editor.chain().focus().deleteTable().run()
-              : editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
-          TableIcon,
-          editor?.isActive("table") ? "Excluir tabela" : "Inserir tabela",
-          false,
-          editor?.isActive("table") ?? false,
-        )}
-
+        <div className="relative">
+          <button
+            type="button"
+            aria-label="Inserir tabela"
+            title="Inserir tabela"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!mounted) setMounted(true);
+              setTableOpen((v) => !v);
+            }}
+            className={cn(
+              "rounded p-1 text-foreground/60 hover:bg-foreground/10",
+              (tableOpen || editor?.isActive("table")) && "bg-foreground/10 text-foreground",
+            )}
+          >
+            <TableIcon className={compact ? "h-3 w-3" : "h-4 w-4"} />
+          </button>
+          {tableOpen && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="absolute left-0 top-full z-30 mt-1 w-max rounded-md border border-border bg-popover p-2 shadow-md"
+            >
+              <p className="mb-1.5 text-[11px] text-muted-foreground">
+                {grid ? `${grid.r} x ${grid.c}` : "Escolha o tamanho"}
+              </p>
+              <div className="grid grid-cols-6 gap-0.5" onMouseLeave={() => setGrid(null)}>
+                {Array.from({ length: 36 }, (_, i) => {
+                  const r = Math.floor(i / 6) + 1;
+                  const c = (i % 6) + 1;
+                  const on = !!grid && r <= grid.r && c <= grid.c;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-label={`Tabela ${r} por ${c}`}
+                      onMouseEnter={() => setGrid({ r, c })}
+                      onClick={() => insertTable(r, c)}
+                      className={cn(
+                        "h-4 w-4 rounded-[2px] border border-border",
+                        on ? "bg-primary/70" : "bg-background",
+                      )}
+                    />
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={() => insertTable(3, 3)}
+                className="mt-2 w-full rounded border border-border px-2 py-1 text-[11px] hover:bg-accent"
+              >
+                Inserir 3 x 3
+              </button>
+            </div>
+          )}
+        </div>
 
         <input
           ref={fileRef}
@@ -382,7 +435,7 @@ export function RichNoteEditor({
           />
         )}
 
-        {showToolbar && mounted && <TableMenu editor={editor} containerRef={proseRef} />}
+        {mounted && <TableMenu editor={editor} containerRef={proseRef} />}
 
 
 
