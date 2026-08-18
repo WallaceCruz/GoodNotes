@@ -78,9 +78,6 @@ export function NoteFocusView({
       <div
         ref={scrollRef}
         onScroll={(e) => focusScroll.set(note.id, e.currentTarget.scrollTop)}
-        onMouseDown={(e) => {
-          if (e.target === e.currentTarget) requestClose();
-        }}
         className="scroll-thin min-w-0 flex-1 overflow-y-auto bg-muted/40 px-6 py-6"
       >
 
