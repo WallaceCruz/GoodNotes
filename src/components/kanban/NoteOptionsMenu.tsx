@@ -76,7 +76,7 @@ export function NoteOptionsMenu({
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            variant="destructive"
+            className="text-destructive focus:text-destructive"
             onClick={() => {
               store.removeNote(note.id);
               toast.success(`"${title}" excluíd${note.kind === "notepad" ? "o" : "a"}`, {
