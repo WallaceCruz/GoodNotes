@@ -56,13 +56,24 @@ export function NoteFocusView({
 
   return (
     <div
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) requestClose();
+      }}
       className={cn(
-        "flex min-h-0 flex-1",
+        "fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm sm:p-8",
         closing
-          ? "animate-out fade-out-0 zoom-out-95 duration-150 ease-in"
-          : "animate-in fade-in-0 zoom-in-[0.98] duration-200 ease-out",
+          ? "animate-out fade-out-0 duration-150 ease-in"
+          : "animate-in fade-in-0 duration-200 ease-out",
       )}
     >
+      <div
+        className={cn(
+          "flex h-[92vh] w-full max-w-[80rem] overflow-hidden rounded-2xl border border-border bg-background shadow-2xl",
+          closing
+            ? "animate-out zoom-out-95 duration-150 ease-in"
+            : "animate-in zoom-in-95 duration-200 ease-out",
+        )}
+      >
       {/* Canvas central em foco */}
       <div
         ref={scrollRef}
