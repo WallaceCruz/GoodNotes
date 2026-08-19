@@ -97,9 +97,7 @@ export function AppSidebar({
         >
           <PanelLeftOpen className={ICON} />
         </button>
-        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Layers className={ICON} />
-        </span>
+        <BrandLogo compact />
         <button
           onClick={onGoHome}
           aria-label="Home (kanban)"
