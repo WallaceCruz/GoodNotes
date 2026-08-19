@@ -34,6 +34,7 @@ import type { BoardStore } from "@/hooks/useBoardStore";
 import { useTeams } from "@/hooks/useTeams";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "./BrandLogo";
 import { UserMenu } from "./UserMenu";
 
 
