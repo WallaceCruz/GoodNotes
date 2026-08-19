@@ -11,6 +11,8 @@ import { NoteFocusView } from "@/components/kanban/NoteFocusView";
 import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { UserMenu } from "@/components/kanban/UserMenu";
 import { useBoardStore } from "@/hooks/useBoardStore";
+import { useWorkspaces } from "@/hooks/useWorkspaces";
+
 
 import type { Note } from "@/lib/board-types";
 import { stripHtml } from "@/components/kanban/note-style";
