@@ -122,7 +122,8 @@ function Index() {
           <div className="flex min-w-0 flex-1 flex-col">
             <header className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm">
               <Layers className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Meu Workspace</span>
+              <span className="text-muted-foreground">{workspaces.active.name}</span>
+
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
               <Folder className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">{store.project?.name ?? "-"}</span>
