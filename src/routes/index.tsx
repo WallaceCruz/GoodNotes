@@ -39,6 +39,8 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const store = useBoardStore();
+  const workspaces = useWorkspaces();
+
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [collapsed, setCollapsed] = useState(false);
