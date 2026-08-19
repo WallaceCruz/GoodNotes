@@ -131,18 +131,66 @@ export function AppSidebar({
     <TooltipProvider>
       <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-sidebar">
         <div className="flex items-center gap-2 px-3 py-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Layers className={ICON} />
-          </span>
-          <span className="text-sm font-semibold">Sticky Flow</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left transition-colors hover:bg-sidebar-accent">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-base text-primary-foreground">
+                  {ws.active.emoji}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+                  {ws.active.name}
+                </span>
+                <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+              {ws.workspaces.map((w) => (
+                <DropdownMenuItem key={w.id} onClick={() => ws.selectWorkspace(w.id)}>
+                  <span>{w.emoji}</span>
+                  <span className="flex-1 truncate">{w.name}</span>
+                  {w.id === ws.active.id && <Check className="h-4 w-4" />}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => {
+                  const name = window.prompt("Nome do workspace", "Novo workspace");
+                  if (name !== null) ws.addWorkspace(name);
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Novo workspace
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  const name = window.prompt("Renomear workspace", ws.active.name);
+                  if (name?.trim()) ws.renameWorkspace(ws.active.id, name.trim());
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+                Renomear atual
+              </DropdownMenuItem>
+              {ws.workspaces.length > 1 && (
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => ws.removeWorkspace(ws.active.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Excluir atual
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <button
             onClick={onToggleCollapsed}
             aria-label="Recolher menu lateral"
-            className="ml-auto flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
           >
             <PanelLeftClose className="h-4 w-4" />
           </button>
         </div>
+
 
         <nav className="space-y-0.5 px-2">
           <button
