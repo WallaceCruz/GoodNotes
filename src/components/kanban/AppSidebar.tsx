@@ -79,9 +79,13 @@ export function AppSidebar({
   onToggleCalendarView: () => void;
 }) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  const [teamsOpen, setTeamsOpen] = useState(true);
+  const ws = useWorkspaces();
+  const teams = useTeams();
   const showArchived = archivedView;
   const isOpen = (id: string) => open[id] ?? true;
   const projects = store.state.projects.filter((p) => showArchived || !p.archived);
+
 
   if (collapsed) {
     return (
