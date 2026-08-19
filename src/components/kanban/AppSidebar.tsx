@@ -149,14 +149,27 @@ export function AppSidebar({
   return (
     <TooltipProvider>
       <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-sidebar">
-        <div className="flex items-center gap-2 px-3 py-3">
+        {/* Marca do SaaS */}
+        <div className="flex items-center justify-between gap-2 px-3 pt-3">
+          <BrandLogo />
+          <button
+            onClick={onToggleCollapsed}
+            aria-label="Recolher menu lateral"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Seletor de workspace logo abaixo da marca */}
+        <div className="px-3 pb-2 pt-1.5">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left transition-colors hover:bg-sidebar-accent">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-base text-primary-foreground">
+              <button className="flex min-w-0 w-full items-center gap-2 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-sidebar-accent">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-sm">
                   {ws.active.emoji}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+                <span className="min-w-0 flex-1 truncate text-sm font-medium">
                   {ws.active.name}
                 </span>
                 <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -201,13 +214,6 @@ export function AppSidebar({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <button
-            onClick={onToggleCollapsed}
-            aria-label="Recolher menu lateral"
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-          >
-            <PanelLeftClose className="h-4 w-4" />
-          </button>
         </div>
 
 
