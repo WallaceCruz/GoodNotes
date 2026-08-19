@@ -11,7 +11,6 @@ import {
   FolderOpen,
   Home,
   Inbox,
-  Layers,
   PanelLeftClose,
   PanelLeftOpen,
   Pencil,
