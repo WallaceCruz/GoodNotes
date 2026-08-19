@@ -2,8 +2,10 @@ import {
   Archive,
   ArchiveRestore,
   CalendarDays,
+  Check,
   ChevronDown,
   ChevronRight,
+  ChevronsUpDown,
   FileText,
   Folder,
   FolderOpen,
@@ -12,14 +14,29 @@ import {
   Layers,
   PanelLeftClose,
   PanelLeftOpen,
+  Pencil,
   Plus,
   Trash2,
+  UserPlus,
+  Users,
+  X,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { BoardStore } from "@/hooks/useBoardStore";
+import { useTeams } from "@/hooks/useTeams";
+import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
+
 
 const ICON = "h-[18px] w-[18px] shrink-0";
 const ROW =
