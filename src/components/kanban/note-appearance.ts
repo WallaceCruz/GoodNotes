@@ -87,14 +87,14 @@ function shared(appearance: NoteAppearance): string[] {
 export function noteSurface(
   appearance: NoteAppearance,
   color: NoteColor,
-  opts: { tilt?: boolean } = {},
+  opts: { tilt?: boolean; tint?: string | null } = {},
 ): { className: string; style: CSSProperties } {
   const classes = [surface[appearance.style] ?? surface.classic, ...shared(appearance)];
   if (appearance.tilt && opts.tilt !== false) classes.push("note-tilt");
-  return {
-    className: classes.join(" "),
-    style: colorVars(appearance, noteTintVar[color]),
-  };
+  const style = colorVars(appearance, noteTintVar[color]);
+  // Cor personalizada da nota tem prioridade sobre a cor global da aparência.
+  if (opts.tint) (style as Record<string, string>)["--note-tint"] = opts.tint;
+  return { className: classes.join(" "), style };
 }
 
 export function notepadSurface(

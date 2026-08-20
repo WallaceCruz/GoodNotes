@@ -5,8 +5,10 @@ import Image from "@tiptap/extension-image";
 import Highlight from "@tiptap/extension-highlight";
 import Link from "@tiptap/extension-link";
 import { TableKit } from "@tiptap/extension-table";
+import { Node, mergeAttributes } from "@tiptap/core";
 import {
   Bold,
+  Film,
   Heading1,
   Heading2,
   Heading3,
@@ -39,6 +41,33 @@ const HIGHLIGHTS = [
   { label: "Rosa", value: "#fbcfe8" },
   { label: "Laranja", value: "#fed7aa" },
 ];
+
+// Vídeos (mp4/webm) como nó atômico arrastável dentro da nota.
+const Video = Node.create({
+  name: "video",
+  group: "block",
+  atom: true,
+  draggable: true,
+  addAttributes() {
+    return { src: { default: null } };
+  },
+  parseHTML() {
+    return [{ tag: "video" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "video",
+      mergeAttributes(HTMLAttributes, {
+        controls: "true",
+        playsinline: "true",
+        preload: "metadata",
+        class: "note-video",
+      }),
+    ];
+  },
+});
+
+const MAX_MEDIA_BYTES = 8 * 1024 * 1024;
 
 // Imagens arrastáveis: permite reordenar dentro da nota (a ordem fica no HTML salvo).
 const DraggableImage = Image.extend({ draggable: true, selectable: true });
@@ -94,6 +123,7 @@ export function RichNoteEditor({
   // instâncias do Tiptap montando ao mesmo tempo (loop de forceUpdate).
   const [mounted, setMounted] = useState(!compact);
   const fileRef = useRef<HTMLInputElement>(null);
+  const mediaRef = useRef<HTMLInputElement>(null);
 
 
   const images = useMemo(() => collectImages(content), [content]);
@@ -106,6 +136,7 @@ export function RichNoteEditor({
       Highlight.configure({ multicolor: true }),
       Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { rel: "noreferrer noopener", target: "_blank" } }),
       DraggableImage.configure({ inline: false, allowBase64: true, HTMLAttributes: { class: "note-img" } }),
+      Video,
       TableKit.configure({ table: { resizable: true, HTMLAttributes: { class: "note-table" } } }),
     ],
 
@@ -217,6 +248,28 @@ export function RichNoteEditor({
     );
   };
 
+  const insertMediaUrl = (url: string) => {
+    const ed = editorRef.current;
+    if (!ed || ed.isDestroyed) return;
+    const clean = url.trim();
+    if (!clean) return;
+    const isVideo = /\.(mp4|webm|ogg|mov)(\?|$)/i.test(clean) || clean.startsWith("data:video");
+    if (isVideo) ed.chain().focus().insertContent({ type: "video", attrs: { src: clean } }).run();
+    else ed.chain().focus().setImage({ src: clean }).run();
+  };
+
+  const insertMediaFiles = (files: FileList | null) => {
+    if (!files) return;
+    const list = Array.from(files).filter(
+      (f) => f.type.startsWith("video/") || f.type.startsWith("image/"),
+    );
+    const tooBig = list.filter((f) => f.size > MAX_MEDIA_BYTES);
+    if (tooBig.length > 0) window.alert("Arquivos acima de 8 MB não podem ser salvos na nota.");
+    void Promise.all(
+      list.filter((f) => f.size <= MAX_MEDIA_BYTES).map(async (f) => readAsDataUrl(f)),
+    ).then((urls) => urls.forEach(insertMediaUrl));
+  };
+
   const insertTable = (rows: number, cols: number) => {
     const ed = editorRef.current;
     setTableOpen(false);
@@ -303,6 +356,16 @@ export function RichNoteEditor({
         {onToggleChecklist &&
           btn(null, onToggleChecklist, ListChecks, "Checklist", false, checklistActive)}
         {btn(null, () => fileRef.current?.click(), ImagePlus, "Adicionar imagem")}
+        {btn(null, () => mediaRef.current?.click(), Film, "Adicionar GIF ou vídeo")}
+        {btn(
+          null,
+          () => {
+            const url = window.prompt("Cole o link do GIF ou vídeo (https://...)");
+            if (url?.trim()) insertMediaUrl(url);
+          },
+          Link2,
+          "Inserir GIF/vídeo por link",
+        )}
         {btn(null, () => setSwatchOpen((v) => !v), Highlighter, "Cor de realce", false, editor?.isActive("highlight") ?? false)}
         {btn("link", applyLink, Link2, "Inserir hiperlink")}
         <div className="relative">
@@ -360,6 +423,18 @@ export function RichNoteEditor({
             </div>
           )}
         </div>
+
+        <input
+          ref={mediaRef}
+          type="file"
+          accept="video/*,image/gif"
+          multiple
+          hidden
+          onChange={(e) => {
+            insertMediaFiles(e.target.files);
+            e.target.value = "";
+          }}
+        />
 
         <input
           ref={fileRef}

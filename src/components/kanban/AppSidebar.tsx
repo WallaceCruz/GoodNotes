@@ -15,6 +15,7 @@ import {
   PanelLeftOpen,
   Pencil,
   Plus,
+  Search,
   Trash2,
   UserPlus,
   Users,
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { BoardStore } from "@/hooks/useBoardStore";
+import type { BoardFile } from "@/lib/board-types";
 import { useTeams } from "@/hooks/useTeams";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { cn } from "@/lib/utils";
@@ -80,11 +82,24 @@ export function AppSidebar({
 }) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [teamsOpen, setTeamsOpen] = useState(true);
+  const [query, setQuery] = useState("");
   const ws = useWorkspaces();
   const teams = useTeams();
   const showArchived = archivedView;
-  const isOpen = (id: string) => open[id] ?? true;
-  const projects = store.state.projects.filter((p) => showArchived || !p.archived);
+  const q = query.trim().toLowerCase();
+  const isOpen = (id: string) => (q ? true : (open[id] ?? true));
+  const projects = store.state.projects
+    .filter((p) => showArchived || !p.archived)
+    .filter(
+      (p) =>
+        !q ||
+        p.name.toLowerCase().includes(q) ||
+        p.files.some((f) => f.name.toLowerCase().includes(q)),
+    );
+  const visibleFiles = (files: BoardFile[]) =>
+    files
+      .filter((f) => showArchived || !f.archived)
+      .filter((f) => !q || f.name.toLowerCase().includes(q));
 
 
   if (collapsed) {
@@ -217,6 +232,29 @@ export function AppSidebar({
         </div>
 
 
+        {/* Busca de projetos e arquivos */}
+        <div className="px-3 pb-2">
+          <div className="flex items-center gap-2 rounded-md border border-sidebar-border bg-background px-2 py-1.5">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar projetos e arquivos"
+              aria-label="Buscar projetos e arquivos"
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                aria-label="Limpar busca"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+
         <nav className="space-y-0.5 px-2">
           <button
             onClick={onGoHome}
@@ -345,8 +383,7 @@ export function AppSidebar({
                 </div>
 
                 {expanded &&
-                  p.files
-                    .filter((f) => showArchived || !f.archived)
+                  visibleFiles(p.files)
                     .map((f) => {
                       const selected = store.file?.id === f.id;
                       return (
