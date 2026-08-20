@@ -145,6 +145,8 @@ export type Note = {
   title: string;
   content: string;
   color: NoteColor;
+  /** Cor personalizada (hex) escolhida pelo usuário; sobrepõe `color`. */
+  colorHex?: string | null;
   author: string;
   assignee: string | null;
   updatedAt: number;
