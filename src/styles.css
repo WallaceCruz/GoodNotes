@@ -88,10 +88,10 @@
   --card-foreground: oklch(0.24 0.012 275);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.24 0.012 275);
-  --primary: oklch(0.31 0.015 275);
-  --primary-foreground: oklch(0.99 0.004 95);
-  --secondary: oklch(0.965 0.005 95);
-  --secondary-foreground: oklch(0.31 0.015 275);
+  --primary: #ff4d00;
+  --primary-foreground: #ffffff;
+  --secondary: #f9e8e3;
+  --secondary-foreground: #5a2308;
   --muted: oklch(0.965 0.005 95);
   --muted-foreground: oklch(0.55 0.012 275);
   --accent: oklch(0.955 0.008 95);
@@ -108,8 +108,8 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.975 0.005 95);
   --sidebar-foreground: oklch(0.24 0.012 275);
-  --sidebar-primary: oklch(0.31 0.015 275);
-  --sidebar-primary-foreground: oklch(0.99 0.004 95);
+  --sidebar-primary: #ff4d00;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: oklch(0.945 0.008 95);
   --sidebar-accent-foreground: oklch(0.24 0.012 275);
   --sidebar-border: oklch(0.912 0.005 95);
@@ -142,10 +142,10 @@
   --card-foreground: oklch(0.965 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.965 0 0);
-  --primary: oklch(0.96 0 0);
-  --primary-foreground: oklch(0.18 0 0);
-  --secondary: oklch(0.245 0 0);
-  --secondary-foreground: oklch(0.965 0 0);
+  --primary: #ff4d00;
+  --primary-foreground: #ffffff;
+  --secondary: #2a1a15;
+  --secondary-foreground: #f9e8e3;
   --muted: oklch(0.245 0 0);
   --muted-foreground: oklch(0.7 0 0);
   --accent: oklch(0.27 0 0);
@@ -162,8 +162,8 @@
   --chart-5: oklch(0.66 0.18 16);
   --sidebar: oklch(0.185 0 0);
   --sidebar-foreground: oklch(0.955 0 0);
-  --sidebar-primary: oklch(0.96 0 0);
-  --sidebar-primary-foreground: oklch(0.18 0 0);
+  --sidebar-primary: #ff4d00;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: oklch(0.27 0 0);
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
@@ -520,4 +520,16 @@
 
 @utility note-corner-pill {
   border-radius: 2.5rem;
+}
+
+.note-prose video,
+.note-prose img[src$=".gif"] {
+  max-width: 100%;
+  border-radius: 0.5rem;
+}
+
+.note-prose video {
+  display: block;
+  margin: 0.5rem 0;
+  background: #000;
 }
