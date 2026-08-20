@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Archive, ArchiveRestore, ArrowLeft, Pin, PinOff, X } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Eye, Pencil, Pin, PinOff, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
 import { AssigneeSelect } from "./AssigneeSelect";
@@ -27,6 +27,7 @@ export function NoteFocusView({
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
   const isNotepad = note.kind === "notepad";
   const [closing, setClosing] = useState(false);
+  const [editing, setEditing] = useState(false);
   const closingRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -94,31 +95,59 @@ export function NoteFocusView({
             <span className="text-[11px] text-muted-foreground">
               {isNotepad ? "Bloco de notas" : "Nota autoadesiva"} · editado {timeAgo(note.updatedAt)}
             </span>
+            <button
+              onClick={() => setEditing((v) => !v)}
+              className={cn(
+                "ml-auto flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs",
+                editing ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent",
+              )}
+            >
+              {editing ? <Eye className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
+              {editing ? "Visualizar" : "Editar"}
+            </button>
           </div>
 
           <article
+            style={
+              !isNotepad && note.colorHex ? { backgroundColor: note.colorHex } : undefined
+            }
             className={cn(
               "rounded-2xl border border-border/70 p-8 shadow-focus",
-              isNotepad ? "bg-card" : cn(noteBg[note.color], "text-note-foreground"),
+              isNotepad
+                ? "bg-card"
+                : cn(!note.colorHex && noteBg[note.color], "text-note-foreground"),
             )}
           >
-            <input
-              value={note.title}
-              onChange={(e) => onChange({ title: e.target.value })}
-              aria-label="Título da nota"
-              placeholder="Sem título"
-              className="w-full bg-transparent text-3xl font-bold leading-tight tracking-tight outline-none placeholder:text-foreground/30"
-            />
+            {editing ? (
+              <input
+                value={note.title}
+                onChange={(e) => onChange({ title: e.target.value })}
+                aria-label="Título da nota"
+                placeholder="Sem título"
+                className="w-full bg-transparent text-3xl font-bold leading-tight tracking-tight outline-none placeholder:text-foreground/30"
+              />
+            ) : (
+              <h2 className="text-3xl font-bold leading-tight tracking-tight">
+                {note.title || "Sem título"}
+              </h2>
+            )}
 
             <div className="mt-4">
-              <RichNoteEditor
-                content={note.content}
-                onChange={(html) => onChange({ content: html })}
-                minHeight="min-h-[64vh]"
-                maxHeight="max-h-[72vh]"
-                checklistActive={note.showChecklist}
-                onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
-              />
+              {editing ? (
+                <RichNoteEditor
+                  content={note.content}
+                  onChange={(html) => onChange({ content: html })}
+                  minHeight="min-h-[64vh]"
+                  maxHeight="max-h-[72vh]"
+                  checklistActive={note.showChecklist}
+                  onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
+                />
+              ) : (
+                <div
+                  className="note-prose scroll-thin max-h-[72vh] min-h-[64vh] overflow-y-auto text-sm"
+                  dangerouslySetInnerHTML={{ __html: note.content || "<p></p>" }}
+                />
+              )}
             </div>
 
             {note.showChecklist && (
@@ -252,14 +281,36 @@ export function NoteFocusView({
                   <button
                     key={c}
                     aria-label={noteLabel[c]}
-                    onClick={() => onChange({ color: c })}
+                    onClick={() => onChange({ color: c, colorHex: null })}
                     className={cn(
                       "h-6 w-6 rounded-full border border-border",
                       noteBg[c],
-                      note.color === c && "ring-2 ring-ring ring-offset-2 ring-offset-background",
+                      !note.colorHex &&
+                        note.color === c &&
+                        "ring-2 ring-ring ring-offset-2 ring-offset-background",
                     )}
                   />
                 ))}
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <input
+                  type="color"
+                  aria-label="Cor personalizada da nota"
+                  value={note.colorHex ?? "#ffd166"}
+                  onChange={(e) => onChange({ colorHex: e.target.value })}
+                  className="h-7 w-10 cursor-pointer rounded border border-border bg-background p-0.5"
+                />
+                <span className="text-[11px] text-muted-foreground">
+                  {note.colorHex ? `Personalizada ${note.colorHex}` : "Cor personalizada"}
+                </span>
+                {note.colorHex && (
+                  <button
+                    onClick={() => onChange({ colorHex: null })}
+                    className="ml-auto rounded border border-border px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent"
+                  >
+                    Limpar
+                  </button>
+                )}
               </div>
             </section>
           )}
