@@ -37,7 +37,7 @@ function StickyNoteCardBase({
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
   const showChecklist = note.showChecklist;
   const { appearance } = useNoteAppearance(store.project?.id);
-  const surface = noteSurface(appearance, note.color);
+  const surface = noteSurface(appearance, note.color, { tint: note.colorHex ?? null });
 
 
   return (
@@ -51,7 +51,10 @@ function StickyNoteCardBase({
       }}
       className={cn(
         "group relative overflow-hidden border border-border/60 text-note-foreground transition-all duration-200",
-        appearance.style === "classic" && !appearance.bgColor && noteBg[note.color],
+        appearance.style === "classic" &&
+          !appearance.bgColor &&
+          !note.colorHex &&
+          noteBg[note.color],
         surface.className,
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",
