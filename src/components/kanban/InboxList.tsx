@@ -1,9 +1,9 @@
 import { Archive, MessageSquare, Search, X } from "lucide-react";
 import { useState } from "react";
-import { PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note, type Priority } from "@/lib/board-types";
+import { type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
-import { priorityClass, stripHtml, timeAgo } from "./note-style";
-import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
+import { stripHtml, timeAgo } from "./note-style";
+import { DeadlineBadge } from "./NoteMeta";
 
 type Status = "all" | "active" | "archived";
 
@@ -23,23 +23,18 @@ export function InboxList({
   onSelect: (id: string) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [priorities, setPriorities] = useState<Priority[]>([]);
   const [status, setStatus] = useState<Status>("all");
-
-  const togglePriority = (p: Priority) =>
-    setPriorities((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
 
   const q = query.trim().toLowerCase();
   const filtered = notes.filter((n) => {
     if (status === "active" && n.archived) return false;
     if (status === "archived" && !n.archived) return false;
-    if (priorities.length > 0 && !(n.priority && priorities.includes(n.priority))) return false;
     if (q && !`${n.title} ${n.tags.join(" ")} ${stripHtml(n.content)}`.toLowerCase().includes(q))
       return false;
     return true;
   });
 
-  const dirty = q !== "" || priorities.length > 0 || status !== "all";
+  const dirty = q !== "" || status !== "all";
 
   return (
     <section className="flex w-80 shrink-0 flex-col border-r border-border bg-background">
@@ -79,7 +74,6 @@ export function InboxList({
               aria-label="Limpar filtros do inbox"
               onClick={() => {
                 setQuery("");
-                setPriorities([]);
                 setStatus("all");
               }}
               className="text-muted-foreground hover:text-foreground"
@@ -89,22 +83,6 @@ export function InboxList({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-1">
-          {PRIORITIES.map((p) => (
-            <button
-              key={p}
-              onClick={() => togglePriority(p)}
-              className={cn(
-                "rounded-full border px-2 py-0.5 text-[11px]",
-                priorities.includes(p)
-                  ? priorityClass[p]
-                  : "border-border text-muted-foreground hover:bg-accent",
-              )}
-            >
-              {PRIORITY_ICON[p]} {PRIORITY_LABEL[p]}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="scroll-thin flex-1 overflow-y-auto">
@@ -127,10 +105,9 @@ export function InboxList({
               <span className="ml-auto">{timeAgo(n.updatedAt)}</span>
             </div>
             <p className="mt-1.5 text-sm font-semibold leading-snug">{n.title}</p>
-            {(n.priority || n.deadline) && (
+            {n.deadline && (
               <div className="mt-1 flex flex-wrap items-center gap-1">
-                {n.priority && <PriorityBadge priority={n.priority} />}
-                {n.deadline && <DeadlineBadge deadline={n.deadline} />}
+                <DeadlineBadge deadline={n.deadline} />
               </div>
             )}
             <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">

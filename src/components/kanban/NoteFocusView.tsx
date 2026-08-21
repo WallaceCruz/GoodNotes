@@ -1,16 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Archive, ArchiveRestore, ArrowLeft, Eye, Pencil, Pin, PinOff, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import { NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
-import { AssigneeSelect } from "./AssigneeSelect";
+import { type Note } from "@/lib/board-types";
 import { ChecklistEditor } from "./ChecklistEditor";
-import { DeadlinePicker } from "./DeadlinePicker";
 import { RichNoteEditor } from "./RichNoteEditor";
-import { TagEditor } from "./TagEditor";
-import { StatusSelect } from "./StatusSelect";
-import { CategorySelect } from "./CategorySelect";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel, priorityClass, timeAgo } from "./note-style";
+import { noteBg, timeAgo } from "./note-style";
 
 // Guarda a rolagem da página de detalhes por nota, para reabrir onde parou.
 const focusScroll = new Map<string, number>();
@@ -95,16 +90,48 @@ export function NoteFocusView({
             <span className="text-[11px] text-muted-foreground">
               {isNotepad ? "Bloco de notas" : "Nota autoadesiva"} · editado {timeAgo(note.updatedAt)}
             </span>
-            <button
-              onClick={() => setEditing((v) => !v)}
-              className={cn(
-                "ml-auto flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs",
-                editing ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent",
-              )}
-            >
-              {editing ? <Eye className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
-              {editing ? "Visualizar" : "Editar"}
-            </button>
+            <div className="ml-auto flex items-center gap-1.5">
+              <button
+                onClick={() => store.setNotePinned(note.id, !note.pinned)}
+                title={note.pinned ? "Desafixar" : "Fixar"}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs hover:bg-accent",
+                  note.pinned ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {note.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+                {note.pinned ? "Desafixar" : "Fixar"}
+              </button>
+              <button
+                onClick={() => store.setNoteArchived(note.id, !note.archived)}
+                title={note.archived ? "Restaurar" : "Arquivar"}
+                className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent"
+              >
+                {note.archived ? (
+                  <ArchiveRestore className="h-3.5 w-3.5" />
+                ) : (
+                  <Archive className="h-3.5 w-3.5" />
+                )}
+                {note.archived ? "Restaurar" : "Arquivar"}
+              </button>
+              <button
+                onClick={() => setEditing((v) => !v)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs",
+                  editing ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent",
+                )}
+              >
+                {editing ? <Eye className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
+                {editing ? "Visualizar" : "Editar"}
+              </button>
+              <button
+                onClick={requestClose}
+                aria-label="Fechar nota"
+                className="flex items-center justify-center rounded-md border border-border p-1.5 text-muted-foreground hover:bg-accent"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           <article
@@ -164,158 +191,6 @@ export function NoteFocusView({
         </div>
       </div>
 
-      {/* Sidebar de detalhes */}
-      <aside className="scroll-thin flex w-[22rem] shrink-0 flex-col overflow-y-auto border-l border-border bg-background">
-        <header className="flex items-center gap-2 border-b border-border px-3 py-2">
-          <span className="text-sm font-semibold">Detalhes</span>
-          <button
-            onClick={() => store.setNotePinned(note.id, !note.pinned)}
-            className={cn(
-              "ml-auto flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:bg-accent",
-              note.pinned ? "text-foreground" : "text-muted-foreground",
-            )}
-          >
-            {note.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
-            {note.pinned ? "Desafixar" : "Fixar"}
-          </button>
-          <button
-            onClick={() => store.setNoteArchived(note.id, !note.archived)}
-            className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent"
-          >
-            {note.archived ? (
-              <ArchiveRestore className="h-3.5 w-3.5" />
-            ) : (
-              <Archive className="h-3.5 w-3.5" />
-            )}
-            {note.archived ? "Restaurar" : "Arquivar"}
-          </button>
-          <button onClick={requestClose} aria-label="Fechar nota" className="text-muted-foreground">
-            <X className="h-4 w-4" />
-          </button>
-        </header>
-
-        <div className="space-y-5 p-4">
-          <section>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Responsável
-            </p>
-            <div className="mt-2">
-              <AssigneeSelect
-                value={note.assignee}
-                onChange={(assignee) => onChange({ assignee })}
-                size="md"
-              />
-            </div>
-          </section>
-
-          <section>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Etiquetas
-            </p>
-            <div className="mt-2">
-              <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} store={store} size="md" />
-            </div>
-          </section>
-
-          <section>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Status
-            </p>
-            <div className="mt-2">
-              <StatusSelect value={note.status} onChange={(status) => onChange({ status })} />
-            </div>
-          </section>
-
-          {!isNotepad && (
-            <section>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Categoria
-              </p>
-              <div className="mt-2">
-                <CategorySelect
-                  value={note.category}
-                  onChange={(category) => onChange({ category })}
-                />
-              </div>
-            </section>
-          )}
-
-          <section>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Prioridade
-            </p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {PRIORITIES.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => onChange({ priority: note.priority === p ? null : p })}
-                  className={cn(
-                    "rounded-full border px-2.5 py-1 text-xs",
-                    note.priority === p
-                      ? priorityClass[p]
-                      : "border-border bg-background text-muted-foreground hover:bg-accent",
-                  )}
-                >
-                  {PRIORITY_ICON[p]} {PRIORITY_LABEL[p]}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Prazo de conclusão
-            </p>
-            <div className="mt-2">
-              <DeadlinePicker value={note.deadline} onChange={(deadline) => onChange({ deadline })} />
-            </div>
-          </section>
-
-          {!isNotepad && (
-            <section>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Cor da nota
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {NOTE_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    aria-label={noteLabel[c]}
-                    onClick={() => onChange({ color: c, colorHex: null })}
-                    className={cn(
-                      "h-6 w-6 rounded-full border border-border",
-                      noteBg[c],
-                      !note.colorHex &&
-                        note.color === c &&
-                        "ring-2 ring-ring ring-offset-2 ring-offset-background",
-                    )}
-                  />
-                ))}
-              </div>
-              <div className="mt-3 flex items-center gap-2">
-                <input
-                  type="color"
-                  aria-label="Cor personalizada da nota"
-                  value={note.colorHex ?? "#ffd166"}
-                  onChange={(e) => onChange({ colorHex: e.target.value })}
-                  className="h-7 w-10 cursor-pointer rounded border border-border bg-background p-0.5"
-                />
-                <span className="text-[11px] text-muted-foreground">
-                  {note.colorHex ? `Personalizada ${note.colorHex}` : "Cor personalizada"}
-                </span>
-                {note.colorHex && (
-                  <button
-                    onClick={() => onChange({ colorHex: null })}
-                    className="ml-auto rounded border border-border px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent"
-                  >
-                    Limpar
-                  </button>
-                )}
-              </div>
-            </section>
-          )}
-        </div>
-      </aside>
       </div>
     </div>
   );
