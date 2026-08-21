@@ -74,7 +74,6 @@ export function InboxList({
               aria-label="Limpar filtros do inbox"
               onClick={() => {
                 setQuery("");
-                setPriorities([]);
                 setStatus("all");
               }}
               className="text-muted-foreground hover:text-foreground"
