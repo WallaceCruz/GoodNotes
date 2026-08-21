@@ -23,23 +23,18 @@ export function InboxList({
   onSelect: (id: string) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [priorities, setPriorities] = useState<Priority[]>([]);
   const [status, setStatus] = useState<Status>("all");
-
-  const togglePriority = (p: Priority) =>
-    setPriorities((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
 
   const q = query.trim().toLowerCase();
   const filtered = notes.filter((n) => {
     if (status === "active" && n.archived) return false;
     if (status === "archived" && !n.archived) return false;
-    if (priorities.length > 0 && !(n.priority && priorities.includes(n.priority))) return false;
     if (q && !`${n.title} ${n.tags.join(" ")} ${stripHtml(n.content)}`.toLowerCase().includes(q))
       return false;
     return true;
   });
 
-  const dirty = q !== "" || priorities.length > 0 || status !== "all";
+  const dirty = q !== "" || status !== "all";
 
   return (
     <section className="flex w-80 shrink-0 flex-col border-r border-border bg-background">
