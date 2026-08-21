@@ -74,7 +74,7 @@ function KanbanColumnBase({
   activeNoteId: string | null;
   store: BoardStore;
   onAddNote: (kind: NoteKind) => void;
-  onOpenNote: (id: string) => void;
+  onOpenNote: (id: string, mode?: "view" | "edit") => void;
   highlightIds?: Set<string> | undefined;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
@@ -272,7 +272,7 @@ function KanbanColumnBase({
                   note={n}
                   store={store}
                   active={activeNoteId === n.id}
-                  onOpen={() => onOpenNote(n.id)}
+                  onOpen={(mode) => onOpenNote(n.id, mode)}
                 />
               </div>
             );

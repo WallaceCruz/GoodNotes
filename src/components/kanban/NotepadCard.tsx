@@ -27,7 +27,7 @@ function NotepadCardBase({
   note: Note;
   active: boolean;
   store: BoardStore;
-  onOpen: () => void;
+  onOpen: (mode?: "view" | "edit") => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: note.id,
@@ -66,12 +66,12 @@ function NotepadCardBase({
           <button
             aria-label="Expandir bloco"
             title="Expandir bloco"
-            onClick={onOpen}
+            onClick={() => onOpen("view")}
             className="flex h-6 w-6 items-center justify-center rounded text-foreground/60 opacity-0 transition-opacity hover:bg-foreground/10 hover:text-foreground group-hover:opacity-100"
           >
             <Maximize2 className="h-3.5 w-3.5" />
           </button>
-          <NoteOptionsMenu note={note} store={store} onOpen={onOpen} />
+          <NoteOptionsMenu note={note} store={store} onOpen={() => onOpen("edit")} />
         </div>
       </div>
 
