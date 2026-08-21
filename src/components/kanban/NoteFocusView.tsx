@@ -90,16 +90,48 @@ export function NoteFocusView({
             <span className="text-[11px] text-muted-foreground">
               {isNotepad ? "Bloco de notas" : "Nota autoadesiva"} · editado {timeAgo(note.updatedAt)}
             </span>
-            <button
-              onClick={() => setEditing((v) => !v)}
-              className={cn(
-                "ml-auto flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs",
-                editing ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent",
-              )}
-            >
-              {editing ? <Eye className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
-              {editing ? "Visualizar" : "Editar"}
-            </button>
+            <div className="ml-auto flex items-center gap-1.5">
+              <button
+                onClick={() => store.setNotePinned(note.id, !note.pinned)}
+                title={note.pinned ? "Desafixar" : "Fixar"}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs hover:bg-accent",
+                  note.pinned ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {note.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+                {note.pinned ? "Desafixar" : "Fixar"}
+              </button>
+              <button
+                onClick={() => store.setNoteArchived(note.id, !note.archived)}
+                title={note.archived ? "Restaurar" : "Arquivar"}
+                className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent"
+              >
+                {note.archived ? (
+                  <ArchiveRestore className="h-3.5 w-3.5" />
+                ) : (
+                  <Archive className="h-3.5 w-3.5" />
+                )}
+                {note.archived ? "Restaurar" : "Arquivar"}
+              </button>
+              <button
+                onClick={() => setEditing((v) => !v)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs",
+                  editing ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent",
+                )}
+              >
+                {editing ? <Eye className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
+                {editing ? "Visualizar" : "Editar"}
+              </button>
+              <button
+                onClick={requestClose}
+                aria-label="Fechar nota"
+                className="flex items-center justify-center rounded-md border border-border p-1.5 text-muted-foreground hover:bg-accent"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           <article
