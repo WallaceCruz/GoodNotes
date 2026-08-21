@@ -1,9 +1,9 @@
 import { Archive, MessageSquare, Search, X } from "lucide-react";
 import { useState } from "react";
-import { PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note, type Priority } from "@/lib/board-types";
+import { type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
-import { priorityClass, stripHtml, timeAgo } from "./note-style";
-import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
+import { stripHtml, timeAgo } from "./note-style";
+import { DeadlineBadge } from "./NoteMeta";
 
 type Status = "all" | "active" | "archived";
 
