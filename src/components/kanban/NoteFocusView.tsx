@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Archive, ArchiveRestore, ArrowLeft, Eye, Pencil, Pin, PinOff, X } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Eye, Pin, PinOff, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { type Note } from "@/lib/board-types";
 import { ChecklistEditor } from "./ChecklistEditor";
@@ -222,6 +222,3 @@ export function NoteFocusView({
     </div>
   );
 }
-
-// evita import não usado quando o modo edição muda de ícone
-void Pencil;
