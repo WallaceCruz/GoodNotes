@@ -1,16 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Archive, ArchiveRestore, ArrowLeft, Eye, Pencil, Pin, PinOff, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import { NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
-import { AssigneeSelect } from "./AssigneeSelect";
+import { type Note } from "@/lib/board-types";
 import { ChecklistEditor } from "./ChecklistEditor";
-import { DeadlinePicker } from "./DeadlinePicker";
 import { RichNoteEditor } from "./RichNoteEditor";
-import { TagEditor } from "./TagEditor";
-import { StatusSelect } from "./StatusSelect";
-import { CategorySelect } from "./CategorySelect";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel, priorityClass, timeAgo } from "./note-style";
+import { noteBg, timeAgo } from "./note-style";
 
 // Guarda a rolagem da página de detalhes por nota, para reabrir onde parou.
 const focusScroll = new Map<string, number>();
