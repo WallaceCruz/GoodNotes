@@ -105,10 +105,9 @@ export function InboxList({
               <span className="ml-auto">{timeAgo(n.updatedAt)}</span>
             </div>
             <p className="mt-1.5 text-sm font-semibold leading-snug">{n.title}</p>
-            {(n.priority || n.deadline) && (
+            {n.deadline && (
               <div className="mt-1 flex flex-wrap items-center gap-1">
-                {n.priority && <PriorityBadge priority={n.priority} />}
-                {n.deadline && <DeadlineBadge deadline={n.deadline} />}
+                <DeadlineBadge deadline={n.deadline} />
               </div>
             )}
             <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
