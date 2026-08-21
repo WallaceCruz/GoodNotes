@@ -89,22 +89,6 @@ export function InboxList({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-1">
-          {PRIORITIES.map((p) => (
-            <button
-              key={p}
-              onClick={() => togglePriority(p)}
-              className={cn(
-                "rounded-full border px-2 py-0.5 text-[11px]",
-                priorities.includes(p)
-                  ? priorityClass[p]
-                  : "border-border text-muted-foreground hover:bg-accent",
-              )}
-            >
-              {PRIORITY_ICON[p]} {PRIORITY_LABEL[p]}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="scroll-thin flex-1 overflow-y-auto">
