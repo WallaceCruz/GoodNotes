@@ -44,6 +44,11 @@ function Index() {
   const workspaces = useWorkspaces();
 
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+  const [focusMode, setFocusMode] = useState<"view" | "edit">("view");
+  const openNote = useCallback((id: string, mode: "view" | "edit" = "view") => {
+    setFocusMode(mode);
+    setActiveNoteId(id);
+  }, []);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [collapsed, setCollapsed] = useState(false);
   const [automationsOpen, setAutomationsOpen] = useState(false);
@@ -174,7 +179,7 @@ function Index() {
               {calendarView ? (
                 <CalendarView
                   notes={store.file?.notes ?? []}
-                  onOpenNote={setActiveNoteId}
+                  onOpenNote={openNote}
                   selectedDay={selectedDay}
                   onSelectDay={setSelectedDay}
                   onCreateNote={(deadline) => {
@@ -194,7 +199,7 @@ function Index() {
                   <KanbanBoard
                     store={store}
                     activeNoteId={activeNoteId}
-                    onOpenNote={setActiveNoteId}
+                    onOpenNote={openNote}
                     matches={matches}
                     highlightIds={highlightIds}
                   />
@@ -206,6 +211,7 @@ function Index() {
               <NoteFocusView
                 note={activeNote}
                 store={store}
+                mode={focusMode}
                 onClose={() => setActiveNoteId(null)}
               />
             )}

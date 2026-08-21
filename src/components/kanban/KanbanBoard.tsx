@@ -34,7 +34,7 @@ export function KanbanBoard({
 }: {
   store: BoardStore;
   activeNoteId: string | null;
-  onOpenNote: (id: string) => void;
+  onOpenNote: (id: string, mode?: "view" | "edit") => void;
   matches: (note: Note) => boolean;
   highlightIds?: Set<string> | undefined;
 }) {
