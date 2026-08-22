@@ -198,8 +198,14 @@ export function NoteFocusView({
       className={overlayClass}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={note.title || "Nota"}
+        data-note-focus=""
+        tabIndex={-1}
         className={cn(
-          "flex h-[92vh] w-full max-w-[80rem] overflow-hidden rounded-2xl border border-border bg-background shadow-2xl",
+          "flex h-[92vh] w-full max-w-[80rem] overflow-hidden rounded-2xl border border-border bg-background shadow-2xl outline-none",
           enterClass,
         )}
       >
