@@ -149,6 +149,8 @@ export type Note = {
   colorHex?: string | null;
   author: string;
   assignee: string | null;
+  /** Responsáveis adicionais (multi). `assignee` permanece como o primeiro da lista. */
+  assignees?: string[];
   updatedAt: number;
   tags: string[];
   checklist: ChecklistItem[];
