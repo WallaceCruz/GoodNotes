@@ -2,9 +2,7 @@ import { Archive, ArchiveRestore, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
 import { AssigneeSelect } from "./AssigneeSelect";
-import { ChecklistEditor } from "./ChecklistEditor";
 import { DeadlinePicker } from "./DeadlinePicker";
-import { RichNoteEditor } from "./RichNoteEditor";
 import { TagEditor } from "./TagEditor";
 import { StatusSelect } from "./StatusSelect";
 import { CategorySelect } from "./CategorySelect";
@@ -46,48 +44,26 @@ export function NoteEditorPanel({
       </header>
 
       <div className="scroll-thin flex-1 overflow-y-auto p-3">
-        <div
-          className={cn(
-            "rounded-md border border-border/60 p-3 shadow-sm",
-            note.kind === "notepad" ? "bg-card" : noteBg[note.color],
-          )}
-        >
-          <input
-            value={note.title}
-            onChange={(e) => onChange({ title: e.target.value })}
-            aria-label="Título da nota"
-            className="w-full bg-transparent text-base font-bold outline-none"
-          />
-
-          <RichNoteEditor
-            content={note.content}
-            onChange={(html) => onChange({ content: html })}
-            minHeight="min-h-32"
-            checklistActive={note.showChecklist}
-            onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
-          />
-
-          {note.showChecklist && (
-            <div className="mt-3">
-              <ChecklistEditor
-                items={note.checklist}
-                onAdd={(text) => store.addChecklistItem(note.id, text)}
-                onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
-                onRemove={(id) => store.removeChecklistItem(note.id, id)}
-              />
-            </div>
-          )}
-
-          <footer className="mt-3 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Responsável
+          </p>
+          <div className="mt-2">
             <AssigneeSelect
               value={note.assignee}
               onChange={(assignee) => onChange({ assignee })}
               size="md"
             />
-            <div className="min-w-0 flex-1">
-              <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} store={store} size="md" />
-            </div>
-          </footer>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Etiquetas
+          </p>
+          <div className="mt-2">
+            <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} store={store} size="md" />
+          </div>
         </div>
 
         <div className="mt-4">
