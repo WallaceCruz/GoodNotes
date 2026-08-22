@@ -28,6 +28,7 @@ export function NoteFocusView({
   const [editing, setEditing] = useState(mode === "edit");
   const closingRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const requestClose = () => {
     if (closingRef.current) return;
