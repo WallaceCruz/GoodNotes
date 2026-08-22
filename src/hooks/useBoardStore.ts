@@ -293,6 +293,7 @@ export function useBoardStore() {
           color: kind === "notepad" ? "slate" : "amber",
           author: "Você",
           assignee: "Walle Dev",
+          assignees: ["Walle Dev"],
           updatedAt: Date.now(),
           tags: [],
           checklist: [],
