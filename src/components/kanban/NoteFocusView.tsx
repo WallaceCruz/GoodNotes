@@ -42,15 +42,57 @@ export function NoteFocusView({
     if (el) el.scrollTop = focusScroll.get(note.id) ?? 0;
   }, [note.id]);
 
+  // Focus trap + Esc: mantém o teclado dentro do card em foco.
   useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+
+    const focusables = () =>
+      Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>(
+          'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[contenteditable="true"],[tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      ).filter((el) => el.offsetParent !== null || el === document.activeElement);
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
       const target = e.target as HTMLElement | null;
-      if (target?.closest("[role='dialog']")) return;
-      requestClose();
+      const inNested = !!target?.closest("[role='dialog']:not([data-note-focus])");
+
+      if (e.key === "Escape") {
+        if (inNested) return;
+        e.preventDefault();
+        requestClose();
+        return;
+      }
+
+      if (e.key === "Tab" && !inNested) {
+        const items = focusables();
+        if (items.length === 0) {
+          e.preventDefault();
+          dialogRef.current?.focus();
+          return;
+        }
+        const first = items[0]!;
+        const last = items[items.length - 1]!;
+        const active = document.activeElement as HTMLElement | null;
+        if (!dialogRef.current?.contains(active)) {
+          e.preventDefault();
+          first.focus();
+        } else if (e.shiftKey && active === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+
+    window.addEventListener("keydown", onKey, true);
+    return () => {
+      window.removeEventListener("keydown", onKey, true);
+      previous?.focus?.();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
