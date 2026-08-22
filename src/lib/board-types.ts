@@ -149,6 +149,8 @@ export type Note = {
   colorHex?: string | null;
   author: string;
   assignee: string | null;
+  /** Responsáveis adicionais (multi). `assignee` permanece como o primeiro da lista. */
+  assignees?: string[];
   updatedAt: number;
   tags: string[];
   checklist: ChecklistItem[];
@@ -378,6 +380,7 @@ function makeFile(name: string, seed: Array<Partial<Note>>): BoardFile {
       color: n.color ?? "rose",
       author: n.author ?? "Walle Dev",
       assignee: n.assignee ?? n.author ?? null,
+      assignees: n.assignees ?? (n.assignee ?? n.author ? [(n.assignee ?? n.author)!] : []),
       updatedAt: n.updatedAt ?? minutes(60 + i * 30),
       tags: n.tags ?? [],
       checklist: n.checklist ?? [],
@@ -481,4 +484,26 @@ export function createInitialState(): BoardState {
       },
     ],
   };
+}
+
+/** Lista de responsáveis de uma nota (compatível com o campo legado `assignee`). */
+export function noteAssignees(note: Pick<Note, "assignee" | "assignees">): string[] {
+  if (note.assignees?.length) return note.assignees;
+  return note.assignee ? [note.assignee] : [];
+}
+
+/** Chave da coluna nativa onde a nota está (ou null para colunas personalizadas). */
+export function nativeKeyOf(columns: Column[], columnId: string): NativeColumnKey | null {
+  return columns.find((c) => c.id === columnId)?.native ?? null;
+}
+
+/** Status efetivo considerando a coluna: "Concluído" conclui, "Em andamento" mostra progresso. */
+export function effectiveStatus(
+  note: Pick<Note, "status" | "columnId">,
+  columns: Column[],
+): NoteStatus | null {
+  const key = nativeKeyOf(columns, note.columnId);
+  if (key === "done") return "done";
+  if (key === "doing") return note.status ?? "doing";
+  return note.status;
 }
