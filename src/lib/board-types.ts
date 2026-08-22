@@ -485,3 +485,25 @@ export function createInitialState(): BoardState {
     ],
   };
 }
+
+/** Lista de responsáveis de uma nota (compatível com o campo legado `assignee`). */
+export function noteAssignees(note: Pick<Note, "assignee" | "assignees">): string[] {
+  if (note.assignees?.length) return note.assignees;
+  return note.assignee ? [note.assignee] : [];
+}
+
+/** Chave da coluna nativa onde a nota está (ou null para colunas personalizadas). */
+export function nativeKeyOf(columns: Column[], columnId: string): NativeColumnKey | null {
+  return columns.find((c) => c.id === columnId)?.native ?? null;
+}
+
+/** Status efetivo considerando a coluna: "Concluído" conclui, "Em andamento" mostra progresso. */
+export function effectiveStatus(
+  note: Pick<Note, "status" | "columnId">,
+  columns: Column[],
+): NoteStatus | null {
+  const key = nativeKeyOf(columns, note.columnId);
+  if (key === "done") return "done";
+  if (key === "doing") return note.status ?? "doing";
+  return note.status;
+}
