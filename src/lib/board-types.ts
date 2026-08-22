@@ -380,6 +380,7 @@ function makeFile(name: string, seed: Array<Partial<Note>>): BoardFile {
       color: n.color ?? "rose",
       author: n.author ?? "Walle Dev",
       assignee: n.assignee ?? n.author ?? null,
+      assignees: n.assignees ?? (n.assignee ?? n.author ? [(n.assignee ?? n.author)!] : []),
       updatedAt: n.updatedAt ?? minutes(60 + i * 30),
       tags: n.tags ?? [],
       checklist: n.checklist ?? [],
