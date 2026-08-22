@@ -400,7 +400,7 @@ export function useBoardStore() {
           const columnId = f.notes[to]!.columnId;
           const notes = [...f.notes];
           const [moving] = notes.splice(from, 1);
-          notes.splice(to, 0, { ...moving!, columnId });
+          notes.splice(to, 0, syncColumnStatus({ ...moving!, columnId }, f.columns));
           return { ...f, notes: reindex(notes) };
         }),
       moveNote: (noteId: string, columnId: string, beforeNoteId?: string) =>
@@ -408,11 +408,40 @@ export function useBoardStore() {
           const moving = f.notes.find((n) => n.id === noteId);
           if (!moving) return f;
           const rest = f.notes.filter((n) => n.id !== noteId);
-          const updated = { ...moving, columnId };
+          const updated = syncColumnStatus({ ...moving, columnId }, f.columns);
           const idx = beforeNoteId ? rest.findIndex((n) => n.id === beforeNoteId) : -1;
           if (idx === -1) rest.push(updated);
           else rest.splice(idx, 0, updated);
           return { ...f, notes: reindex(rest) };
+        }),
+      /** Marca/desmarca a nota como concluída, movendo-a de/para a coluna "Concluído". */
+      setNoteDone: (noteId: string, done: boolean) =>
+        updateFile((f) => {
+          const doneCol = f.columns.find((c) => c.native === "done");
+          const backlog = f.columns.find((c) => c.native === "backlog");
+          return {
+            ...f,
+            notes: reindex(
+              f.notes.map((n) => {
+                if (n.id !== noteId) return n;
+                if (done) {
+                  return {
+                    ...n,
+                    status: "done" as const,
+                    columnId: doneCol?.id ?? n.columnId,
+                    updatedAt: Date.now(),
+                  };
+                }
+                const leavingDone = doneCol && n.columnId === doneCol.id;
+                return {
+                  ...n,
+                  status: "pending" as const,
+                  columnId: leavingDone ? (backlog?.id ?? n.columnId) : n.columnId,
+                  updatedAt: Date.now(),
+                };
+              }),
+            ),
+          };
         }),
 
       addChecklistItem: (noteId: string, text: string) =>
