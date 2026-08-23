@@ -8,33 +8,53 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
+/** Seletor multi de responsáveis: exibe apenas a pilha de avatares (sem nomes). */
 export function AssigneeSelect({
   value,
   onChange,
   size = "sm",
 }: {
-  value: string | null;
-  onChange: (name: string | null) => void;
+  value: string[];
+  onChange: (names: string[]) => void;
   size?: "sm" | "md";
 }) {
   const dim = size === "sm" ? "h-6 w-6 text-[10px]" : "h-7 w-7 text-[11px]";
+  const toggle = (name: string) =>
+    onChange(value.includes(name) ? value.filter((n) => n !== name) : [...value, name]);
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            aria-label="Atribuir responsável"
-            className="flex items-center gap-1.5 rounded-full border border-foreground/15 bg-background/40 py-0.5 pl-0.5 pr-2 text-[11px] text-foreground/70 hover:bg-foreground/5"
+            aria-label="Atribuir responsáveis"
+            title={value.length ? value.join(", ") : "Responsáveis"}
+            className="flex items-center rounded-full border border-foreground/15 bg-background/40 p-0.5 hover:bg-foreground/5"
           >
-            {value ? (
-              <span
-                className={cn(
-                  "flex items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground",
-                  dim,
+            {value.length ? (
+              <span className="flex items-center">
+                {value.slice(0, 4).map((name, i) => (
+                  <span
+                    key={name}
+                    className={cn(
+                      "flex items-center justify-center rounded-full border border-background bg-primary font-semibold text-primary-foreground",
+                      dim,
+                      i > 0 && "-ml-2",
+                    )}
+                  >
+                    {initials(name)}
+                  </span>
+                ))}
+                {value.length > 4 && (
+                  <span
+                    className={cn(
+                      "-ml-2 flex items-center justify-center rounded-full border border-background bg-muted font-semibold text-foreground/70",
+                      dim,
+                    )}
+                  >
+                    +{value.length - 4}
+                  </span>
                 )}
-              >
-                {initials(value)}
               </span>
             ) : (
               <span
@@ -46,22 +66,27 @@ export function AssigneeSelect({
                 <UserPlus className="h-3 w-3" />
               </span>
             )}
-            <span className="max-w-24 truncate">{value ?? "Responsável"}</span>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-52">
-          <DropdownMenuItem onClick={() => onChange(null)}>
+          <DropdownMenuItem onClick={() => onChange([])}>
             <UserPlus className="h-4 w-4" />
             Sem responsável
-            {!value && <Check className="ml-auto h-3.5 w-3.5" />}
+            {value.length === 0 && <Check className="ml-auto h-3.5 w-3.5" />}
           </DropdownMenuItem>
           {MEMBERS.map((m) => (
-            <DropdownMenuItem key={m.id} onClick={() => onChange(m.name)}>
+            <DropdownMenuItem
+              key={m.id}
+              onSelect={(e) => {
+                e.preventDefault();
+                toggle(m.name);
+              }}
+            >
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
                 {initials(m.name)}
               </span>
               {m.name}
-              {value === m.name && <Check className="ml-auto h-3.5 w-3.5" />}
+              {value.includes(m.name) && <Check className="ml-auto h-3.5 w-3.5" />}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
