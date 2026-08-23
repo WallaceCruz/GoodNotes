@@ -73,30 +73,31 @@ export const STATUS_CLASS: Record<NoteStatus, string> = {
   rescheduled: "border-purple-500/50 bg-purple-500/15 text-purple-700 dark:text-purple-300",
 };
 
-export type CategoryDef = { id: string; emoji: string; name: string };
+export type CategoryDef = { id: string; icon: string; name: string };
 
 export const DEFAULT_CATEGORIES: CategoryDef[] = [
-  { id: "casa", emoji: "🏠", name: "Casa" },
-  { id: "trabalho", emoji: "💼", name: "Trabalho" },
-  { id: "estudos", emoji: "📚", name: "Estudos" },
-  { id: "autocuidado", emoji: "🧘", name: "Autocuidado" },
-  { id: "exercicio", emoji: "🏃", name: "Exercício" },
-  { id: "alimentacao", emoji: "🍎", name: "Alimentação" },
-  { id: "sono", emoji: "😴", name: "Sono" },
-  { id: "saude", emoji: "💊", name: "Saúde" },
-  { id: "social", emoji: "👥", name: "Social" },
-  { id: "relacionamentos", emoji: "❤️", name: "Relacionamentos" },
-  { id: "familia", emoji: "👨‍👩‍👧", name: "Família" },
-  { id: "compras", emoji: "🛒", name: "Compras" },
-  { id: "transporte", emoji: "🚗", name: "Transporte" },
-  { id: "financas", emoji: "💰", name: "Finanças" },
-  { id: "domesticas", emoji: "🧹", name: "Tarefas domésticas" },
-  { id: "criatividade", emoji: "🎨", name: "Criatividade" },
-  { id: "lazer", emoji: "🎮", name: "Lazer" },
-  { id: "tecnologia", emoji: "📱", name: "Tecnologia" },
-  { id: "externas", emoji: "🌳", name: "Atividades externas" },
-  { id: "relaxamento", emoji: "🧘‍♂️", name: "Relaxamento" },
+  { id: "casa", icon: "home", name: "Casa" },
+  { id: "trabalho", icon: "briefcase", name: "Trabalho" },
+  { id: "estudos", icon: "book", name: "Estudos" },
+  { id: "autocuidado", icon: "lotus", name: "Autocuidado" },
+  { id: "exercicio", icon: "run", name: "Exercício" },
+  { id: "alimentacao", icon: "apple", name: "Alimentação" },
+  { id: "sono", icon: "sleep", name: "Sono" },
+  { id: "saude", icon: "pill", name: "Saúde" },
+  { id: "social", icon: "users", name: "Social" },
+  { id: "relacionamentos", icon: "heart", name: "Relacionamentos" },
+  { id: "familia", icon: "family", name: "Família" },
+  { id: "compras", icon: "cart", name: "Compras" },
+  { id: "transporte", icon: "car", name: "Transporte" },
+  { id: "financas", icon: "money", name: "Finanças" },
+  { id: "domesticas", icon: "clean", name: "Tarefas domésticas" },
+  { id: "criatividade", icon: "palette", name: "Criatividade" },
+  { id: "lazer", icon: "game", name: "Lazer" },
+  { id: "tecnologia", icon: "phone", name: "Tecnologia" },
+  { id: "externas", icon: "tree", name: "Atividades externas" },
+  { id: "relaxamento", icon: "leaf", name: "Relaxamento" },
 ];
+
 
 export type Member = { id: string; name: string };
 

@@ -2,6 +2,7 @@ import { Plus, Tag, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useCategories } from "@/hooks/useCategories";
+import { CATEGORY_ICON_KEYS, CategoryIcon } from "@/lib/category-icons";
 import { cn } from "@/lib/utils";
 
 export function CategoryBadge({ category }: { category: string }) {
@@ -10,7 +11,7 @@ export function CategoryBadge({ category }: { category: string }) {
   if (!cat) return null;
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium">
-      <span aria-hidden>{cat.emoji}</span>
+      <CategoryIcon name={cat.icon} className="h-3 w-3" />
       {cat.name}
     </span>
   );
@@ -26,15 +27,15 @@ export function CategorySelect({
   const { categories, custom, addCategory, removeCategory, findCategory } = useCategories();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState("🏷️");
+  const [icon, setIcon] = useState("tag");
   const current = findCategory(value);
 
   const create = () => {
-    const cat = addCategory(name, emoji);
+    const cat = addCategory(name, icon);
     if (!cat) return;
     onChange(cat.id);
     setName("");
-    setEmoji("🏷️");
+    setIcon("tag");
   };
 
   return (
@@ -44,7 +45,7 @@ export function CategorySelect({
           <button className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent">
             {current ? (
               <>
-                <span aria-hidden>{current.emoji}</span>
+                <CategoryIcon name={current.icon} className="h-3.5 w-3.5" />
                 {current.name}
               </>
             ) : (
@@ -70,7 +71,7 @@ export function CategorySelect({
                       value === c.id ? "border-primary bg-primary/10" : "border-border",
                     )}
                   >
-                    <span aria-hidden>{c.emoji}</span>
+                    <CategoryIcon name={c.icon} className="h-3 w-3" />
                     {c.name}
                   </button>
                   {custom.some((x) => x.id === c.id) && (
@@ -92,13 +93,22 @@ export function CategorySelect({
 
           <div className="mt-2 border-t border-border pt-2">
             <p className="mb-1 text-[11px] font-medium text-muted-foreground">Nova categoria</p>
+            <div className="scroll-thin mb-2 grid max-h-24 grid-cols-10 gap-1 overflow-y-auto pr-1">
+              {CATEGORY_ICON_KEYS.map((key) => (
+                <button
+                  key={key}
+                  onClick={() => setIcon(key)}
+                  aria-label={`Ícone ${key}`}
+                  className={cn(
+                    "flex h-6 w-6 items-center justify-center rounded-md border hover:bg-accent",
+                    icon === key ? "border-primary bg-primary/10" : "border-border",
+                  )}
+                >
+                  <CategoryIcon name={key} className="h-3.5 w-3.5" />
+                </button>
+              ))}
+            </div>
             <div className="flex items-center gap-1.5">
-              <input
-                value={emoji}
-                onChange={(e) => setEmoji(e.target.value)}
-                aria-label="Emoji da categoria"
-                className="w-10 rounded-md border border-border bg-background px-1.5 py-1 text-center text-xs"
-              />
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
