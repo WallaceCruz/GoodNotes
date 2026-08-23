@@ -17,9 +17,19 @@ import {
   collectTags,
   ensureNativeColumns,
   nativeColumns,
+  nativeKeyOf,
 } from "@/lib/board-types";
 
 const STORAGE_KEY = "sticky-kanban-v1";
+
+/** Mantém o status da nota coerente com a coluna nativa de destino. */
+function syncColumnStatus(note: Note, columns: Column[]): Note {
+  const key = nativeKeyOf(columns, note.columnId);
+  if (key === "done") return { ...note, status: "done" };
+  if (key === "doing") return { ...note, status: "doing" };
+  if (note.status === "done") return { ...note, status: null };
+  return note;
+}
 
 function reindex(notes: Note[]): Note[] {
   const counters = new Map<string, number>();
@@ -29,6 +39,7 @@ function reindex(notes: Note[]): Note[] {
     return { ...n, order: next };
   });
 }
+
 
 // Reordena pelo campo persistido `order` (por coluna) e reindexa para manter posições estáveis.
 function withOrder(notes: Note[]): Note[] {
