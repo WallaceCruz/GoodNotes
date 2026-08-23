@@ -8,14 +8,17 @@ function read(): CategoryDef[] {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return [];
-    const parsed = JSON.parse(raw) as CategoryDef[];
+    const parsed = JSON.parse(raw) as (CategoryDef & { emoji?: string })[];
     return Array.isArray(parsed)
-      ? parsed.filter((c) => c && typeof c.id === "string" && typeof c.name === "string")
+      ? parsed
+          .filter((c) => c && typeof c.id === "string" && typeof c.name === "string")
+          .map((c) => ({ id: c.id, name: c.name, icon: c.icon ?? "tag" }))
       : [];
   } catch {
     return [];
   }
 }
+
 
 /** Categorias padrão + personalizadas do usuário (persistidas localmente). */
 export function useCategories() {
@@ -36,18 +39,19 @@ export function useCategories() {
   }, []);
 
   const addCategory = useCallback(
-    (name: string, emoji: string) => {
+    (name: string, icon: string) => {
       const clean = name.trim();
       if (!clean) return null;
       const id = `c_${clean.toLowerCase().replace(/\s+/g, "-")}_${Math.random()
         .toString(36)
         .slice(2, 6)}`;
-      const cat: CategoryDef = { id, emoji: emoji.trim() || "🏷️", name: clean };
+      const cat: CategoryDef = { id, icon: icon || "tag", name: clean };
       persist([...read(), cat]);
       return cat;
     },
     [persist],
   );
+
 
   const removeCategory = useCallback(
     (id: string) => persist(read().filter((c) => c.id !== id)),
