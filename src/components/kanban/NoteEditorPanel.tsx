@@ -1,6 +1,6 @@
 import { Archive, ArchiveRestore, X } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import { NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
+import { noteAssignees, NOTE_COLORS, PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Note } from "@/lib/board-types";
 import { AssigneeSelect } from "./AssigneeSelect";
 import { DeadlinePicker } from "./DeadlinePicker";
 import { TagEditor } from "./TagEditor";
@@ -46,12 +46,12 @@ export function NoteEditorPanel({
       <div className="scroll-thin flex-1 overflow-y-auto p-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Responsável
+            Responsáveis
           </p>
           <div className="mt-2">
             <AssigneeSelect
-              value={note.assignee}
-              onChange={(assignee) => onChange({ assignee })}
+              value={noteAssignees(note)}
+              onChange={(names) => onChange({ assignees: names, assignee: names[0] ?? null })}
               size="md"
             />
           </div>

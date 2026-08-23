@@ -3,7 +3,7 @@ import { memo } from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Maximize2, Pin } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import type { Note } from "@/lib/board-types";
+import { effectiveStatus, noteAssignees, type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { sameStoreView } from "./memo-compare";
 import { NoteOptionsMenu } from "./NoteOptionsMenu";
@@ -36,6 +36,9 @@ function NotepadCardBase({
   const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
   const { appearance } = useNoteAppearance(store.project?.id);
   const surface = notepadSurface(appearance);
+  const columns = store.file?.columns ?? [];
+  const status = effectiveStatus(note, columns);
+  const done = status === "done";
 
   return (
     <div
@@ -52,6 +55,7 @@ function NotepadCardBase({
         !note.height && "min-h-[22rem]",
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",
+        done && "opacity-70",
         active && "ring-2 ring-ring",
       )}
     >
@@ -61,6 +65,15 @@ function NotepadCardBase({
         className="flex cursor-grab items-center gap-1.5 border-b border-border/70 bg-transparent px-2 py-1.5 active:cursor-grabbing"
       >
         <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
+        <input
+          type="checkbox"
+          checked={done}
+          aria-label="Marcar tarefa como concluída"
+          title="Marcar como concluída"
+          onPointerDown={(e) => e.stopPropagation()}
+          onChange={(e) => store.setNoteDone(note.id, e.target.checked)}
+          className="h-3.5 w-3.5 cursor-pointer accent-emerald-600"
+        />
         {note.pinned && <Pin className="h-3.5 w-3.5 text-foreground/70" />}
         <div className="ml-auto flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
           <button
@@ -77,7 +90,7 @@ function NotepadCardBase({
 
       <div className="flex-1 px-3 pb-2 pt-2">
         <div className="flex flex-wrap items-center gap-1 pb-1">
-          {note.status && <StatusBadge status={note.status} />}
+          {status && <StatusBadge status={status} />}
           {note.priority && <PriorityBadge priority={note.priority} />}
           {note.deadline && <DeadlineBadge deadline={note.deadline} />}
         </div>
@@ -86,7 +99,10 @@ function NotepadCardBase({
           value={note.title}
           onChange={(e) => onChange({ title: e.target.value })}
           aria-label="Título do bloco"
-          className="note-title-color w-full bg-transparent text-[1.15em] font-bold leading-7 outline-none"
+          className={cn(
+            "note-title-color w-full bg-transparent text-[1.15em] font-bold leading-7 outline-none",
+            done && "line-through opacity-70",
+          )}
         />
 
         <div
@@ -124,7 +140,10 @@ function NotepadCardBase({
       />
 
       <footer className="flex flex-wrap items-center gap-2 border-t border-border px-3 py-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-        <AssigneeSelect value={note.assignee} onChange={(assignee) => onChange({ assignee })} />
+        <AssigneeSelect
+          value={noteAssignees(note)}
+          onChange={(names) => onChange({ assignees: names, assignee: names[0] ?? null })}
+        />
         <div className="min-w-0 flex-1">
           <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} store={store} />
         </div>

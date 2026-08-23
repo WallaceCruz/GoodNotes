@@ -3,7 +3,7 @@ import { memo } from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Maximize2, Pin } from "lucide-react";
 import type { BoardStore } from "@/hooks/useBoardStore";
-import { type Note } from "@/lib/board-types";
+import { effectiveStatus, noteAssignees, type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { sameStoreView } from "./memo-compare";
 import { NoteOptionsMenu } from "./NoteOptionsMenu";
@@ -38,6 +38,9 @@ function StickyNoteCardBase({
   const showChecklist = note.showChecklist;
   const { appearance } = useNoteAppearance(store.project?.id);
   const surface = noteSurface(appearance, note.color, { tint: note.colorHex ?? null });
+  const columns = store.file?.columns ?? [];
+  const status = effectiveStatus(note, columns);
+  const done = status === "done";
 
 
   return (
@@ -58,6 +61,7 @@ function StickyNoteCardBase({
         surface.className,
         isDragging && "scale-[0.98] opacity-40 shadow-none ring-2 ring-dashed ring-ring/40",
         note.archived && "opacity-60 grayscale",
+        done && "opacity-70",
         active && "ring-2 ring-ring",
       )}
     >
@@ -67,6 +71,15 @@ function StickyNoteCardBase({
         className="-mx-1 flex cursor-grab items-center gap-1 rounded px-1 pb-1.5 active:cursor-grabbing"
       >
         <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
+        <input
+          type="checkbox"
+          checked={done}
+          aria-label="Marcar tarefa como concluída"
+          title="Marcar como concluída"
+          onPointerDown={(e) => e.stopPropagation()}
+          onChange={(e) => store.setNoteDone(note.id, e.target.checked)}
+          className="h-3.5 w-3.5 cursor-pointer accent-emerald-600"
+        />
         {note.pinned && <Pin className="h-3.5 w-3.5 text-foreground/70" />}
         <div
           className="ml-auto flex items-center gap-1"
@@ -85,7 +98,7 @@ function StickyNoteCardBase({
       </div>
 
       <div className="flex flex-wrap items-center gap-1 pb-1" onPointerDown={(e) => e.stopPropagation()}>
-        {note.status && <StatusBadge status={note.status} />}
+        {status && <StatusBadge status={status} />}
         {note.category && <CategoryBadge category={note.category} />}
         {note.priority && <PriorityBadge priority={note.priority} />}
         {note.deadline && <DeadlineBadge deadline={note.deadline} />}
@@ -134,8 +147,8 @@ function StickyNoteCardBase({
 
       <footer className="mt-1 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
         <AssigneeSelect
-          value={note.assignee}
-          onChange={(assignee) => onChange({ assignee })}
+          value={noteAssignees(note)}
+          onChange={(names) => onChange({ assignees: names, assignee: names[0] ?? null })}
         />
         <div className="min-w-0 flex-1">
           <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} store={store} />
