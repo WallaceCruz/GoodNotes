@@ -200,6 +200,14 @@
   --note-slate: oklch(0.38 0.01 250);
   --note-foreground: oklch(0.965 0 0);
   --link: oklch(0.78 0.12 250);
+  --prio-urgent: oklch(0.64 0.22 25);
+  --prio-urgent-foreground: oklch(0.99 0 0);
+  --prio-high: oklch(0.72 0.19 55);
+  --prio-high-foreground: oklch(0.14 0 0);
+  --prio-medium: oklch(0.66 0.18 250);
+  --prio-medium-foreground: oklch(0.99 0 0);
+  --prio-low: oklch(0.7 0.17 145);
+  --prio-low-foreground: oklch(0.14 0 0);
   --shadow-card: 0 1px 2px oklch(0 0 0 / 0.5), 0 4px 14px -6px oklch(0 0 0 / 0.6);
   --shadow-card-hover: 0 2px 6px oklch(0 0 0 / 0.55), 0 12px 28px -10px oklch(0 0 0 / 0.7);
   --shadow-focus: 0 2px 6px oklch(0 0 0 / 0.5), 0 28px 70px -30px oklch(0 0 0 / 0.85);
