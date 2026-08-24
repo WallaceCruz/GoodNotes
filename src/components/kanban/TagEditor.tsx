@@ -10,7 +10,7 @@ import { noteBg, noteLabel } from "./note-style";
 function autoColor(name: string): NoteColor {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return NOTE_COLORS[h % NOTE_COLORS.length];
+  return NOTE_COLORS[h % NOTE_COLORS.length] ?? "sky";
 }
 
 export function TagEditor({
