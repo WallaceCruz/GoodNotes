@@ -53,6 +53,7 @@ export function NoteEditorPanel({
               value={noteAssignees(note)}
               onChange={(names) => onChange({ assignees: names, assignee: names[0] ?? null })}
               size="md"
+              variant="cta"
             />
           </div>
         </div>
