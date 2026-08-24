@@ -61,10 +61,10 @@ export const noteAccent: Record<NoteColor, string> = {
 };
 
 export const priorityClass: Record<Priority, string> = {
-  urgent: "border-destructive/50 bg-destructive/15 text-foreground",
-  high: "border-note-peach bg-note-peach text-note-foreground",
-  medium: "border-note-sky bg-note-sky text-note-foreground",
-  low: "border-border bg-muted text-muted-foreground",
+  urgent: "border-transparent bg-prio-urgent text-prio-urgent-foreground",
+  high: "border-transparent bg-prio-high text-prio-high-foreground",
+  medium: "border-transparent bg-prio-medium text-prio-medium-foreground",
+  low: "border-transparent bg-prio-low text-prio-low-foreground",
 };
 
 export function timeAgo(ts: number) {
