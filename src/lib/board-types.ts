@@ -161,6 +161,8 @@ export type Note = {
   status: NoteStatus | null;
   category: string | null;
   deadline: number | null;
+  /** Início planejado (usado na Linha do tempo). */
+  startDate?: number | null;
   archived: boolean;
   pinned?: boolean;
   order: number;
