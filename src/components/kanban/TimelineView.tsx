@@ -59,6 +59,7 @@ export function TimelineView({
   const [anchor, setAnchor] = useState(() => startOfDay(Date.now()));
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [drag, setDrag] = useState<DragState | null>(null);
+  const [preview, setPreview] = useState<{ start: number; end: number } | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const cfg = SCALES.find((s) => s.value === scale)!;
@@ -126,12 +127,8 @@ export function TimelineView({
 
   const onPointerMove = (e: React.PointerEvent) => {
     if (!drag) return;
-    const next = computeDrag(drag, e.clientX);
-    setDrag({ ...drag, ...{ preview: next } } as DragState & { preview?: unknown });
-    setPreview(next);
+    setPreview(computeDrag(drag, e.clientX));
   };
-
-  const [preview, setPreview] = useState<{ start: number; end: number } | null>(null);
 
   const endDrag = (e: React.PointerEvent) => {
     if (!drag) return;
@@ -394,11 +391,6 @@ export function TimelineView({
               </div>
             ))}
 
-            {/* Linha do hoje */}
-            <div
-              className="pointer-events-none absolute"
-              style={{ left: ((today - rangeStart) / DAY_MS) * cfg.px }}
-            />
           </div>
         </div>
       </div>
