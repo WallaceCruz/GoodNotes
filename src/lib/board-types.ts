@@ -510,3 +510,16 @@ export function effectiveStatus(
   if (key === "doing") return note.status ?? "doing";
   return note.status;
 }
+
+export const DAY_MS = 86_400_000;
+
+/** Intervalo (início/fim) de uma nota para a Linha do tempo. */
+export function noteRange(
+  note: Pick<Note, "startDate" | "deadline">,
+): { start: number; end: number } | null {
+  const anchor = note.deadline ?? note.startDate ?? null;
+  if (!anchor) return null;
+  const end = note.deadline ?? anchor;
+  const start = note.startDate ?? end - DAY_MS;
+  return { start: Math.min(start, end), end: Math.max(start, end) };
+}
