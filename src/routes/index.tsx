@@ -170,9 +170,9 @@ function Index() {
               <div className="ml-auto flex items-center gap-1.5">
                 <div className="mr-1 flex items-center gap-0.5 rounded-md border border-border p-0.5">
                   {([
-                    { key: "kanban", label: "Kanban" },
-                    { key: "timeline", label: "Linha do tempo" },
-                    { key: "calendar", label: "Calendário" },
+                    { key: "kanban", label: "Kanban", icon: LayoutGrid },
+                    { key: "timeline", label: "Linha do tempo", icon: GanttChartSquare },
+                    { key: "calendar", label: "Calendário", icon: Calendar },
                   ] as const).map((v) => {
                     const active =
                       v.key === "kanban"
@@ -180,6 +180,7 @@ function Index() {
                         : v.key === "timeline"
                           ? timelineView
                           : calendarView;
+                    const Icon = v.icon;
                     return (
                       <button
                         key={v.key}
@@ -188,12 +189,13 @@ function Index() {
                           setTimelineView(v.key === "timeline");
                           setCalendarView(v.key === "calendar");
                         }}
-                        className={`rounded px-2 py-1 text-xs transition-colors ${
+                        className={`flex items-center gap-1.5 rounded px-2 py-1 text-xs transition-colors ${
                           active
                             ? "bg-accent text-foreground"
                             : "text-muted-foreground hover:bg-accent/60"
                         }`}
                       >
+                        <Icon className="h-3.5 w-3.5" />
                         {v.label}
                       </button>
                     );
