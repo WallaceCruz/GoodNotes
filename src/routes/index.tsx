@@ -7,6 +7,7 @@ import { CalendarView } from "@/components/kanban/CalendarView";
 import { FiltersMenu, emptyFilters, type Filters } from "@/components/kanban/FiltersMenu";
 import { InboxList } from "@/components/kanban/InboxList";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
+import { TimelineView } from "@/components/kanban/TimelineView";
 import { NoteFocusView } from "@/components/kanban/NoteFocusView";
 import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { UserMenu } from "@/components/kanban/UserMenu";
@@ -55,6 +56,7 @@ function Index() {
   const [inboxOpen, setInboxOpen] = useState(true);
   const [archivedView, setArchivedView] = useState(false);
   const [calendarView, setCalendarView] = useState(false);
+  const [timelineView, setTimelineView] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   const allTags = Array.from(
@@ -114,17 +116,26 @@ function Index() {
             onGoHome={() => {
               setArchivedView(false);
               setCalendarView(false);
+              setTimelineView(false);
               setActiveNoteId(null);
             }}
             archivedView={archivedView}
             onToggleArchivedView={() => {
               setCalendarView(false);
+              setTimelineView(false);
               setArchivedView((v) => !v);
             }}
             calendarView={calendarView}
             onToggleCalendarView={() => {
               setArchivedView(false);
+              setTimelineView(false);
               setCalendarView((v) => !v);
+            }}
+            timelineView={timelineView}
+            onToggleTimelineView={() => {
+              setArchivedView(false);
+              setCalendarView(false);
+              setTimelineView((v) => !v);
             }}
           />
 
@@ -157,6 +168,37 @@ function Index() {
                 </button>
               )}
               <div className="ml-auto flex items-center gap-1.5">
+                <div className="mr-1 flex items-center gap-0.5 rounded-md border border-border p-0.5">
+                  {([
+                    { key: "kanban", label: "Kanban" },
+                    { key: "timeline", label: "Linha do tempo" },
+                    { key: "calendar", label: "Calendário" },
+                  ] as const).map((v) => {
+                    const active =
+                      v.key === "kanban"
+                        ? !calendarView && !timelineView && !archivedView
+                        : v.key === "timeline"
+                          ? timelineView
+                          : calendarView;
+                    return (
+                      <button
+                        key={v.key}
+                        onClick={() => {
+                          setArchivedView(false);
+                          setTimelineView(v.key === "timeline");
+                          setCalendarView(v.key === "calendar");
+                        }}
+                        className={`rounded px-2 py-1 text-xs transition-colors ${
+                          active
+                            ? "bg-accent text-foreground"
+                            : "text-muted-foreground hover:bg-accent/60"
+                        }`}
+                      >
+                        {v.label}
+                      </button>
+                    );
+                  })}
+                </div>
                 <FiltersMenu filters={filters} allTags={allTags} store={store} onChange={setFilters} />
                 <button
                   onClick={() => setAutomationsOpen((v) => !v)}
@@ -176,7 +218,17 @@ function Index() {
             {automationsOpen && <AutomationsPanel store={store} allTags={allTags} />}
 
             <div className="flex min-h-0 flex-1">
-              {calendarView ? (
+              {timelineView ? (
+                <TimelineView
+                  notes={store.file?.notes.filter(matches) ?? []}
+                  columns={store.file?.columns ?? []}
+                  projectId={store.project?.id}
+                  onOpenNote={openNote}
+                  onChangeRange={(id, startDate, deadline) =>
+                    store.updateNote(id, { startDate, deadline })
+                  }
+                />
+              ) : calendarView ? (
                 <CalendarView
                   notes={store.file?.notes ?? []}
                   onOpenNote={openNote}
