@@ -332,7 +332,7 @@ export function TimelineView({
                     return (
                       <div
                         key={n.id}
-                        className="relative h-11 border-b border-border/40"
+                        className="relative h-14 border-b border-border/40"
                         style={{ width: gridWidth }}
                       >
                         <div className="pointer-events-none absolute inset-0 flex">
@@ -358,7 +358,7 @@ export function TimelineView({
                               ...(n.colorHex ? { background: n.colorHex } : {}),
                             }}
                             className={cn(
-                              "absolute top-1.5 flex h-8 cursor-grab items-center gap-1 rounded-md border border-border/60 px-2 shadow-sm",
+                              "absolute top-1 flex h-12 cursor-grab items-center gap-1 rounded-md border border-border/60 px-2 shadow-sm",
                               !n.colorHex && noteBg[n.color],
                               done && "opacity-60",
                               late && "ring-2 ring-destructive/60",
@@ -372,13 +372,13 @@ export function TimelineView({
                             />
                             <span
                               className={cn(
-                                "min-w-0 flex-1 truncate text-[11px] font-medium",
+                                "min-w-0 flex-1 text-[11px] font-medium leading-tight line-clamp-2",
                                 done && "line-through",
                               )}
                             >
                               {n.title || "Sem título"}
                             </span>
-                            {late && <CalendarClock className="h-3 w-3 text-destructive" />}
+                            {late && <CalendarClock className="h-3 w-3 shrink-0 text-destructive" />}
                             <span
                               onPointerDown={(e) => beginDrag(e, n, "end")}
                               className="absolute right-0 top-0 h-full w-1.5 cursor-ew-resize rounded-r-md hover:bg-foreground/20"
