@@ -1,4 +1,5 @@
 import {
+  GanttChartSquare,
   Archive,
   ArchiveRestore,
   CalendarDays,
@@ -68,6 +69,8 @@ export function AppSidebar({
   onToggleArchivedView,
   calendarView,
   onToggleCalendarView,
+  timelineView,
+  onToggleTimelineView,
 }: {
   store: BoardStore;
   collapsed: boolean;
@@ -79,6 +82,8 @@ export function AppSidebar({
   onToggleArchivedView: () => void;
   calendarView: boolean;
   onToggleCalendarView: () => void;
+  timelineView: boolean;
+  onToggleTimelineView: () => void;
 }) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [teamsOpen, setTeamsOpen] = useState(true);
@@ -118,7 +123,7 @@ export function AppSidebar({
           aria-label="Home (kanban)"
           className={cn(
             "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
-            !archivedView && !calendarView && "bg-sidebar-accent text-foreground",
+            !archivedView && !calendarView && !timelineView && "bg-sidebar-accent text-foreground",
           )}
         >
           <Home className={ICON} />
@@ -132,6 +137,16 @@ export function AppSidebar({
           )}
         >
           <Inbox className={ICON} />
+        </button>
+        <button
+          onClick={onToggleTimelineView}
+          aria-label="Linha do tempo"
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
+            timelineView && "bg-sidebar-accent text-foreground",
+          )}
+        >
+          <GanttChartSquare className={ICON} />
         </button>
         <button
           onClick={onToggleCalendarView}
@@ -261,7 +276,7 @@ export function AppSidebar({
             className={cn(
               ROW,
               "text-sidebar-foreground hover:bg-sidebar-accent",
-              !archivedView && !calendarView && "bg-sidebar-accent font-medium text-foreground",
+              !archivedView && !calendarView && !timelineView && "bg-sidebar-accent font-medium text-foreground",
             )}
           >
             <Home className={cn(ICON, "text-muted-foreground")} />
@@ -280,6 +295,17 @@ export function AppSidebar({
             <span className="ml-auto text-[11px] text-muted-foreground">
               {inboxOpen ? "Ocultar" : "Mostrar"}
             </span>
+          </button>
+          <button
+            onClick={onToggleTimelineView}
+            className={cn(
+              ROW,
+              "text-sidebar-foreground hover:bg-sidebar-accent",
+              timelineView && "bg-sidebar-accent font-medium text-foreground",
+            )}
+          >
+            <GanttChartSquare className={cn(ICON, "text-muted-foreground")} />
+            Linha do tempo
           </button>
           <button
             onClick={onToggleCalendarView}
