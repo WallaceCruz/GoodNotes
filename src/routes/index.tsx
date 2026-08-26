@@ -222,7 +222,7 @@ function Index() {
                 <TimelineView
                   notes={store.file?.notes.filter(matches) ?? []}
                   columns={store.file?.columns ?? []}
-                  projectId={store.project?.id}
+                  projectId={store.project?.id ?? null}
                   onOpenNote={openNote}
                   onChangeRange={(id, startDate, deadline) =>
                     store.updateNote(id, { startDate, deadline })
