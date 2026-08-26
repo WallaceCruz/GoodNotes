@@ -23,6 +23,7 @@ const SCALES: { value: Scale; label: string; px: number; days: number }[] = [
 ];
 
 const WEEKDAY = ["D", "S", "T", "Q", "Q", "S", "S"];
+const MIN_NOTE_BAR_WIDTH = 280;
 const MONTH_SHORT = [
   "jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez",
 ];
@@ -221,7 +222,7 @@ export function TimelineView({
         }}
       >
         {/* Coluna fixa de notas */}
-        <div className="scroll-thin w-64 shrink-0 overflow-y-auto border-r border-border bg-background">
+        <div className="scroll-thin w-80 shrink-0 overflow-y-auto border-r border-border bg-background">
           <div className="sticky top-0 z-10 h-12 border-b border-border bg-background px-3 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Notas
           </div>
@@ -327,7 +328,7 @@ export function TimelineView({
                     const late = r ? r.end < today && !done : false;
                     const left = r ? ((r.start - rangeStart) / DAY_MS) * cfg.px : 0;
                     const width = r
-                      ? Math.max(cfg.px * 0.6, ((r.end - r.start) / DAY_MS) * cfg.px)
+                      ? Math.max(MIN_NOTE_BAR_WIDTH, ((r.end - r.start) / DAY_MS) * cfg.px)
                       : 0;
                     return (
                       <div
