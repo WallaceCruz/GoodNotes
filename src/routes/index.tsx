@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronRight, FileText, Folder, Layers, Zap } from "lucide-react";
+import { Calendar, ChevronRight, FileText, Folder, GanttChartSquare, Layers, LayoutGrid, Zap } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { AppSidebar } from "@/components/kanban/AppSidebar";
 import { AutomationsPanel } from "@/components/kanban/AutomationsPanel";
