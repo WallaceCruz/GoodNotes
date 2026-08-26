@@ -252,17 +252,17 @@ export function TimelineView({
                     <button
                       key={n.id}
                       onClick={() => onOpenNote(n.id)}
-                      className="flex h-11 w-full items-center gap-2 border-b border-border/40 px-3 text-left hover:bg-accent"
+                      className="flex h-14 w-full items-center gap-2 border-b border-border/40 px-3 text-left hover:bg-accent"
                     >
                       <span
                         className={cn(
-                          "min-w-0 flex-1 truncate text-xs",
+                          "min-w-0 flex-1 text-xs leading-tight line-clamp-2",
                           done && "text-muted-foreground line-through",
                         )}
                       >
                         {n.title || "Sem título"}
                       </span>
-                      <span className="flex -space-x-1.5">
+                      <span className="flex shrink-0 -space-x-1.5">
                         {noteAssignees(n)
                           .slice(0, 3)
                           .map((a) => (
