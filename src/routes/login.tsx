@@ -1,19 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowUp, Github, Lock } from "lucide-react";
+import { ArrowUp, Github } from "lucide-react";
+import { BrandLogo } from "@/components/kanban/BrandLogo";
+import bgImage from "@/assets/kanban-sticky-bg.jpg";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Entrar - Lovable" },
+      { title: "Entrar - Lembrei!" },
       {
         name: "description",
-        content: "Entre na sua conta Lovable para criar aplicativos com IA.",
+        content: "Entre na sua conta Lembrei! para organizar notas autoadesivas e tarefas.",
       },
-      { property: "og:title", content: "Entrar - Lovable" },
+      { property: "og:title", content: "Entrar - Lembrei!" },
       {
         property: "og:description",
-        content: "Entre na sua conta Lovable para criar aplicativos com IA.",
+        content: "Entre na sua conta Lembrei! para organizar notas autoadesivas e tarefas.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -21,23 +23,6 @@ export const Route = createFileRoute("/login")({
   }),
   component: LoginPage,
 });
-
-function LovableHeart({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden>
-      <defs>
-        <linearGradient id="lovable-heart" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%" stopColor="#f97316" />
-          <stop offset="100%" stopColor="#ec4899" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M12 21s-7.5-4.6-10-9.2C.6 8.6 2.2 5 5.6 5c2 0 3.4 1.1 4.4 2.6C11 6.1 12.4 5 14.4 5 17.8 5 19.4 8.6 18 11.8 15.5 16.4 12 21 12 21Z"
-        fill="url(#lovable-heart)"
-      />
-    </svg>
-  );
-}
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -82,20 +67,17 @@ function LoginPage() {
           <div className="mx-auto w-full max-w-[360px]">
             {/* Brand */}
             <div className="mb-10 flex items-center gap-2">
-              <LovableHeart className="h-7 w-7" />
-              <span className="text-lg font-semibold tracking-tight text-zinc-900">
-                Lovable
-              </span>
+              <BrandLogo />
             </div>
 
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
               Entrar
             </h1>
             <p className="mt-2 text-sm text-zinc-500">
-              Bem-vindo de volta. Entre para continuar criando.
+              Bem-vindo de volta. Entre para continuar organizando.
             </p>
 
-            {/* Social login */}
+            {/* Social login — pill buttons */}
             <div className="mt-8 flex flex-col gap-3">
               <div className="relative">
                 <SocialButton onClick={() => {}}>
@@ -103,7 +85,7 @@ function LoginPage() {
                   Continuar com Google
                 </SocialButton>
                 {lastUsed === "google" && (
-                  <span className="absolute -top-2 left-4 rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm">
+                  <span className="absolute -top-2 left-4 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-white shadow-sm">
                     Usado pela última vez
                   </span>
                 )}
@@ -145,13 +127,13 @@ function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="E-mail"
-                  className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3.5 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-4 focus:ring-zinc-100"
+                  className="h-12 w-full rounded-full border border-zinc-200 bg-white px-5 text-sm text-zinc-900 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-4 focus:ring-zinc-100"
                 />
               </div>
 
               <button
                 type="submit"
-                className="flex h-11 w-full items-center justify-center rounded-xl bg-zinc-900 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 active:scale-[0.99]"
+                className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90 active:scale-[0.99]"
               >
                 Continuar
               </button>
@@ -169,55 +151,55 @@ function LoginPage() {
                 </Link>
               </p>
 
-              <div className="flex items-center justify-center gap-1.5 text-xs text-zinc-400">
-                <Lock className="h-3.5 w-3.5" />
-                <span>
-                  SSO disponível nos planos{" "}
-                  <span className="underline underline-offset-4">Business e Enterprise</span>
-                </span>
-              </div>
+              <p className="text-center text-xs text-zinc-400">
+                SSO disponível nos planos Business e Enterprise.
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right pane — gradient showcase with prompt box */}
+      {/* Right pane — kanban de notas autoadesivas */}
       <div className="relative hidden flex-1 overflow-hidden lg:block">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,#3b82f6_0%,transparent_45%),radial-gradient(circle_at_80%_30%,#9333ea_0%,transparent_45%),radial-gradient(circle_at_50%_80%,#ec4899_0%,transparent_45%),linear-gradient(135deg,#1e1b4b_0%,#0f0a2e_100%)]" />
-        {/* soft bloom overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_40%,rgba(255,255,255,0.18),transparent_55%)]" />
+        <img
+          src={bgImage}
+          alt="Kanban de notas autoadesivas Lembrei!"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-white/5 to-zinc-900/10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.25),transparent_60%)]" />
 
-        <div className="relative flex h-full items-center justify-center p-12">
-          <div className="w-full max-w-xl">
+        <div className="relative flex h-full items-end justify-center p-12">
+          <div className="w-full max-w-xl pb-12">
             <div className="mb-6 text-center">
-              <LovableHeart className="mx-auto h-10 w-10 drop-shadow-lg" />
+              <BrandLogo className="justify-center [&_span]:text-white" />
               <p className="mt-4 text-2xl font-semibold text-white drop-shadow-sm">
-                Crie qualquer aplicativo
+                Suas notas e tarefas, organizadas.
               </p>
-              <p className="mt-1.5 text-sm text-white/70">
-                Descreva em linguagem natural e deixe a IA construir.
+              <p className="mt-1.5 text-sm text-white/80">
+                Quadros kanban com notas autoadesivas para você não esquecer.
               </p>
             </div>
 
             {/* Prompt pill */}
-            <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/95 py-2 pl-5 pr-2 shadow-2xl backdrop-blur">
+            <div className="flex items-center gap-2 rounded-full border border-white/30 bg-white/95 py-2 pl-5 pr-2 shadow-2xl backdrop-blur">
               <input
                 type="text"
-                placeholder="Peça à Lovable para criar seu blog."
+                placeholder="Crie sua primeira nota autoadesiva..."
                 className="flex-1 bg-transparent text-sm text-zinc-800 outline-none placeholder:text-zinc-400"
               />
               <button
                 type="button"
                 onClick={() => {}}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white shadow-sm transition hover:bg-zinc-800 active:scale-95"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm transition hover:bg-primary/90 active:scale-95"
                 aria-label="Enviar"
               >
                 <ArrowUp className="h-4 w-4" />
               </button>
             </div>
 
-            <p className="mt-4 text-center text-xs text-white/50">
-              Sem código. Sem configuração. Apenas ideia → aplicativo.
+            <p className="mt-4 text-center text-xs text-white/60">
+              Notas autoadesivas · Prazos · Equipes · Lembrei!
             </p>
           </div>
         </div>
@@ -237,7 +219,7 @@ function SocialButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 hover:border-zinc-300 active:scale-[0.99]"
+      className="flex h-12 w-full items-center justify-center gap-2.5 rounded-full border border-zinc-200 bg-white px-5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 hover:border-zinc-300 active:scale-[0.99]"
     >
       {children}
     </button>
