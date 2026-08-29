@@ -13,6 +13,7 @@ export const noteBg: Record<NoteColor, string> = {
   mint: "bg-note-mint",
   coral: "bg-note-coral",
   slate: "bg-note-slate",
+  white: "bg-note-white",
 };
 
 export const noteHeaderBg: Record<NoteColor, string> = {
@@ -28,6 +29,7 @@ export const noteHeaderBg: Record<NoteColor, string> = {
   mint: "bg-note-mint/40",
   coral: "bg-note-coral/40",
   slate: "bg-note-slate/40",
+  white: "bg-note-white/40",
 };
 
 export const noteLabel: Record<NoteColor, string> = {
@@ -43,6 +45,7 @@ export const noteLabel: Record<NoteColor, string> = {
   mint: "Menta",
   coral: "Coral",
   slate: "Cinza",
+  white: "Branco",
 };
 
 export const noteAccent: Record<NoteColor, string> = {
@@ -58,6 +61,7 @@ export const noteAccent: Record<NoteColor, string> = {
   mint: "bg-note-mint/60",
   coral: "bg-note-coral/60",
   slate: "bg-note-slate/60",
+  white: "bg-note-white/60",
 };
 
 export const priorityClass: Record<Priority, string> = {
