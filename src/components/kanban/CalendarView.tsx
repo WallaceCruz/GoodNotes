@@ -67,12 +67,14 @@ export function CalendarView({
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [snap, setSnap] = useState(15);
   const [now, setNow] = useState(() => new Date());
+  const gridRef = useRef<HTMLDivElement | null>(null);
   const previewNote = notes.find((n) => n.id === previewId) ?? null;
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
   }, []);
+
 
 
   useEffect(() => {
