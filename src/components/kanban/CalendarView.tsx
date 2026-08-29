@@ -66,7 +66,14 @@ export function CalendarView({
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [snap, setSnap] = useState(15);
+  const [now, setNow] = useState(() => new Date());
   const previewNote = notes.find((n) => n.id === previewId) ?? null;
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
 
   useEffect(() => {
     const raw = Number(localStorage.getItem(SNAP_KEY));
