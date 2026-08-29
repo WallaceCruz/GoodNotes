@@ -71,6 +71,7 @@
   --color-note-mint: var(--note-mint);
   --color-note-coral: var(--note-coral);
   --color-note-slate: var(--note-slate);
+  --color-note-white: var(--note-white);
   --color-canvas: var(--canvas);
   --color-canvas-dot: var(--canvas-dot);
   --color-note-foreground: var(--note-foreground);
@@ -136,6 +137,7 @@
   --note-mint: oklch(0.93 0.06 165);
   --note-coral: oklch(0.89 0.07 25);
   --note-slate: oklch(0.92 0.012 250);
+  --note-white: oklch(1 0 0);
   --note-foreground: oklch(0.24 0.012 275);
   --link: oklch(0.5 0.19 262);
   --prio-urgent: oklch(0.58 0.22 25);
@@ -198,6 +200,7 @@
   --note-mint: oklch(0.42 0.06 165);
   --note-coral: oklch(0.42 0.08 25);
   --note-slate: oklch(0.38 0.01 250);
+  --note-white: oklch(0.98 0 0);
   --note-foreground: oklch(0.965 0 0);
   --link: oklch(0.78 0.12 250);
   --prio-urgent: oklch(0.64 0.22 25);
