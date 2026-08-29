@@ -417,7 +417,11 @@ export function CalendarView({
             </div>
           </>
         ) : (
-          <div className="scroll-thin min-h-0 flex-1 overflow-y-auto rounded-md border border-border">
+          <div
+            ref={gridRef}
+            className="scroll-thin min-h-0 flex-1 overflow-y-auto rounded-md border border-border"
+          >
+
             <div
               className="grid"
               style={{ gridTemplateColumns: `4rem repeat(${days.length}, minmax(0, 1fr))` }}
