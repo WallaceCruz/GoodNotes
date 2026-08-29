@@ -452,8 +452,21 @@ export function CalendarView({
 
               {HOURS.map((hour) => (
                 <Fragment key={hour}>
-                  <div className="h-14 border-b border-border pr-2 pt-1 text-right text-[10px] tabular-nums text-muted-foreground">
+                  <div
+                    className={cn(
+                      "relative h-14 border-b border-border pr-2 pt-1 text-right text-[10px] tabular-nums text-muted-foreground",
+                      now.getHours() === hour && "text-destructive",
+                    )}
+                  >
                     {String(hour).padStart(2, "0")}:00
+                    {now.getHours() === hour && (
+                      <span
+                        className="pointer-events-none absolute right-1 z-20 -translate-y-1/2 rounded-sm bg-destructive px-1 text-[9px] font-semibold tabular-nums text-white"
+                        style={{ top: `${(now.getMinutes() / 60) * 100}%` }}
+                      >
+                        {formatTime(now.getTime())}
+                      </span>
+                    )}
                   </div>
                   {days.map((d) => {
                     const k = dayKey(d);
@@ -466,6 +479,7 @@ export function CalendarView({
                     const activeMinute = activeSnap
                       ? Number(dragOverKey!.split("|")[2] ?? 0)
                       : 0;
+                    const isNowCell = k === dayKey(now) && hour === now.getHours();
                     return (
                       <div
                         key={slotKey}
@@ -484,6 +498,15 @@ export function CalendarView({
                           activeSnap && "bg-primary/15 ring-2 ring-inset ring-primary",
                         )}
                       >
+                        {isNowCell && (
+                          <span
+                            aria-label={`Horário atual ${formatTime(now.getTime())}`}
+                            className="pointer-events-none absolute inset-x-0 z-20 -translate-y-1/2 border-t-2 border-destructive"
+                            style={{ top: `${(now.getMinutes() / 60) * 100}%` }}
+                          >
+                            <span className="absolute -left-[3px] -top-[5px] block h-2 w-2 rounded-full bg-destructive" />
+                          </span>
+                        )}
                         {activeSnap && (
                           <span
                             className="pointer-events-none absolute inset-x-0 z-10 flex items-center gap-1 border-t-2 border-primary"
@@ -495,6 +518,7 @@ export function CalendarView({
                             </span>
                           </span>
                         )}
+
                         {items.map((n) => (
                           <div
                             key={n.id}
