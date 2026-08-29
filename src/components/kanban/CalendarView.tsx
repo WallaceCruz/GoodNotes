@@ -1,5 +1,5 @@
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { formatTime, noteBg, noteLabel, stripHtml } from "./note-style";
@@ -81,6 +81,14 @@ export function CalendarView({
     const raw = Number(localStorage.getItem(SNAP_KEY));
     if (SNAPS.includes(raw)) setSnap(raw);
   }, []);
+
+  useEffect(() => {
+    if (view === "month") return;
+    const el = gridRef.current;
+    if (!el) return;
+    const hour = new Date().getHours();
+    el.scrollTo({ top: Math.max(0, (hour - 2) * 56), behavior: "smooth" });
+  }, [view]);
 
   const changeSnap = (v: number) => {
     setSnap(v);
