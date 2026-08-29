@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PlanosRouteImport } from './routes/planos'
 
@@ -23,11 +22,6 @@ const IndexRoute = IndexRouteImport.update({
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   id: '/configuracoes',
   path: '/configuracoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -44,14 +38,12 @@ const PlanosRoute = PlanosRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRoute
-  '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
   '/planos': typeof PlanosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRoute
-  '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
   '/planos': typeof PlanosRoute
 }
@@ -59,22 +51,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRoute
-  '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
   '/planos': typeof PlanosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/configuracoes' | '/login' | '/perfil' | '/planos'
+  fullPaths: '/' | '/configuracoes' | '/perfil' | '/planos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/configuracoes' | '/login' | '/perfil' | '/planos'
-  id: '__root__' | '/' | '/configuracoes' | '/login' | '/perfil' | '/planos'
+  to: '/' | '/configuracoes' | '/perfil' | '/planos'
+  id: '__root__' | '/' | '/configuracoes' | '/perfil' | '/planos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
-  LoginRoute: typeof LoginRoute
   PerfilRoute: typeof PerfilRoute
   PlanosRoute: typeof PlanosRoute
 }
@@ -93,13 +83,6 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes'
       fullPath: '/configuracoes'
       preLoaderRoute: typeof ConfiguracoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -122,7 +105,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
-  LoginRoute: LoginRoute,
   PerfilRoute: PerfilRoute,
   PlanosRoute: PlanosRoute,
 }
