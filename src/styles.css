@@ -423,6 +423,11 @@
   background-color: var(--note-tint);
 }
 
+/* Notas brancas mantêm texto escuro em qualquer tema. */
+.bg-note-white {
+  --note-foreground: oklch(0.24 0.012 275);
+}
+
 @utility note-surface-soft {
   background-image: linear-gradient(
     180deg,

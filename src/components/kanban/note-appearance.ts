@@ -95,6 +95,10 @@ export function noteSurface(
   const style = colorVars(appearance, noteTintVar[color]);
   // Cor personalizada da nota tem prioridade sobre a cor global da aparência.
   if (opts.tint) (style as Record<string, string>)["--note-tint"] = opts.tint;
+  // Notas brancas precisam de texto escuro para permanecerem legíveis no dark mode.
+  if (color === "white" && !opts.tint) {
+    (style as Record<string, string>)["--note-foreground"] = "oklch(0.24 0.012 275)";
+  }
   return { className: classes.join(" "), style };
 }
 
