@@ -15,6 +15,7 @@ export const noteTintVar: Record<NoteColor, string> = {
   mint: "var(--note-mint)",
   coral: "var(--note-coral)",
   slate: "var(--note-slate)",
+  white: "var(--note-white)",
 };
 
 const surface: Record<NoteAppearance["style"], string> = {

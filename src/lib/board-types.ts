@@ -10,7 +10,8 @@ export type NoteColor =
   | "sand"
   | "mint"
   | "coral"
-  | "slate";
+  | "slate"
+  | "white";
 
 export const NOTE_COLORS: NoteColor[] = [
   "rose",
@@ -25,6 +26,7 @@ export const NOTE_COLORS: NoteColor[] = [
   "mint",
   "coral",
   "slate",
+  "white",
 ];
 
 export type Priority = "urgent" | "high" | "medium" | "low";
