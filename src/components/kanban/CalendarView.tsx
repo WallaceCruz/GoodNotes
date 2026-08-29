@@ -1,5 +1,5 @@
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 import { formatTime, noteBg, noteLabel, stripHtml } from "./note-style";
@@ -66,12 +66,29 @@ export function CalendarView({
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [snap, setSnap] = useState(15);
+  const [now, setNow] = useState(() => new Date());
+  const gridRef = useRef<HTMLDivElement | null>(null);
   const previewNote = notes.find((n) => n.id === previewId) ?? null;
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+
 
   useEffect(() => {
     const raw = Number(localStorage.getItem(SNAP_KEY));
     if (SNAPS.includes(raw)) setSnap(raw);
   }, []);
+
+  useEffect(() => {
+    if (view === "month") return;
+    const el = gridRef.current;
+    if (!el) return;
+    const hour = new Date().getHours();
+    el.scrollTo({ top: Math.max(0, (hour - 2) * 56), behavior: "smooth" });
+  }, [view]);
 
   const changeSnap = (v: number) => {
     setSnap(v);
@@ -410,7 +427,11 @@ export function CalendarView({
             </div>
           </>
         ) : (
-          <div className="scroll-thin min-h-0 flex-1 overflow-y-auto rounded-md border border-border">
+          <div
+            ref={gridRef}
+            className="scroll-thin min-h-0 flex-1 overflow-y-auto rounded-md border border-border"
+          >
+
             <div
               className="grid"
               style={{ gridTemplateColumns: `4rem repeat(${days.length}, minmax(0, 1fr))` }}
@@ -445,8 +466,21 @@ export function CalendarView({
 
               {HOURS.map((hour) => (
                 <Fragment key={hour}>
-                  <div className="h-14 border-b border-border pr-2 pt-1 text-right text-[10px] tabular-nums text-muted-foreground">
+                  <div
+                    className={cn(
+                      "relative h-14 border-b border-border pr-2 pt-1 text-right text-[10px] tabular-nums text-muted-foreground",
+                      now.getHours() === hour && "text-destructive",
+                    )}
+                  >
                     {String(hour).padStart(2, "0")}:00
+                    {now.getHours() === hour && (
+                      <span
+                        className="pointer-events-none absolute right-1 z-20 -translate-y-1/2 rounded-sm bg-destructive px-1 text-[9px] font-semibold tabular-nums text-white"
+                        style={{ top: `${(now.getMinutes() / 60) * 100}%` }}
+                      >
+                        {formatTime(now.getTime())}
+                      </span>
+                    )}
                   </div>
                   {days.map((d) => {
                     const k = dayKey(d);
@@ -459,6 +493,7 @@ export function CalendarView({
                     const activeMinute = activeSnap
                       ? Number(dragOverKey!.split("|")[2] ?? 0)
                       : 0;
+                    const isNowCell = k === dayKey(now) && hour === now.getHours();
                     return (
                       <div
                         key={slotKey}
@@ -477,6 +512,15 @@ export function CalendarView({
                           activeSnap && "bg-primary/15 ring-2 ring-inset ring-primary",
                         )}
                       >
+                        {isNowCell && (
+                          <span
+                            aria-label={`Horário atual ${formatTime(now.getTime())}`}
+                            className="pointer-events-none absolute inset-x-0 z-20 -translate-y-1/2 border-t-2 border-destructive"
+                            style={{ top: `${(now.getMinutes() / 60) * 100}%` }}
+                          >
+                            <span className="absolute -left-[3px] -top-[5px] block h-2 w-2 rounded-full bg-destructive" />
+                          </span>
+                        )}
                         {activeSnap && (
                           <span
                             className="pointer-events-none absolute inset-x-0 z-10 flex items-center gap-1 border-t-2 border-primary"
@@ -488,6 +532,7 @@ export function CalendarView({
                             </span>
                           </span>
                         )}
+
                         {items.map((n) => (
                           <div
                             key={n.id}
