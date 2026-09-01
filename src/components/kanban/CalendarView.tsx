@@ -468,7 +468,8 @@ export function CalendarView({
                 <Fragment key={hour}>
                   <div
                     className={cn(
-                      "relative h-14 border-b border-border pr-2 pt-1 text-right text-[10px] tabular-nums text-muted-foreground",
+                      "relative border-b border-border pr-2 pt-1 text-right text-[10px] tabular-nums text-muted-foreground",
+                      view === "week" ? "h-24" : "h-14",
                       now.getHours() === hour && "text-destructive",
                     )}
                   >
