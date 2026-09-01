@@ -508,7 +508,8 @@ export function CalendarView({
                         }
                         onDrop={handleDrop(k, hour)}
                         className={cn(
-                          "relative h-14 space-y-0.5 overflow-hidden border-b border-l border-border p-0.5 transition-colors hover:bg-accent/50",
+                          "relative space-y-0.5 overflow-hidden border-b border-l border-border p-0.5 transition-colors hover:bg-accent/50",
+                          view === "week" ? "h-24" : "h-14",
                           selected === k && "bg-primary/5",
                           activeSnap && "bg-primary/15 ring-2 ring-inset ring-primary",
                         )}
@@ -534,38 +535,56 @@ export function CalendarView({
                           </span>
                         )}
 
-                        {items.map((n) => (
-                          <div
-                            key={n.id}
-                            draggable
-                            onDragStart={(e) => {
-                              e.dataTransfer.setData("text/note-id", n.id);
-                              setDragging(true);
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPreviewId(n.id);
-                            }}
-                            title={
-                              isConflict(n)
-                                ? `Conflito de horário às ${formatTime(n.deadline!)}`
-                                : `${formatTime(n.deadline!)} · ${n.title}`
-                            }
-                            className={cn(
-                              "cursor-grab truncate rounded border border-border/60 px-1 py-0.5 text-[10px] text-foreground active:cursor-grabbing",
-                              n.kind === "notepad" ? "bg-card" : noteBg[n.color],
-                              isConflict(n) && "border-destructive ring-1 ring-destructive",
-                            )}
-                          >
-                            {isConflict(n) && (
-                              <AlertTriangle className="mr-0.5 inline h-2.5 w-2.5 text-destructive" />
-                            )}
-                            <span className="font-medium tabular-nums">
-                              {formatTime(n.deadline!)}
-                            </span>{" "}
-                            {n.title || "Sem título"}
-                          </div>
-                        ))}
+                        {items.map((n) => {
+                          const isNotepad = n.kind === "notepad";
+                          const bigNotepad = isNotepad && view === "week";
+                          return (
+                            <div
+                              key={n.id}
+                              draggable
+                              onDragStart={(e) => {
+                                e.dataTransfer.setData("text/note-id", n.id);
+                                setDragging(true);
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewId(n.id);
+                              }}
+                              title={
+                                isConflict(n)
+                                  ? `Conflito de horário às ${formatTime(n.deadline!)}`
+                                  : `${formatTime(n.deadline!)} · ${n.title}`
+                              }
+                              className={cn(
+                                "cursor-grab rounded border border-border/60 px-1 py-0.5 text-foreground active:cursor-grabbing",
+                                bigNotepad
+                                  ? "min-h-[3.25rem] space-y-0.5 p-2 text-xs shadow-sm"
+                                  : "truncate text-[10px]",
+                                isNotepad
+                                  ? "bg-card border-l-4 border-l-primary"
+                                  : noteBg[n.color],
+                                isConflict(n) && "border-destructive ring-1 ring-destructive",
+                              )}
+                            >
+                              <div className="flex items-center gap-1">
+                                {isConflict(n) && (
+                                  <AlertTriangle className="mr-0.5 inline h-2.5 w-2.5 text-destructive" />
+                                )}
+                                <span className="font-medium tabular-nums">
+                                  {formatTime(n.deadline!)}
+                                </span>
+                                <span className={cn(bigNotepad ? "line-clamp-2 font-medium" : "truncate")}>
+                                  {n.title || "Sem título"}
+                                </span>
+                              </div>
+                              {bigNotepad && n.content && (
+                                <p className="line-clamp-1 text-[10px] text-muted-foreground">
+                                  {stripHtml(n.content)}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
 
                     );
