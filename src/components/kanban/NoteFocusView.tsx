@@ -23,7 +23,6 @@ export function NoteFocusView({
   onClose: () => void;
 }) {
   const onChange = (patch: Partial<Note>) => boardActions.updateNote(note.id, patch);
-  const isNotepad = note.kind === "notepad";
   const [closing, setClosing] = useState(false);
   const [editing, setEditing] = useState(mode === "edit");
   // Instância do editor do corpo da nota, para o painel lateral agir sobre ela.
@@ -101,10 +100,10 @@ export function NoteFocusView({
 
   const article = (
     <article
-      style={!isNotepad && note.colorHex ? { backgroundColor: note.colorHex } : undefined}
+      style={note.colorHex ? { backgroundColor: note.colorHex } : undefined}
       className={cn(
-        "rounded-2xl border border-border/70 p-8 shadow-focus",
-        isNotepad ? "bg-card" : cn(!note.colorHex && noteBg[note.color], "text-note-foreground"),
+        "rounded-2xl border border-border/70 p-8 shadow-focus text-note-foreground",
+        !note.colorHex && noteBg[note.color],
       )}
     >
       {editing ? (
@@ -240,7 +239,7 @@ export function NoteFocusView({
                 Voltar ao quadro
               </button>
               <span className="text-[11px] text-muted-foreground">
-                {isNotepad ? "Bloco de notas" : "Nota autoadesiva"} · editado{" "}
+                Nota autoadesiva · editado{" "}
                 {timeAgo(note.updatedAt)}
               </span>
               <div className="ml-auto flex items-center gap-1.5">

@@ -24,8 +24,9 @@ import type { BoardFile, Note } from "@/lib/board-types";
 import { boardActions, getActiveFile, useActiveFile } from "@/stores/board";
 import { cn } from "@/lib/utils";
 import { KanbanColumn } from "./KanbanColumn";
+import { NoteCardPreview } from "./NoteCardPreview";
 import { columnIdOf, columnSortableId } from "./column-drag";
-import { noteBg, stripHtml } from "./note-style";
+import { noteBg } from "./note-style";
 
 // Mantém a posição do scroll do quadro ao abrir/fechar a página de detalhes.
 let savedBoardScroll = { top: 0, left: 0 };
@@ -209,7 +210,7 @@ export function KanbanBoard({
                 activeNoteId={activeNoteId}
                 index={i}
                 total={file.columns.length}
-                onAddNote={(kind) => boardActions.addNote(c.id, kind)}
+                onAddNote={() => boardActions.addNote(c.id)}
                 onOpenNote={onOpenNote}
                 highlightIds={highlightIds}
               />
@@ -250,18 +251,8 @@ export function KanbanBoard({
               </div>
             </div>
           ) : dragging ? (
-            <div
-              className={cn(
-                "w-96 origin-center scale-[1.03] cursor-grabbing rounded-lg border border-border/60 p-3 shadow-2xl ring-2 ring-ring/40 transition-transform",
-                dragging.kind === "notepad"
-                  ? "bg-card text-card-foreground"
-                  : cn("rotate-2", noteBg[dragging.color]),
-              )}
-            >
-              <p className="text-[15px] font-semibold leading-snug">{dragging.title}</p>
-              <p className="mt-1 line-clamp-3 text-xs text-foreground/70">
-                {stripHtml(dragging.content)}
-              </p>
+            <div className="rotate-1">
+              <NoteCardPreview note={dragging} />
             </div>
           ) : null}
         </DragOverlay>

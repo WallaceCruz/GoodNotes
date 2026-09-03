@@ -20,10 +20,9 @@ import type { Note } from "@/lib/board-types";
 import { boardActions } from "@/stores/board";
 import { cn } from "@/lib/utils";
 
-/** Menu de "mais opções" (três pontos) das notas e blocos. */
+/** Menu de "mais opções" (três pontos) da nota. */
 export function NoteOptionsMenu({ note, onOpen }: { note: Note; onOpen: () => void }) {
-  const label = note.kind === "notepad" ? "Bloco de notas" : "Nota";
-  const title = note.title || label;
+  const title = note.title || "Nota";
 
   return (
     <div onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
@@ -52,7 +51,7 @@ export function NoteOptionsMenu({ note, onOpen }: { note: Note; onOpen: () => vo
           <DropdownMenuItem
             onClick={() => {
               boardActions.duplicateNote(note.id);
-              toast.success(`${label} duplicad${note.kind === "notepad" ? "o" : "a"}`);
+              toast.success("Nota duplicada");
             }}
           >
             <Copy className="h-4 w-4" />
@@ -71,7 +70,7 @@ export function NoteOptionsMenu({ note, onOpen }: { note: Note; onOpen: () => vo
             className="text-destructive focus:text-destructive"
             onClick={() => {
               boardActions.removeNote(note.id);
-              toast.success(`"${title}" excluíd${note.kind === "notepad" ? "o" : "a"}`, {
+              toast.success(`"${title}" excluída`, {
                 action: { label: "Desfazer", onClick: () => boardActions.restoreNote(note) },
               });
             }}

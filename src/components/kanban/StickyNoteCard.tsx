@@ -152,7 +152,7 @@ function StickyNoteCardBase({
         onReset={() => onChange({ height: null })}
       />
 
-      <footer className="mt-1 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+      <footer className="mt-1 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2">
         <AssigneeSelect
           value={noteAssignees(note)}
           onChange={(names) => onChange({ assignees: names, assignee: names[0] ?? null })}

@@ -16,7 +16,6 @@ import type { NativeColumnKey } from "@/lib/board-types";
  */
 
 export type NoteStyle = "classic" | "soft" | "gradient" | "outline" | "glass" | "tape";
-export type NotepadStyle = "plain" | "soft" | "outline" | "glass" | "accent" | "header";
 export type NoteCorners = "sharp" | "soft" | "rounded" | "xl" | "pill" | "notched";
 export type NoteShadow = "none" | "soft" | "strong";
 export type NoteFont = "sans" | "serif" | "mono";
@@ -25,7 +24,6 @@ export type NoteAlign = "left" | "center";
 
 export type NoteAppearance = {
   style: NoteStyle;
-  notepadStyle: NotepadStyle;
   corners: NoteCorners;
   shadow: NoteShadow;
   tilt: boolean;
@@ -53,7 +51,6 @@ export const DEFAULT_COLUMN_COLORS: Record<NativeColumnKey, string> = {
 
 export const defaultNoteAppearance: NoteAppearance = {
   style: "classic",
-  notepadStyle: "plain",
   corners: "soft",
   shadow: "soft",
   tilt: false,
@@ -74,15 +71,6 @@ export const NOTE_STYLE_OPTIONS: { value: NoteStyle; label: string; hint: string
   { value: "outline", label: "Contorno", hint: "Fundo claro com borda colorida" },
   { value: "glass", label: "Vidro", hint: "Translúcida com desfoque" },
   { value: "tape", label: "Fita", hint: "Post-it com fita adesiva no topo" },
-];
-
-export const NOTEPAD_STYLE_OPTIONS: { value: NotepadStyle; label: string; hint: string }[] = [
-  { value: "plain", label: "Limpo", hint: "Fundo sólido, sem textura" },
-  { value: "soft", label: "Suave", hint: "Degradê muito discreto" },
-  { value: "outline", label: "Contorno", hint: "Fundo neutro com borda colorida" },
-  { value: "glass", label: "Vidro", hint: "Translúcido com desfoque" },
-  { value: "accent", label: "Margem", hint: "Faixa colorida na lateral" },
-  { value: "header", label: "Topo", hint: "Faixa colorida no topo" },
 ];
 
 export const NOTE_CORNER_OPTIONS: { value: NoteCorners; label: string }[] = [

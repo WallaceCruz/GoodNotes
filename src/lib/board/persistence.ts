@@ -41,7 +41,6 @@ export function normalize(state: BoardState): BoardState {
           deadline: n.deadline ?? null,
           archived: n.archived ?? false,
           pinned: n.pinned ?? false,
-          kind: n.kind ?? "sticky",
           assignee: n.assignee ?? n.author ?? null,
           assignees: n.assignees?.length ? n.assignees : n.assignee ? [n.assignee] : [],
           showChecklist: n.showChecklist ?? (n.checklist?.length ?? 0) > 0,

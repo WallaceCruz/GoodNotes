@@ -32,19 +32,11 @@ import {
   Loader,
   MoreHorizontal,
   Eye,
-  NotebookPen,
   Plus,
-  StickyNote,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  NOTE_COLORS,
-  type Column,
-  type NativeColumnKey,
-  type Note,
-  type NoteKind,
-} from "@/lib/board-types";
+import { type Column, type NativeColumnKey, type Note } from "@/lib/board-types";
 import { boardActions, useActiveProjectId } from "@/stores/board";
 import { DEFAULT_COLUMN_COLORS, useNoteAppearance } from "@/stores/noteAppearance";
 
@@ -58,8 +50,7 @@ const NATIVE_ICON: Record<NativeColumnKey, typeof Inbox> = {
 };
 import { cn } from "@/lib/utils";
 import { columnSortableId } from "./column-drag";
-import { noteBg, noteHeaderBg, noteLabel } from "./note-style";
-import { NotepadCard } from "./NotepadCard";
+import { noteBg, noteHeaderBg } from "./note-style";
 import { StickyNoteCard } from "./StickyNoteCard";
 
 const PAGE = 30;
@@ -79,7 +70,7 @@ function KanbanColumnBase({
   activeNoteId: string | null;
   index: number;
   total: number;
-  onAddNote: (kind: NoteKind) => void;
+  onAddNote: () => void;
   onOpenNote: (id: string, mode?: "view" | "edit") => void;
   highlightIds?: Set<string> | undefined;
 }) {
@@ -172,23 +163,14 @@ function KanbanColumnBase({
         <span className="rounded bg-muted px-1.5 text-[11px] text-muted-foreground">
           {notes.length}
         </span>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button aria-label="Adicionar item" className="text-muted-foreground">
-              <Plus className="h-4 w-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuItem onClick={() => onAddNote("sticky")}>
-              <StickyNote className="mr-2 h-4 w-4" />
-              Nota autoadesiva
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onAddNote("notepad")}>
-              <NotebookPen className="mr-2 h-4 w-4" />
-              Bloco de notas
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <button
+          aria-label="Adicionar nota"
+          title="Adicionar nota"
+          onClick={onAddNote}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
 
         <AlertDialog>
           <DropdownMenu>
@@ -198,32 +180,6 @@ function KanbanColumnBase({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
-              <div className="px-2 py-1.5">
-                <p className="mb-2 text-[11px] font-medium text-muted-foreground">Cor da coluna</p>
-                <div className="flex flex-wrap gap-1.5">
-                  <button
-                    title="Sem cor"
-                    onClick={() => boardActions.setColumnColor(column.id, null)}
-                    className={cn(
-                      "h-5 w-5 rounded-full border border-border bg-background",
-                      !column.color && "ring-2 ring-ring ring-offset-1 ring-offset-background",
-                    )}
-                  />
-                  {NOTE_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      title={noteLabel[c]}
-                      onClick={() => boardActions.setColumnColor(column.id, c)}
-                      className={cn(
-                        "h-5 w-5 rounded-full border border-border",
-                        noteBg[c],
-                        column.color === c && "ring-2 ring-ring ring-offset-1 ring-offset-background",
-                      )}
-                    />
-                  ))}
-                </div>
-              </div>
-              <DropdownMenuSeparator />
               <DropdownMenuItem
                 disabled={index === 0}
                 onClick={() => boardActions.moveColumnBy(column.id, -1)}
@@ -248,12 +204,7 @@ function KanbanColumnBase({
                 <Copy className="mr-2 h-4 w-4" />
                 Duplicar coluna
               </DropdownMenuItem>
-              {isNative ? (
-                <DropdownMenuItem disabled className="text-muted-foreground">
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Coluna nativa do fluxo (não excluível)
-                </DropdownMenuItem>
-              ) : (
+              {!isNative && (
                 <AlertDialogTrigger asChild>
                   <DropdownMenuItem
                     onSelect={(e) => e.preventDefault()}
@@ -307,25 +258,22 @@ function KanbanColumnBase({
         }`}
       >
         <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-          {visible.map((n) => {
-            const Card = n.kind === "notepad" ? NotepadCard : StickyNoteCard;
-            return (
-              <div
-                key={n.id}
-                className={
-                  highlightIds?.has(n.id)
-                    ? "rounded-xl ring-2 ring-primary ring-offset-2 ring-offset-background"
-                    : undefined
-                }
-              >
-                <Card
-                  note={n}
-                  active={activeNoteId === n.id}
-                  onOpen={(mode) => onOpenNote(n.id, mode)}
-                />
-              </div>
-            );
-          })}
+          {visible.map((n) => (
+            <div
+              key={n.id}
+              className={
+                highlightIds?.has(n.id)
+                  ? "rounded-xl ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  : undefined
+              }
+            >
+              <StickyNoteCard
+                note={n}
+                active={activeNoteId === n.id}
+                onOpen={(mode) => onOpenNote(n.id, mode)}
+              />
+            </div>
+          ))}
         </SortableContext>
         {notes.length > visible.length && (
           <button

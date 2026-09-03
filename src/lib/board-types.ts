@@ -134,17 +134,9 @@ export type NoteImage = {
   link: string;
 };
 
-export type NoteKind = "sticky" | "notepad";
-
-export const NOTE_KIND_LABEL: Record<NoteKind, string> = {
-  sticky: "Nota autoadesiva",
-  notepad: "Bloco de notas",
-};
-
 export type Note = {
   id: string;
   columnId: string;
-  kind: NoteKind;
   title: string;
   content: string;
   /** Texto que fica depois do checklist (conclusões, observações, próximos passos). */
@@ -377,14 +369,33 @@ export function nativeKeyOf(columns: Column[], columnId: string): NativeColumnKe
   return columns.find((c) => c.id === columnId)?.native ?? null;
 }
 
-/** Status efetivo considerando a coluna: "Concluído" conclui, "Em andamento" mostra progresso. */
+/**
+ * Status que a coluna nativa sugere quando a nota não tem um status próprio
+ * definido manualmente — backlog/research/discovery ainda não começaram
+ * (pendente), doing/validação estão em andamento, concluído fecha o ciclo.
+ */
+const NATIVE_STATUS_DEFAULT: Record<NativeColumnKey, NoteStatus> = {
+  backlog: "pending",
+  research: "pending",
+  discovery: "pending",
+  doing: "doing",
+  validation: "doing",
+  done: "done",
+};
+
+/**
+ * Status efetivo considerando a coluna. "Concluído" sempre fecha a nota,
+ * independente do que estava marcado antes; as demais colunas nativas só
+ * *sugerem* um status — se o usuário já escolheu um manualmente (ex.: "Não
+ * concluído", "Reagendado"), essa escolha continua valendo.
+ */
 export function effectiveStatus(
   note: Pick<Note, "status" | "columnId">,
   columns: Column[],
 ): NoteStatus | null {
   const key = nativeKeyOf(columns, note.columnId);
   if (key === "done") return "done";
-  if (key === "doing") return note.status ?? "doing";
+  if (key) return note.status ?? NATIVE_STATUS_DEFAULT[key];
   return note.status;
 }
 

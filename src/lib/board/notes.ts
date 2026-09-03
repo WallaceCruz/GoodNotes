@@ -5,7 +5,6 @@ import {
   type BoardFile,
   type Column,
   type Note,
-  type NoteKind,
 } from "@/lib/board-types";
 
 /**
@@ -48,15 +47,14 @@ export function withOrder(notes: Note[]): Note[] {
   return reindex(out);
 }
 
-export function createNote(columnId: string, kind: NoteKind): Note {
+export function createNote(columnId: string): Note {
   return {
     id: uid(),
     columnId,
-    kind,
-    title: kind === "notepad" ? "Novo bloco de notas" : "Nova nota",
+    title: "Nova nota",
     content: "",
     contentBelow: "",
-    color: kind === "notepad" ? "slate" : "amber",
+    color: "white",
     author: "Você",
     assignee: "Walle Dev",
     assignees: ["Walle Dev"],

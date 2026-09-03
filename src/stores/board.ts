@@ -7,7 +7,6 @@ import type {
   Note,
   NoteColor,
   NoteImage,
-  NoteKind,
 } from "@/lib/board-types";
 import * as automations from "@/lib/board/automations";
 import * as checklist from "@/lib/board/checklist";
@@ -56,7 +55,7 @@ export type BoardActions = {
   toggleAutomation: (id: string) => void;
   removeAutomation: (id: string) => void;
 
-  addNote: (columnId: string, kind?: NoteKind) => string;
+  addNote: (columnId: string) => string;
   updateNote: (noteId: string, patch: Partial<Note>) => void;
   setNoteArchived: (noteId: string, archived: boolean) => void;
   setNotePinned: (noteId: string, pinned: boolean) => void;
@@ -147,8 +146,8 @@ export const useBoard = create<BoardSlice>()((set, get) => {
       toggleAutomation: (id) => onFile((f) => automations.toggleAutomation(f, id)),
       removeAutomation: (id) => onFile((f) => automations.removeAutomation(f, id)),
 
-      addNote: (columnId, kind = "sticky") => {
-        const note = notes.createNote(columnId, kind);
+      addNote: (columnId) => {
+        const note = notes.createNote(columnId);
         onFile((f) => notes.addNote(f, note));
         return note.id;
       },

@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { noteSurface, notepadSurface } from "@/components/kanban/note-appearance";
+import { noteSurface } from "@/components/kanban/note-appearance";
 import { useProjects } from "@/stores/board";
 import {
   NOTE_ALIGN_OPTIONS,
@@ -19,7 +19,6 @@ import {
   NOTE_SHADOW_OPTIONS,
   NOTE_SIZE_OPTIONS,
   NOTE_STYLE_OPTIONS,
-  NOTEPAD_STYLE_OPTIONS,
   DEFAULT_COLUMN_COLORS,
   hydrateNoteAppearance,
   useNoteAppearance,
@@ -57,30 +56,6 @@ function StickyPreview({
           <span className="rounded-full border border-current/30 px-2 py-0.5">urgente</span>
         </div>
       )}
-    </div>
-  );
-}
-
-function NotepadPreview({
-  appearance,
-  compact = false,
-}: {
-  appearance: NoteAppearance;
-  compact?: boolean;
-}) {
-  const surface = notepadSurface(appearance, { tilt: !compact });
-  return (
-    <div
-      style={surface.style}
-      className={cn(
-        "relative overflow-hidden border border-border/80 text-foreground",
-        compact ? "h-20 w-full" : "w-full",
-        surface.className,
-      )}
-    >
-      <p className="note-title-color text-[1.15em] font-bold leading-tight">Bloco de notas</p>
-      <p className="mt-1 opacity-75">Anotações da reunião</p>
-      {!compact && <p className="mt-1 opacity-60">Definir escopo, prazos e responsáveis.</p>}
     </div>
   );
 }
@@ -225,19 +200,11 @@ export function NoteAppearanceSection() {
         </div>
       )}
 
-      <div className="grid gap-4 rounded-lg border border-dashed border-border bg-muted/30 p-5 sm:grid-cols-2">
-        <div className="space-y-2">
-          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-            Nota autoadesiva
-          </p>
-          <StickyPreview appearance={appearance} />
-        </div>
-        <div className="space-y-2">
-          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-            Bloco de notas
-          </p>
-          <NotepadPreview appearance={appearance} />
-        </div>
+      <div className="rounded-lg border border-dashed border-border bg-muted/30 p-5">
+        <p className="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+          Pré-visualização
+        </p>
+        <StickyPreview appearance={appearance} />
       </div>
 
       <div className="space-y-3">
@@ -260,29 +227,6 @@ export function NoteAppearanceSection() {
                 color={opt.value === "glass" ? "sky" : opt.value === "outline" ? "mint" : "amber"}
                 compact
               />
-              <p className="mt-2 text-xs font-medium">{opt.label}</p>
-              <p className="text-[11px] text-muted-foreground">{opt.hint}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <Label className="text-xs">Estilo do bloco de notas</Label>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {NOTEPAD_STYLE_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => set({ notepadStyle: opt.value })}
-              className={cn(
-                "rounded-lg border p-2 text-left transition-colors",
-                appearance.notepadStyle === opt.value
-                  ? "border-foreground bg-accent/50"
-                  : "border-border hover:bg-accent/30",
-              )}
-            >
-              <NotepadPreview appearance={{ ...appearance, notepadStyle: opt.value }} compact />
               <p className="mt-2 text-xs font-medium">{opt.label}</p>
               <p className="text-[11px] text-muted-foreground">{opt.hint}</p>
             </button>

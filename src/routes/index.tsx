@@ -262,7 +262,7 @@ function Index() {
                   onCreateNote={(deadline) => {
                     const columnId = fileColumns?.[0]?.id;
                     if (!columnId) return;
-                    const id = boardActions.addNote(columnId, "sticky");
+                    const id = boardActions.addNote(columnId);
                     boardActions.updateNote(id, { deadline });
                     setActiveNoteId(id);
                   }}

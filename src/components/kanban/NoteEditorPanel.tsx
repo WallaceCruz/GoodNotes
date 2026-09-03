@@ -208,7 +208,7 @@ export function NoteEditorPanel({
     <section className="flex w-[22rem] shrink-0 flex-col border-l border-border bg-background">
       <header className="flex items-center gap-2 border-b border-border px-3 py-2">
         <span className="text-sm font-semibold">
-          {note.kind === "notepad" ? "Bloco de notas" : "Nota"}
+          Nota
         </span>
         <button
           onClick={() => boardActions.setNoteArchived(note.id, !note.archived)}
@@ -500,52 +500,48 @@ export function NoteEditorPanel({
 
         {tab === "Estilo" && (
           <>
-            {note.kind !== "notepad" && (
-              <Group title="Cor da nota">
-                <div className="flex flex-wrap gap-2">
-                  {NOTE_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      aria-label={noteLabel[c]}
-                      title={noteLabel[c]}
-                      onClick={() => onChange({ color: c, colorHex: null })}
-                      className={cn(
-                        "h-7 w-7 rounded-full border border-border",
-                        noteBg[c],
-                        note.color === c &&
-                          !note.colorHex &&
-                          "ring-2 ring-ring ring-offset-2 ring-offset-background",
-                      )}
-                    />
-                  ))}
-                </div>
-              </Group>
-            )}
-
-            {note.kind !== "notepad" && (
-              <Group title="Cor personalizada">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    aria-label="Cor personalizada da nota"
-                    value={note.colorHex ?? "#f4c7d6"}
-                    onChange={(e) => onChange({ colorHex: e.target.value })}
-                    className="h-9 w-16 cursor-pointer rounded-lg border border-border bg-transparent"
+            <Group title="Cor da nota">
+              <div className="flex flex-wrap gap-2">
+                {NOTE_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    aria-label={noteLabel[c]}
+                    title={noteLabel[c]}
+                    onClick={() => onChange({ color: c, colorHex: null })}
+                    className={cn(
+                      "h-7 w-7 rounded-full border border-border",
+                      noteBg[c],
+                      note.color === c &&
+                        !note.colorHex &&
+                        "ring-2 ring-ring ring-offset-2 ring-offset-background",
+                    )}
                   />
-                  <span className="text-xs text-muted-foreground">
-                    {note.colorHex ?? "usando a paleta"}
-                  </span>
-                  {note.colorHex && (
-                    <button
-                      onClick={() => onChange({ colorHex: null })}
-                      className="ml-auto rounded-lg border border-border px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent"
-                    >
-                      Remover
-                    </button>
-                  )}
-                </div>
-              </Group>
-            )}
+                ))}
+              </div>
+            </Group>
+
+            <Group title="Cor personalizada">
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  aria-label="Cor personalizada da nota"
+                  value={note.colorHex ?? "#f4c7d6"}
+                  onChange={(e) => onChange({ colorHex: e.target.value })}
+                  className="h-9 w-16 cursor-pointer rounded-lg border border-border bg-transparent"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {note.colorHex ?? "usando a paleta"}
+                </span>
+                {note.colorHex && (
+                  <button
+                    onClick={() => onChange({ colorHex: null })}
+                    className="ml-auto rounded-lg border border-border px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent"
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
+            </Group>
 
             <Group title="Altura no quadro">
               <div className="flex items-center gap-2">
@@ -603,7 +599,7 @@ export function NoteEditorPanel({
                     </div>
                     <div className="flex justify-between gap-2">
                       <dt className="text-muted-foreground">Tipo</dt>
-                      <dd>{note.kind === "notepad" ? "Bloco de notas" : "Nota autoadesiva"}</dd>
+                      <dd>Nota autoadesiva</dd>
                     </div>
                   </dl>
                 </Group>
@@ -625,14 +621,12 @@ export function NoteEditorPanel({
                   <StatusSelect value={note.status} onChange={(status) => onChange({ status })} />
                 </Group>
 
-                {note.kind !== "notepad" && (
-                  <Group title="Categoria">
-                    <CategorySelect
-                      value={note.category}
-                      onChange={(category) => onChange({ category })}
-                    />
-                  </Group>
-                )}
+                <Group title="Categoria">
+                  <CategorySelect
+                    value={note.category}
+                    onChange={(category) => onChange({ category })}
+                  />
+                </Group>
 
                 <Group title="Prioridade">
                   <div className="flex flex-wrap gap-1.5">

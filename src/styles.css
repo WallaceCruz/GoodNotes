@@ -563,39 +563,6 @@
   color: var(--note-title, inherit);
 }
 
-@utility notepad-surface-plain {
-  background-color: var(--note-tint);
-}
-
-@utility notepad-surface-soft {
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in oklab, var(--note-tint) 92%, var(--color-foreground)),
-    var(--note-tint)
-  );
-}
-
-@utility notepad-surface-outline {
-  background-color: var(--color-card);
-  border-color: color-mix(in oklab, var(--note-accent, var(--color-primary)) 55%, transparent);
-}
-
-@utility notepad-surface-glass {
-  background-color: color-mix(in oklab, var(--note-tint) 60%, transparent);
-  border-color: color-mix(in oklab, var(--color-foreground) 12%, transparent);
-  backdrop-filter: blur(10px) saturate(1.2);
-}
-
-@utility notepad-surface-accent {
-  background-color: var(--note-tint);
-  box-shadow: inset 5px 0 0 0 var(--note-accent, var(--color-primary));
-}
-
-@utility notepad-surface-header {
-  background-color: var(--note-tint);
-  box-shadow: inset 0 4px 0 0 var(--note-accent, var(--color-primary));
-}
-
 @utility note-corner-xl {
   border-radius: 1.75rem;
 }

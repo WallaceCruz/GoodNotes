@@ -27,15 +27,6 @@ const surface: Record<NoteAppearance["style"], string> = {
   tape: "note-surface-tape",
 };
 
-const notepad: Record<NoteAppearance["notepadStyle"], string> = {
-  plain: "notepad-surface-plain",
-  soft: "notepad-surface-soft",
-  outline: "notepad-surface-outline",
-  glass: "notepad-surface-glass",
-  accent: "notepad-surface-accent",
-  header: "notepad-surface-header",
-};
-
 const corners: Record<NoteAppearance["corners"], string> = {
   sharp: "rounded-none",
   soft: "rounded-lg",
@@ -100,16 +91,4 @@ export function noteSurface(
     (style as Record<string, string>)["--note-foreground"] = "oklch(0.24 0.012 275)";
   }
   return { className: classes.join(" "), style };
-}
-
-export function notepadSurface(
-  appearance: NoteAppearance,
-  opts: { tilt?: boolean } = {},
-): { className: string; style: CSSProperties } {
-  const classes = [notepad[appearance.notepadStyle] ?? notepad.plain, ...shared(appearance)];
-  if (appearance.tilt && opts.tilt !== false) classes.push("note-tilt");
-  return {
-    className: classes.join(" "),
-    style: colorVars(appearance, "var(--color-card)"),
-  };
 }
