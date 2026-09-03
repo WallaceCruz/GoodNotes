@@ -2,17 +2,17 @@ import { useSortable } from "@dnd-kit/sortable";
 import { memo } from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Maximize2, Pin } from "lucide-react";
-import type { BoardStore } from "@/hooks/useBoardStore";
 import { effectiveStatus, noteAssignees, type Note } from "@/lib/board-types";
+import { boardActions, useActiveProjectId, useFileColumns } from "@/stores/board";
 import { cn } from "@/lib/utils";
-import { sameStoreView } from "./memo-compare";
 import { NoteOptionsMenu } from "./NoteOptionsMenu";
 import { AssigneeSelect } from "./AssigneeSelect";
+import { BelowChecklistNote } from "./BelowChecklistNote";
 import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
-import { noteBg } from "./note-style";
+import { hasRichContent, noteBg } from "./note-style";
 import { noteSurface } from "./note-appearance";
-import { useNoteAppearance } from "@/hooks/useNoteAppearance";
+import { useNoteAppearance } from "@/stores/noteAppearance";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 import { StatusBadge } from "./StatusSelect";
 import { CategoryBadge } from "./CategorySelect";
@@ -22,23 +22,22 @@ import { TagEditor } from "./TagEditor";
 function StickyNoteCardBase({
   note,
   active,
-  store,
   onOpen,
 }: {
   note: Note;
   active: boolean;
-  store: BoardStore;
   onOpen: (mode?: "view" | "edit") => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: note.id,
     transition: { duration: 220, easing: "cubic-bezier(0.2, 0, 0, 1)" },
   });
-  const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
+  const onChange = (patch: Partial<Note>) => boardActions.updateNote(note.id, patch);
   const showChecklist = note.showChecklist;
-  const { appearance } = useNoteAppearance(store.project?.id);
+  const activeProjectId = useActiveProjectId();
+  const { appearance } = useNoteAppearance(activeProjectId);
   const surface = noteSurface(appearance, note.color, { tint: note.colorHex ?? null });
-  const columns = store.file?.columns ?? [];
+  const columns = useFileColumns() ?? [];
   const status = effectiveStatus(note, columns);
   const done = status === "done";
 
@@ -77,7 +76,7 @@ function StickyNoteCardBase({
           aria-label="Marcar tarefa como concluída"
           title="Marcar como concluída"
           onPointerDown={(e) => e.stopPropagation()}
-          onChange={(e) => store.setNoteDone(note.id, e.target.checked)}
+          onChange={(e) => boardActions.setNoteDone(note.id, e.target.checked)}
           className="h-3.5 w-3.5 cursor-pointer accent-emerald-600"
         />
         {note.pinned && <Pin className="h-3.5 w-3.5 text-foreground/70" />}
@@ -93,7 +92,7 @@ function StickyNoteCardBase({
           >
             <Maximize2 className="h-3.5 w-3.5" />
           </button>
-          <NoteOptionsMenu note={note} store={store} onOpen={() => onOpen("edit")} />
+          <NoteOptionsMenu note={note} onOpen={() => onOpen("edit")} />
         </div>
       </div>
 
@@ -112,7 +111,10 @@ function StickyNoteCardBase({
       />
 
       <div
-        className="overflow-hidden"
+        // Rola em vez de cortar: sem limite o card estica e domina a coluna, e
+        // com `overflow-hidden` o texto além da altura ficava inacessível.
+        // `pr-2` mantém o texto fora da barra de rolagem.
+        className={cn("scroll-thin overflow-y-auto pr-2", !note.height && "max-h-96")}
         style={note.height ? { height: note.height } : undefined}
       >
         <RichNoteEditor
@@ -120,20 +122,25 @@ function StickyNoteCardBase({
           onChange={(html) => onChange({ content: html })}
           minHeight="min-h-14"
           compact
-          showToolbar={false}
-          checklistActive={showChecklist}
-          onToggleChecklist={() => onChange({ showChecklist: !showChecklist })}
         />
 
         {showChecklist && (
           <div className="mt-2">
             <ChecklistEditor
               items={note.checklist}
-              onAdd={(text) => store.addChecklistItem(note.id, text)}
-              onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
-              onRemove={(id) => store.removeChecklistItem(note.id, id)}
+              onAdd={(text) => boardActions.addChecklistItem(note.id, text)}
+              onUpdate={(id, patch) => boardActions.updateChecklistItem(note.id, id, patch)}
+              onRemove={(id) => boardActions.removeChecklistItem(note.id, id)}
             />
           </div>
+        )}
+
+        {(showChecklist || hasRichContent(note.contentBelow)) && (
+          <BelowChecklistNote
+            value={note.contentBelow ?? ""}
+            onChange={(html) => onChange({ contentBelow: html })}
+            compact
+          />
         )}
       </div>
 
@@ -151,13 +158,16 @@ function StickyNoteCardBase({
           onChange={(names) => onChange({ assignees: names, assignee: names[0] ?? null })}
         />
         <div className="min-w-0 flex-1">
-          <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} store={store} />
+          <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} />
         </div>
       </footer>
     </div>
   );
 }
 
-export const StickyNoteCard = memo(StickyNoteCardBase, (prev, next) =>
-  prev.note === next.note && prev.active === next.active && sameStoreView(prev.store, next.store),
+// `columns` e `appearance` chegam por assinatura direta ao Zustand (dentro do
+// componente), não por prop — então comparar `note`/`active` já basta aqui.
+export const StickyNoteCard = memo(
+  StickyNoteCardBase,
+  (prev, next) => prev.note === next.note && prev.active === next.active,
 );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { noteSurface, notepadSurface } from "@/components/kanban/note-appearance";
-import { useBoardStore } from "@/hooks/useBoardStore";
+import { useProjects } from "@/stores/board";
 import {
   NOTE_ALIGN_OPTIONS,
   NOTE_CORNER_OPTIONS,
@@ -21,9 +21,10 @@ import {
   NOTE_STYLE_OPTIONS,
   NOTEPAD_STYLE_OPTIONS,
   DEFAULT_COLUMN_COLORS,
+  hydrateNoteAppearance,
   useNoteAppearance,
   type NoteAppearance,
-} from "@/hooks/useNoteAppearance";
+} from "@/stores/noteAppearance";
 import { NATIVE_COLUMNS } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 
@@ -156,9 +157,16 @@ function ColorField({
 }
 
 export function NoteAppearanceSection() {
-  const store = useBoardStore();
+  // Página renderizada sem gate de hidratação: sem isto o preview mostraria o
+  // padrão no primeiro paint do servidor e trocaria de repente pelo valor
+  // salvo assim que o cliente carregasse — a mesma divergência que o efeito
+  // em `routes/index.tsx` evita para o quadro.
+  useEffect(() => {
+    hydrateNoteAppearance();
+  }, []);
   const [target, setTarget] = useState<string>(ACCOUNT);
-  const projects = store.state.projects.filter((p) => !p.archived);
+  const allProjects = useProjects();
+  const projects = allProjects.filter((p) => !p.archived);
   const projectId = target === ACCOUNT ? null : target;
   const { appearance, hasProjectOverride, update, reset, setProjectOverride } =
     useNoteAppearance(projectId);

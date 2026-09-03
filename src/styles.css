@@ -227,18 +227,23 @@
   scrollbar-color: color-mix(in oklab, var(--color-foreground) 14%, transparent) transparent;
 
   &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
   &::-webkit-scrollbar-track {
     background: transparent;
   }
+  /* A borda transparente afina a barra para 4px e a afasta da borda do conteúdo,
+     sem tirar área de clique (o `background-clip` pinta só a caixa interna). */
   &::-webkit-scrollbar-thumb {
-    background-color: color-mix(in oklab, var(--color-foreground) 14%, transparent);
+    background-color: color-mix(in oklab, var(--color-foreground) 18%, transparent);
+    border: 2px solid transparent;
+    background-clip: content-box;
     border-radius: 9999px;
   }
   &::-webkit-scrollbar-thumb:hover {
     background-color: color-mix(in oklab, var(--color-foreground) 35%, transparent);
+    background-clip: content-box;
   }
   &::-webkit-scrollbar-corner {
     background: transparent;
@@ -309,7 +314,8 @@
   }
   .note-prose,
   .note-prose .tiptap {
-    overflow-x: hidden;
+    /* `auto` (e não `hidden`): tabela larga rola dentro da nota em vez de ser cortada. */
+    overflow-x: auto;
     max-width: 100%;
   }
   .note-prose * {
@@ -320,6 +326,38 @@
   .note-prose pre,
   .note-prose code {
     white-space: pre-wrap;
+  }
+  /* Estrutura markdown legível (Notion/Obsidian): citação, código e divisor. */
+  .note-prose blockquote {
+    border-left: 3px solid color-mix(in oklab, currentColor 30%, transparent);
+    padding-left: 0.6rem;
+    margin: 0.35rem 0;
+    color: color-mix(in oklab, currentColor 75%, transparent);
+    font-style: italic;
+  }
+  .note-prose pre {
+    background-color: color-mix(in oklab, currentColor 8%, transparent);
+    border: 1px solid color-mix(in oklab, currentColor 15%, transparent);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.65rem;
+    margin: 0.4rem 0;
+    font-size: 0.86em;
+    overflow-x: auto;
+  }
+  .note-prose :not(pre) > code {
+    background-color: color-mix(in oklab, currentColor 10%, transparent);
+    border-radius: 0.25rem;
+    padding: 0 0.25rem;
+    font-size: 0.9em;
+  }
+  .note-prose hr {
+    border: 0;
+    border-top: 1px solid color-mix(in oklab, currentColor 20%, transparent);
+    margin: 0.7rem 0;
+  }
+  /* Cursor de destino do arraste de blocos. */
+  .note-prose .ProseMirror-dropcursor {
+    border-color: var(--color-primary);
   }
 
   .note-prose .tiptap:focus {
@@ -372,22 +410,33 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
+    /* Sem o clamp de `.note-prose *`: colunas redimensionadas mantêm a largura real
+       e quem rola é o contêiner, em vez de espremer as demais colunas. */
+    max-width: none;
   }
   .note-prose table p {
     margin: 0;
   }
   .note-prose th,
   .note-prose td {
-    border: 1px solid var(--color-border);
-    padding: 0.25rem 0.4rem;
+    /* A borda deriva do texto da nota: `--color-border` é quase invisível sobre
+       os tons pastel das notas autoadesivas (contraste ~1.03:1). */
+    border: 1px solid color-mix(in oklab, currentColor 25%, transparent);
+    padding: 0.3rem 0.45rem;
     vertical-align: top;
     position: relative;
     min-width: 3rem;
+    /* Célula estreita não parte palavra no meio ("Respon/sável"); só token gigante. */
+    word-break: normal;
+    overflow-wrap: break-word;
   }
   .note-prose th {
-    background-color: color-mix(in oklab, currentColor 8%, transparent);
+    background-color: color-mix(in oklab, currentColor 12%, transparent);
     font-weight: 600;
     text-align: left;
+  }
+  .note-prose tbody tr:nth-child(even) td {
+    background-color: color-mix(in oklab, currentColor 4%, transparent);
   }
   .note-prose .selectedCell::after {
     content: "";
@@ -403,6 +452,11 @@
     bottom: 0;
     width: 4px;
     background-color: var(--color-ring);
+    cursor: col-resize;
+  }
+  /* O ProseMirror marca o editor enquanto a borda da coluna está "pegável". */
+  .note-prose .tiptap.resize-cursor,
+  .note-prose .tiptap.resize-cursor * {
     cursor: col-resize;
   }
 

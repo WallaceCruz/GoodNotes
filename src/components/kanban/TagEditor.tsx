@@ -1,8 +1,8 @@
 import { Check, Palette, Pencil, Plus, Search, Tag as TagIcon, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { BoardStore } from "@/hooks/useBoardStore";
 import { NOTE_COLORS, tagColorOf, type NoteColor } from "@/lib/board-types";
+import { boardActions, useFileTags } from "@/stores/board";
 import { cn } from "@/lib/utils";
 import { noteBg, noteLabel } from "./note-style";
 
@@ -16,17 +16,15 @@ function autoColor(name: string): NoteColor {
 export function TagEditor({
   tags,
   onChange,
-  store,
   size = "sm",
 }: {
   tags: string[];
   onChange: (tags: string[]) => void;
-  store: BoardStore;
   size?: "sm" | "md";
 }) {
   const [query, setQuery] = useState("");
   const [color, setColor] = useState<NoteColor>("sky");
-  const defs = store.file?.tags ?? [];
+  const defs = useFileTags() ?? [];
   const text = size === "sm" ? "text-[10px]" : "text-[11px]";
 
   const toggle = (name: string) =>
@@ -35,7 +33,7 @@ export function TagEditor({
   const create = () => {
     const name = query.trim().toLowerCase();
     if (!name) return;
-    store.addTag(name, color);
+    boardActions.addTag(name, color);
     if (!tags.includes(name)) onChange([...tags, name]);
     setQuery("");
   };
@@ -84,7 +82,6 @@ export function TagEditor({
         </PopoverTrigger>
         <PopoverContent align="start" className="w-[19rem] p-0" onClick={(e) => e.stopPropagation()}>
           <TagManager
-            store={store}
             selected={tags}
             onToggle={toggle}
             query={query}
@@ -144,7 +141,6 @@ function ColorPicker({
 
 /** Lista de tags com seleção, criação rápida, renomeação e cor por tag. */
 export function TagManager({
-  store,
   selected,
   onToggle,
   query,
@@ -155,7 +151,6 @@ export function TagManager({
   filtered,
   canCreate,
 }: {
-  store: BoardStore;
   selected: string[];
   onToggle: (name: string) => void;
   query: string;
@@ -166,7 +161,7 @@ export function TagManager({
   filtered: string[];
   canCreate: boolean;
 }) {
-  const defs = store.file?.tags ?? [];
+  const defs = useFileTags() ?? [];
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -292,12 +287,12 @@ export function TagManager({
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   onBlur={() => {
-                    store.renameTag(name, draft);
+                    boardActions.renameTag(name, draft);
                     setEditing(null);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      store.renameTag(name, draft);
+                      boardActions.renameTag(name, draft);
                       setEditing(null);
                     }
                     if (e.key === "Escape") setEditing(null);
@@ -347,7 +342,7 @@ export function TagManager({
                 <ColorPicker
                   value={tagColor}
                   label={`Cor da tag ${name}`}
-                  onPick={(c) => store.setTagColor(name, c)}
+                  onPick={(c) => boardActions.setTagColor(name, c)}
                 />
                 <button
                   aria-label={`Renomear tag ${name}`}
@@ -364,7 +359,7 @@ export function TagManager({
                   <button
                     aria-label={`Confirmar exclusão da tag ${name}`}
                     onClick={() => {
-                      store.removeTag(name);
+                      boardActions.removeTag(name);
                       setConfirmDelete(null);
                     }}
                     onBlur={() => setConfirmDelete(null)}

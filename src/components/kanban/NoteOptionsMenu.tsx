@@ -16,20 +16,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { BoardStore } from "@/hooks/useBoardStore";
 import type { Note } from "@/lib/board-types";
+import { boardActions } from "@/stores/board";
 import { cn } from "@/lib/utils";
 
 /** Menu de "mais opções" (três pontos) das notas e blocos. */
-export function NoteOptionsMenu({
-  note,
-  store,
-  onOpen,
-}: {
-  note: Note;
-  store: BoardStore;
-  onOpen: () => void;
-}) {
+export function NoteOptionsMenu({ note, onOpen }: { note: Note; onOpen: () => void }) {
   const label = note.kind === "notepad" ? "Bloco de notas" : "Nota";
   const title = note.title || label;
 
@@ -53,20 +45,20 @@ export function NoteOptionsMenu({
             <Pencil className="h-4 w-4" />
             Editar
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => store.setNotePinned(note.id, !note.pinned)}>
+          <DropdownMenuItem onClick={() => boardActions.setNotePinned(note.id, !note.pinned)}>
             {note.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
             {note.pinned ? "Desafixar" : "Fixar no topo"}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
-              store.duplicateNote(note.id);
+              boardActions.duplicateNote(note.id);
               toast.success(`${label} duplicad${note.kind === "notepad" ? "o" : "a"}`);
             }}
           >
             <Copy className="h-4 w-4" />
             Duplicar
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => store.setNoteArchived(note.id, !note.archived)}>
+          <DropdownMenuItem onClick={() => boardActions.setNoteArchived(note.id, !note.archived)}>
             {note.archived ? (
               <ArchiveRestore className="h-4 w-4" />
             ) : (
@@ -78,9 +70,9 @@ export function NoteOptionsMenu({
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
             onClick={() => {
-              store.removeNote(note.id);
+              boardActions.removeNote(note.id);
               toast.success(`"${title}" excluíd${note.kind === "notepad" ? "o" : "a"}`, {
-                action: { label: "Desfazer", onClick: () => store.restoreNote(note) },
+                action: { label: "Desfazer", onClick: () => boardActions.restoreNote(note) },
               });
             }}
           >

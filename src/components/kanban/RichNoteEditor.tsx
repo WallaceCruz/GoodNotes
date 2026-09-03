@@ -1,119 +1,46 @@
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import Image from "@tiptap/extension-image";
 import Highlight from "@tiptap/extension-highlight";
-import Link from "@tiptap/extension-link";
 import { TableKit } from "@tiptap/extension-table";
-import { Node, mergeAttributes } from "@tiptap/core";
-import {
-  Bold,
-  Film,
-  Heading1,
-  Heading2,
-  Heading3,
-  Heading4,
-  Heading5,
-  Highlighter,
-  ImagePlus,
-  Italic,
-  Link2,
-  List,
-  ListChecks,
-  ListOrdered,
-  Maximize2,
-  Pencil,
-  Strikethrough,
-  Table as TableIcon,
-  Trash2,
-  Underline as UnderlineIcon,
-} from "lucide-react";
-
+import { Maximize2, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { BlockHandle } from "./BlockHandle";
+import { EditorBoundary } from "./EditorBoundary";
 import { ImageLightbox } from "./ImageLightbox";
 import { TableMenu } from "./TableMenu";
+import { BLOCK_DRAG_MIME, insertBlock, readAsDataUrl, type BlockKind } from "./editor-blocks";
+import { DraggableImage, Video, collectImages } from "./editor-extensions";
 import { cn } from "@/lib/utils";
 
-const HIGHLIGHTS = [
-  { label: "Amarelo", value: "#fde68a" },
-  { label: "Verde", value: "#bbf7d0" },
-  { label: "Azul", value: "#bae6fd" },
-  { label: "Rosa", value: "#fbcfe8" },
-  { label: "Laranja", value: "#fed7aa" },
-];
-
-// Vídeos (mp4/webm) como nó atômico arrastável dentro da nota.
-const Video = Node.create({
-  name: "video",
-  group: "block",
-  atom: true,
-  draggable: true,
-  addAttributes() {
-    return { src: { default: null } };
-  },
-  parseHTML() {
-    return [{ tag: "video" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return [
-      "video",
-      mergeAttributes(HTMLAttributes, {
-        controls: "true",
-        playsinline: "true",
-        preload: "metadata",
-        class: "note-video",
-      }),
-    ];
-  },
-});
-
-const MAX_MEDIA_BYTES = 8 * 1024 * 1024;
-
-// Imagens arrastáveis: permite reordenar dentro da nota (a ordem fica no HTML salvo).
-const DraggableImage = Image.extend({ draggable: true, selectable: true });
-
-function collectImages(html: string): string[] {
-  const out: string[] = [];
-  const re = /<img[^>]+src="([^"]+)"/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html))) if (m[1]) out.push(m[1]);
-  return out;
-}
-
-function readAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.readAsDataURL(file);
-  });
-}
-
-
-export function RichNoteEditor({
-  content,
-  onChange,
-  minHeight = "min-h-16",
-  maxHeight,
-  compact = false,
-  showToolbar = true,
-  onToggleChecklist,
-  checklistActive = false,
-}: {
+/**
+ * Superfície de edição da nota. Formatação e inserção de blocos vivem no painel
+ * lateral (`NoteEditorPanel`), que age sobre a instância exposta por `onEditor`;
+ * aqui ficam só o documento, as ferramentas de imagem e os controles de bloco.
+ */
+type NoteEditorProps = {
   content: string;
   onChange: (html: string) => void;
   minHeight?: string;
   maxHeight?: string;
   compact?: boolean;
-  showToolbar?: boolean;
-  onToggleChecklist?: () => void;
-  checklistActive?: boolean;
-}) {
+  /** Margem com alça de bloco (arrastar para reordenar) e drop vindo do painel. */
+  blocks?: boolean;
+  /** Expõe a instância do editor para o painel lateral agir sobre ela. */
+  onEditor?: (editor: Editor | null) => void;
+};
+
+function RichNoteEditorBase({
+  content,
+  onChange,
+  minHeight = "min-h-16",
+  maxHeight,
+  compact = false,
+  blocks = false,
+  onEditor,
+}: NoteEditorProps) {
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const [lightbox, setLightbox] = useState<string | null>(null);
-  const [swatchOpen, setSwatchOpen] = useState(false);
-  const [tableOpen, setTableOpen] = useState(false);
-  const [grid, setGrid] = useState<{ r: number; c: number } | null>(null);
   const [hovered, setHovered] = useState<{ src: string; top: number; left: number } | null>(null);
   const proseRef = useRef<HTMLDivElement>(null);
   const replaceRef = useRef<HTMLInputElement>(null);
@@ -122,20 +49,27 @@ export function RichNoteEditor({
   // Em cards compactos o editor só é montado ao interagir: evita dezenas de
   // instâncias do Tiptap montando ao mesmo tempo (loop de forceUpdate).
   const [mounted, setMounted] = useState(!compact);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const mediaRef = useRef<HTMLInputElement>(null);
-
 
   const images = useMemo(() => collectImages(content), [content]);
   const lightboxIndex = lightbox ? images.indexOf(lightbox) : -1;
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Underline,
+      // Link e Underline já vêm no StarterKit v3: registrá-los de novo duplica
+      // a marca no schema e faz esta configuração ser descartada.
+      StarterKit.configure({
+        link: {
+          openOnClick: false,
+          autolink: true,
+          HTMLAttributes: { rel: "noreferrer noopener", target: "_blank" },
+        },
+      }),
       Highlight.configure({ multicolor: true }),
-      Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { rel: "noreferrer noopener", target: "_blank" } }),
-      DraggableImage.configure({ inline: false, allowBase64: true, HTMLAttributes: { class: "note-img" } }),
+      DraggableImage.configure({
+        inline: false,
+        allowBase64: true,
+        HTMLAttributes: { class: "note-img" },
+      }),
       Video,
       TableKit.configure({ table: { resizable: true, HTMLAttributes: { class: "note-table" } } }),
     ],
@@ -144,9 +78,19 @@ export function RichNoteEditor({
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class: cn("outline-none", minHeight, compact ? "text-xs" : "text-sm"),
+        // Calha à esquerda para a alça de bloco não cobrir o texto.
+        class: cn("outline-none", minHeight, compact ? "text-xs" : "text-sm", blocks && "pl-11"),
       },
-      handleDrop: (_view, event) => {
+      handleDrop: (view, event) => {
+        // Bloco arrastado do painel: entra na posição solta, não como texto.
+        const kind = event.dataTransfer?.getData(BLOCK_DRAG_MIME) as BlockKind | "";
+        if (kind) {
+          event.preventDefault();
+          const at = view.posAtCoords({ left: event.clientX, top: event.clientY });
+          const ed = editorRef.current;
+          if (ed) insertBlock(ed, kind, at?.pos);
+          return true;
+        }
         const files = Array.from(event.dataTransfer?.files ?? []).filter((f) =>
           f.type.startsWith("image/"),
         );
@@ -184,6 +128,13 @@ export function RichNoteEditor({
   const editorRef = useRef(editor);
   editorRef.current = editor;
 
+  const onEditorRef = useRef(onEditor);
+  onEditorRef.current = onEditor;
+  useEffect(() => {
+    onEditorRef.current?.(editor);
+    return () => onEditorRef.current?.(null);
+  }, [editor]);
+
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
     if (!editor.isFocused && editor.getHTML() !== content) {
@@ -212,7 +163,6 @@ export function RichNoteEditor({
       return true;
     });
     if (foundPos >= 0) fn(foundPos, foundSize);
-
   };
 
   const deleteImage = (src: string) => {
@@ -235,250 +185,8 @@ export function RichNoteEditor({
     });
   };
 
-
-  const insertFiles = (files: FileList | null) => {
-    if (!files) return;
-    void Promise.all(Array.from(files).filter((f) => f.type.startsWith("image/")).map(readAsDataUrl)).then(
-      (urls) =>
-        urls.forEach((src) => {
-          const ed = editorRef.current;
-          if (!ed || ed.isDestroyed) return;
-          ed.chain().focus().setImage({ src }).run();
-        }),
-    );
-  };
-
-  const insertMediaUrl = (url: string) => {
-    const ed = editorRef.current;
-    if (!ed || ed.isDestroyed) return;
-    const clean = url.trim();
-    if (!clean) return;
-    const isVideo = /\.(mp4|webm|ogg|mov)(\?|$)/i.test(clean) || clean.startsWith("data:video");
-    if (isVideo) ed.chain().focus().insertContent({ type: "video", attrs: { src: clean } }).run();
-    else ed.chain().focus().setImage({ src: clean }).run();
-  };
-
-  const insertMediaFiles = (files: FileList | null) => {
-    if (!files) return;
-    const list = Array.from(files).filter(
-      (f) => f.type.startsWith("video/") || f.type.startsWith("image/"),
-    );
-    const tooBig = list.filter((f) => f.size > MAX_MEDIA_BYTES);
-    if (tooBig.length > 0) window.alert("Arquivos acima de 8 MB não podem ser salvos na nota.");
-    void Promise.all(
-      list.filter((f) => f.size <= MAX_MEDIA_BYTES).map(async (f) => readAsDataUrl(f)),
-    ).then((urls) => urls.forEach(insertMediaUrl));
-  };
-
-  const insertTable = (rows: number, cols: number) => {
-    const ed = editorRef.current;
-    setTableOpen(false);
-    setGrid(null);
-    if (!ed || ed.isDestroyed) return;
-    ed.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
-  };
-
-  const applyLink = () => {
-    if (!editor || editor.isDestroyed) return;
-    if (editor.isActive("link")) {
-      editor.chain().focus().unsetLink().run();
-      return;
-    }
-    const url = window.prompt("Cole o endereço do link (https://...)");
-    if (!url?.trim()) return;
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
-  };
-
-  const btn = (
-    key: string | null,
-    action: () => void,
-    Icon: typeof Bold,
-    label: string,
-    disabled = false,
-    forceActive = false,
-  ) => (
-    <button
-      key={label}
-      type="button"
-      aria-label={label}
-      title={label}
-      disabled={disabled}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (!mounted) setMounted(true);
-        action();
-      }}
-      className={cn(
-        "rounded p-1 text-foreground/60 hover:bg-foreground/10 disabled:opacity-30",
-        ((key && editor?.isActive(key)) || forceActive) && "bg-foreground/10 text-foreground",
-      )}
-    >
-      <Icon className={compact ? "h-3 w-3" : "h-4 w-4"} />
-    </button>
-  );
-
   return (
     <div onClick={(e) => e.stopPropagation()}>
-      {showToolbar && (
-      <div className="relative flex flex-wrap items-center gap-0.5 border-y border-foreground/10 py-0.5">
-        {btn("bold", () => editor?.chain().focus().toggleBold().run(), Bold, "Negrito")}
-        {btn("italic", () => editor?.chain().focus().toggleItalic().run(), Italic, "Itálico")}
-        {btn(
-          "underline",
-          () => editor?.chain().focus().toggleUnderline().run(),
-          UnderlineIcon,
-          "Sublinhado",
-        )}
-        {btn("strike", () => editor?.chain().focus().toggleStrike().run(), Strikethrough, "Tachado")}
-        {([
-          [1, Heading1],
-          [2, Heading2],
-          [3, Heading3],
-          [4, Heading4],
-          [5, Heading5],
-        ] as const).map(([level, Icon]) =>
-          btn(
-            null,
-            () => editor?.chain().focus().toggleHeading({ level }).run(),
-            Icon,
-            `Título ${level}`,
-            false,
-            editor?.isActive("heading", { level }) ?? false,
-          ),
-        )}
-        {btn("bulletList", () => editor?.chain().focus().toggleBulletList().run(), List, "Lista")}
-        {btn(
-          "orderedList",
-          () => editor?.chain().focus().toggleOrderedList().run(),
-          ListOrdered,
-          "Lista numerada",
-        )}
-        {onToggleChecklist &&
-          btn(null, onToggleChecklist, ListChecks, "Checklist", false, checklistActive)}
-        {btn(null, () => fileRef.current?.click(), ImagePlus, "Adicionar imagem")}
-        {btn(null, () => mediaRef.current?.click(), Film, "Adicionar GIF ou vídeo")}
-        {btn(
-          null,
-          () => {
-            const url = window.prompt("Cole o link do GIF ou vídeo (https://...)");
-            if (url?.trim()) insertMediaUrl(url);
-          },
-          Link2,
-          "Inserir GIF/vídeo por link",
-        )}
-        {btn(null, () => setSwatchOpen((v) => !v), Highlighter, "Cor de realce", false, editor?.isActive("highlight") ?? false)}
-        {btn("link", applyLink, Link2, "Inserir hiperlink")}
-        <div className="relative">
-          <button
-            type="button"
-            aria-label="Inserir tabela"
-            title="Inserir tabela"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!mounted) setMounted(true);
-              setTableOpen((v) => !v);
-            }}
-            className={cn(
-              "rounded p-1 text-foreground/60 hover:bg-foreground/10",
-              (tableOpen || editor?.isActive("table")) && "bg-foreground/10 text-foreground",
-            )}
-          >
-            <TableIcon className={compact ? "h-3 w-3" : "h-4 w-4"} />
-          </button>
-          {tableOpen && (
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="absolute left-0 top-full z-30 mt-1 w-max rounded-md border border-border bg-popover p-2 shadow-md"
-            >
-              <p className="mb-1.5 text-[11px] text-muted-foreground">
-                {grid ? `${grid.r} x ${grid.c}` : "Escolha o tamanho"}
-              </p>
-              <div className="grid grid-cols-6 gap-0.5" onMouseLeave={() => setGrid(null)}>
-                {Array.from({ length: 36 }, (_, i) => {
-                  const r = Math.floor(i / 6) + 1;
-                  const c = (i % 6) + 1;
-                  const on = !!grid && r <= grid.r && c <= grid.c;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      aria-label={`Tabela ${r} por ${c}`}
-                      onMouseEnter={() => setGrid({ r, c })}
-                      onClick={() => insertTable(r, c)}
-                      className={cn(
-                        "h-4 w-4 rounded-[2px] border border-border",
-                        on ? "bg-primary/70" : "bg-background",
-                      )}
-                    />
-                  );
-                })}
-              </div>
-              <button
-                type="button"
-                onClick={() => insertTable(3, 3)}
-                className="mt-2 w-full rounded border border-border px-2 py-1 text-[11px] hover:bg-accent"
-              >
-                Inserir 3 x 3
-              </button>
-            </div>
-          )}
-        </div>
-
-        <input
-          ref={mediaRef}
-          type="file"
-          accept="video/*,image/gif"
-          multiple
-          hidden
-          onChange={(e) => {
-            insertMediaFiles(e.target.files);
-            e.target.value = "";
-          }}
-        />
-
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          onChange={(e) => {
-            insertFiles(e.target.files);
-            e.target.value = "";
-          }}
-        />
-
-        {swatchOpen && (
-          <div className="absolute right-0 top-full z-20 mt-1 flex items-center gap-1 rounded-md border border-border bg-popover p-1.5 shadow-md">
-            {HIGHLIGHTS.map((h) => (
-              <button
-                key={h.value}
-                aria-label={`Realce ${h.label}`}
-                title={h.label}
-                onClick={() => {
-                  editor?.chain().focus().setHighlight({ color: h.value }).run();
-                  setSwatchOpen(false);
-                }}
-                className="h-5 w-5 rounded-full border border-border"
-                style={{ backgroundColor: h.value }}
-              />
-            ))}
-            <button
-              onClick={() => {
-                editor?.chain().focus().unsetHighlight().run();
-                setSwatchOpen(false);
-              }}
-              className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-accent"
-            >
-              Limpar
-            </button>
-          </div>
-        )}
-      </div>
-      )}
-
-
-
       <div
         ref={proseRef}
         className={cn(
@@ -511,8 +219,7 @@ export function RichNoteEditor({
         )}
 
         {mounted && <TableMenu editor={editor} containerRef={proseRef} />}
-
-
+        {mounted && blocks && <BlockHandle editor={editor} containerRef={proseRef} />}
 
         {hovered && (
           <div
@@ -573,8 +280,6 @@ export function RichNoteEditor({
         />
       </div>
 
-
-
       {lightbox && lightboxIndex >= 0 && (
         <ImageLightbox
           images={images}
@@ -583,7 +288,15 @@ export function RichNoteEditor({
           onClose={() => setLightbox(null)}
         />
       )}
-
     </div>
+  );
+}
+
+/** Uma falha do editor fica contida na nota, sem levar o quadro junto. */
+export function RichNoteEditor(props: NoteEditorProps) {
+  return (
+    <EditorBoundary>
+      <RichNoteEditorBase {...props} />
+    </EditorBoundary>
   );
 }

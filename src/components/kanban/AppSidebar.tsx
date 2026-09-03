@@ -32,8 +32,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { BoardStore } from "@/hooks/useBoardStore";
 import type { BoardFile } from "@/lib/board-types";
+import { boardActions, useActiveFileId, useProjects } from "@/stores/board";
 import { useTeams } from "@/hooks/useTeams";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { cn } from "@/lib/utils";
@@ -59,7 +59,6 @@ function NameTooltip({ name, children }: { name: string; children: React.ReactNo
 }
 
 export function AppSidebar({
-  store,
   collapsed,
   onToggleCollapsed,
   inboxOpen,
@@ -72,7 +71,6 @@ export function AppSidebar({
   timelineView,
   onToggleTimelineView,
 }: {
-  store: BoardStore;
   collapsed: boolean;
   onToggleCollapsed: () => void;
   inboxOpen: boolean;
@@ -90,10 +88,12 @@ export function AppSidebar({
   const [query, setQuery] = useState("");
   const ws = useWorkspaces();
   const teams = useTeams();
+  const allProjects = useProjects();
+  const activeFileId = useActiveFileId();
   const showArchived = archivedView;
   const q = query.trim().toLowerCase();
   const isOpen = (id: string) => (q ? true : (open[id] ?? true));
-  const projects = store.state.projects
+  const projects = allProjects
     .filter((p) => showArchived || !p.archived)
     .filter(
       (p) =>
@@ -336,7 +336,7 @@ export function AppSidebar({
             Meus projetos
           </span>
           <button
-            onClick={store.addProject}
+            onClick={boardActions.addProject}
             aria-label="Adicionar projeto"
             className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
           >
@@ -347,7 +347,7 @@ export function AppSidebar({
         <div className="scroll-thin mt-1 flex-1 overflow-y-auto px-2 pb-4">
           {projects.map((p) => {
             const expanded = isOpen(p.id);
-            const hasActiveFile = p.files.some((f) => store.file?.id === f.id);
+            const hasActiveFile = p.files.some((f) => activeFileId === f.id);
             return (
               <div key={p.id} className={cn("mt-0.5", p.archived && "opacity-60")}>
                 <div
@@ -376,20 +376,20 @@ export function AppSidebar({
                   <NameTooltip name={p.name}>
                     <input
                       value={p.name}
-                      onChange={(e) => store.renameProject(p.id, e.target.value)}
+                      onChange={(e) => boardActions.renameProject(p.id, e.target.value)}
                       title={p.name}
                       className="min-w-0 flex-1 truncate bg-transparent text-sm font-medium outline-none"
                     />
                   </NameTooltip>
                   <button
-                    onClick={() => store.addFile(p.id)}
+                    onClick={() => boardActions.addFile(p.id)}
                     aria-label="Adicionar arquivo"
                     className={ACTION}
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </button>
                   <button
-                    onClick={() => store.setProjectArchived(p.id, !p.archived)}
+                    onClick={() => boardActions.setProjectArchived(p.id, !p.archived)}
                     aria-label={p.archived ? "Restaurar projeto" : "Arquivar projeto"}
                     className={ACTION}
                   >
@@ -400,7 +400,7 @@ export function AppSidebar({
                     )}
                   </button>
                   <button
-                    onClick={() => store.removeProject(p.id)}
+                    onClick={() => boardActions.removeProject(p.id)}
                     aria-label="Excluir projeto"
                     className={ACTION}
                   >
@@ -411,11 +411,11 @@ export function AppSidebar({
                 {expanded &&
                   visibleFiles(p.files)
                     .map((f) => {
-                      const selected = store.file?.id === f.id;
+                      const selected = activeFileId === f.id;
                       return (
                         <div
                           key={f.id}
-                          onClick={() => store.selectFile(p.id, f.id)}
+                          onClick={() => boardActions.selectFile(p.id, f.id)}
                           className={cn(
                             ROW,
                             "relative ml-6 w-[calc(100%-1.5rem)] cursor-pointer hover:bg-sidebar-accent/70",
@@ -433,7 +433,7 @@ export function AppSidebar({
                           <NameTooltip name={f.name}>
                             <input
                               value={f.name}
-                              onChange={(e) => store.renameFile(p.id, f.id, e.target.value)}
+                              onChange={(e) => boardActions.renameFile(p.id, f.id, e.target.value)}
                               title={f.name}
                               className="min-w-0 flex-1 truncate bg-transparent outline-none"
                             />
@@ -441,7 +441,7 @@ export function AppSidebar({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              store.setFileArchived(p.id, f.id, !f.archived);
+                              boardActions.setFileArchived(p.id, f.id, !f.archived);
                             }}
                             aria-label={f.archived ? "Restaurar arquivo" : "Arquivar arquivo"}
                             className={ACTION}
@@ -455,7 +455,7 @@ export function AppSidebar({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              store.removeFile(p.id, f.id);
+                              boardActions.removeFile(p.id, f.id);
                             }}
                             aria-label="Excluir arquivo"
                             className={ACTION}

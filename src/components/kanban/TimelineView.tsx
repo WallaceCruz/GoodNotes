@@ -9,7 +9,7 @@ import {
   type Column,
   type Note,
 } from "@/lib/board-types";
-import { useNoteAppearance } from "@/hooks/useNoteAppearance";
+import { useNoteAppearance } from "@/stores/noteAppearance";
 import { cn } from "@/lib/utils";
 import { noteBg } from "./note-style";
 import { PriorityBadge } from "./NoteMeta";

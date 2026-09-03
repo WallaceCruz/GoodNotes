@@ -1,6 +1,5 @@
 import { Plus, Trash2, Zap } from "lucide-react";
 import { useState } from "react";
-import type { BoardStore } from "@/hooks/useBoardStore";
 import {
   AUTOMATION_LABEL,
   PRIORITIES,
@@ -8,12 +7,13 @@ import {
   PRIORITY_LABEL,
   type AutomationType,
 } from "@/lib/board-types";
+import { boardActions, useActiveFile } from "@/stores/board";
 import { cn } from "@/lib/utils";
 
 const TYPES: AutomationType[] = ["tag", "priority", "checklist-done"];
 
-export function AutomationsPanel({ store, allTags }: { store: BoardStore; allTags: string[] }) {
-  const file = store.file;
+export function AutomationsPanel({ allTags }: { allTags: string[] }) {
+  const file = useActiveFile();
   const [type, setType] = useState<AutomationType>("tag");
   const [value, setValue] = useState("");
   const [columnId, setColumnId] = useState("");
@@ -26,7 +26,7 @@ export function AutomationsPanel({ store, allTags }: { store: BoardStore; allTag
   const add = () => {
     if (!target) return;
     if (needsValue && !value.trim()) return;
-    store.addAutomation(type, value.trim(), target);
+    boardActions.addAutomation(type, value.trim(), target);
     setValue("");
   };
 
@@ -121,11 +121,11 @@ export function AutomationsPanel({ store, allTags }: { store: BoardStore; allTag
               !a.enabled && "opacity-50",
             )}
           >
-            <button onClick={() => store.toggleAutomation(a.id)} className="font-medium">
+            <button onClick={() => boardActions.toggleAutomation(a.id)} className="font-medium">
               {AUTOMATION_LABEL[a.type]}
               {a.value ? ` "${a.value}"` : ""} → {file.columns.find((c) => c.id === a.columnId)?.title ?? "—"}
             </button>
-            <button onClick={() => store.removeAutomation(a.id)} aria-label="Excluir automação">
+            <button onClick={() => boardActions.removeAutomation(a.id)} aria-label="Excluir automação">
               <Trash2 className="h-3 w-3 text-muted-foreground" />
             </button>
           </li>

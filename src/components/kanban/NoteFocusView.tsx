@@ -1,31 +1,33 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { Editor } from "@tiptap/react";
 import { Archive, ArchiveRestore, ArrowLeft, Eye, Pin, PinOff, X } from "lucide-react";
-import type { BoardStore } from "@/hooks/useBoardStore";
 import { type Note } from "@/lib/board-types";
+import { boardActions } from "@/stores/board";
+import { BelowChecklistNote } from "./BelowChecklistNote";
 import { ChecklistEditor } from "./ChecklistEditor";
 import { NoteEditorPanel } from "./NoteEditorPanel";
 import { RichNoteEditor } from "./RichNoteEditor";
 import { cn } from "@/lib/utils";
-import { noteBg, timeAgo } from "./note-style";
+import { hasRichContent, noteBg, timeAgo } from "./note-style";
 
 // Guarda a rolagem da página de detalhes por nota, para reabrir onde parou.
 const focusScroll = new Map<string, number>();
 
 export function NoteFocusView({
   note,
-  store,
   mode = "view",
   onClose,
 }: {
   note: Note;
-  store: BoardStore;
   mode?: "view" | "edit";
   onClose: () => void;
 }) {
-  const onChange = (patch: Partial<Note>) => store.updateNote(note.id, patch);
+  const onChange = (patch: Partial<Note>) => boardActions.updateNote(note.id, patch);
   const isNotepad = note.kind === "notepad";
   const [closing, setClosing] = useState(false);
   const [editing, setEditing] = useState(mode === "edit");
+  // Instância do editor do corpo da nota, para o painel lateral agir sobre ela.
+  const [editor, setEditor] = useState<Editor | null>(null);
   const closingRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -59,7 +61,8 @@ export function NoteFocusView({
       const inNested = !!target?.closest("[role='dialog']:not([data-note-focus])");
 
       if (e.key === "Escape") {
-        if (inNested) return;
+        // Menu flutuante aberto (ex.: opções da tabela) trata o próprio Esc.
+        if (inNested || document.querySelector("[data-floating-menu]")) return;
         e.preventDefault();
         requestClose();
         return;
@@ -124,9 +127,8 @@ export function NoteFocusView({
             content={note.content}
             onChange={(html) => onChange({ content: html })}
             minHeight="min-h-[52vh]"
-            maxHeight="max-h-[64vh]"
-            checklistActive={note.showChecklist}
-            onToggleChecklist={() => onChange({ showChecklist: !note.showChecklist })}
+            blocks
+            onEditor={setEditor}
           />
         ) : (
           <div
@@ -140,12 +142,28 @@ export function NoteFocusView({
         <div className="mt-5">
           <ChecklistEditor
             items={note.checklist}
-            onAdd={(text) => store.addChecklistItem(note.id, text)}
-            onUpdate={(id, patch) => store.updateChecklistItem(note.id, id, patch)}
-            onRemove={(id) => store.removeChecklistItem(note.id, id)}
+            onAdd={(text) => boardActions.addChecklistItem(note.id, text)}
+            onUpdate={(id, patch) => boardActions.updateChecklistItem(note.id, id, patch)}
+            onRemove={(id) => boardActions.removeChecklistItem(note.id, id)}
           />
         </div>
       )}
+
+      {editing
+        ? (note.showChecklist || hasRichContent(note.contentBelow)) && (
+            <div className="mt-4">
+              <BelowChecklistNote
+                value={note.contentBelow ?? ""}
+                onChange={(html) => onChange({ contentBelow: html })}
+              />
+            </div>
+          )
+        : hasRichContent(note.contentBelow) && (
+            <div
+              className="note-prose mt-5 text-sm"
+              dangerouslySetInnerHTML={{ __html: note.contentBelow! }}
+            />
+          )}
     </article>
   );
 
@@ -189,13 +207,14 @@ export function NoteFocusView({
     );
   }
 
-  // Modo edição: nota + sidebar de detalhes.
+  // Modo edição: ocupa a janela inteira (documento + painel), como um editor de
+  // verdade — não um cartão centralizado espremido no meio da tela.
   return (
     <div
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) requestClose();
-      }}
-      className={overlayClass}
+      className={cn(
+        "fixed inset-0 z-50 bg-background",
+        closing ? "animate-out fade-out-0 duration-150 ease-in" : "animate-in fade-in-0 duration-150",
+      )}
     >
       <div
         ref={dialogRef}
@@ -204,17 +223,14 @@ export function NoteFocusView({
         aria-label={note.title || "Nota"}
         data-note-focus=""
         tabIndex={-1}
-        className={cn(
-          "flex h-[92vh] w-full max-w-[80rem] overflow-hidden rounded-2xl border border-border bg-background shadow-2xl outline-none",
-          enterClass,
-        )}
+        className="flex h-full w-full overflow-hidden bg-background outline-none"
       >
         <div
           ref={scrollRef}
           onScroll={(e) => focusScroll.set(note.id, e.currentTarget.scrollTop)}
-          className="scroll-thin min-w-0 flex-1 overflow-y-auto bg-muted/40 px-6 py-6"
+          className="scroll-thin min-w-0 flex-1 overflow-y-auto bg-muted/40 px-8 py-6"
         >
-          <div className="mx-auto w-full max-w-3xl">
+          <div className="mx-auto w-full max-w-4xl">
             <div className="mb-3 flex items-center gap-2">
               <button
                 onClick={requestClose}
@@ -229,7 +245,7 @@ export function NoteFocusView({
               </span>
               <div className="ml-auto flex items-center gap-1.5">
                 <button
-                  onClick={() => store.setNotePinned(note.id, !note.pinned)}
+                  onClick={() => boardActions.setNotePinned(note.id, !note.pinned)}
                   title={note.pinned ? "Desafixar" : "Fixar"}
                   className={cn(
                     "flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs hover:bg-accent",
@@ -244,7 +260,7 @@ export function NoteFocusView({
                   {note.pinned ? "Desafixar" : "Fixar"}
                 </button>
                 <button
-                  onClick={() => store.setNoteArchived(note.id, !note.archived)}
+                  onClick={() => boardActions.setNoteArchived(note.id, !note.archived)}
                   className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent"
                 >
                   {note.archived ? (
@@ -275,7 +291,7 @@ export function NoteFocusView({
           </div>
         </div>
 
-        <NoteEditorPanel note={note} store={store} onClose={requestClose} />
+        <NoteEditorPanel note={note} editor={editor} onClose={requestClose} />
       </div>
     </div>
   );

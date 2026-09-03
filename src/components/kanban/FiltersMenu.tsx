@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { noteBg, noteLabel, priorityClass } from "./note-style";
 import { TagManager } from "./TagEditor";
 import { useState } from "react";
-import type { BoardStore } from "@/hooks/useBoardStore";
+import { boardActions, useFileTags } from "@/stores/board";
 import { tagColorOf } from "@/lib/board-types";
 
 export type Filters = {
@@ -44,19 +44,17 @@ export function activeFilterCount(f: Filters) {
 export function FiltersMenu({
   filters,
   allTags,
-  store,
   onChange,
 }: {
   filters: Filters;
   allTags: string[];
-  store: BoardStore;
   onChange: (f: Filters) => void;
 }) {
   const count = activeFilterCount(filters);
   const [managing, setManaging] = useState(false);
   const [tagQuery, setTagQuery] = useState("");
   const [tagColor, setTagColor] = useState<NoteColor>("sky");
-  const tagDefs = store.file?.tags ?? [];
+  const tagDefs = useFileTags() ?? [];
 
   const toggleColor = (c: NoteColor) =>
     onChange({
@@ -187,7 +185,6 @@ export function FiltersMenu({
             {managing ? (
               <div className="rounded-md border border-border">
                 <TagManager
-                  store={store}
                   selected={filters.tags}
                   onToggle={toggleTag}
                   query={tagQuery}
@@ -197,7 +194,7 @@ export function FiltersMenu({
                   onCreate={() => {
                     const name = tagQuery.trim().toLowerCase();
                     if (!name) return;
-                    store.addTag(name, tagColor);
+                    boardActions.addTag(name, tagColor);
                     setTagQuery("");
                   }}
                   filtered={tagDefs

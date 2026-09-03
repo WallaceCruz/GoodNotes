@@ -11,7 +11,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,10 +21,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  ArrowLeft,
+  ArrowRight,
   CheckCircle2,
   Compass,
   Copy,
   FlaskConical,
+  GripVertical,
   Inbox,
   Loader,
   MoreHorizontal,
@@ -34,7 +38,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { BoardStore } from "@/hooks/useBoardStore";
 import {
   NOTE_COLORS,
   type Column,
@@ -42,7 +45,8 @@ import {
   type Note,
   type NoteKind,
 } from "@/lib/board-types";
-import { DEFAULT_COLUMN_COLORS, useNoteAppearance } from "@/hooks/useNoteAppearance";
+import { boardActions, useActiveProjectId } from "@/stores/board";
+import { DEFAULT_COLUMN_COLORS, useNoteAppearance } from "@/stores/noteAppearance";
 
 const NATIVE_ICON: Record<NativeColumnKey, typeof Inbox> = {
   backlog: Inbox,
@@ -53,7 +57,7 @@ const NATIVE_ICON: Record<NativeColumnKey, typeof Inbox> = {
   done: CheckCircle2,
 };
 import { cn } from "@/lib/utils";
-import { sameStoreView } from "./memo-compare";
+import { columnSortableId } from "./column-drag";
 import { noteBg, noteHeaderBg, noteLabel } from "./note-style";
 import { NotepadCard } from "./NotepadCard";
 import { StickyNoteCard } from "./StickyNoteCard";
@@ -64,7 +68,8 @@ function KanbanColumnBase({
   column,
   notes,
   activeNoteId,
-  store,
+  index,
+  total,
   onAddNote,
   onOpenNote,
   highlightIds,
@@ -72,18 +77,36 @@ function KanbanColumnBase({
   column: Column;
   notes: Note[];
   activeNoteId: string | null;
-  store: BoardStore;
+  index: number;
+  total: number;
   onAddNote: (kind: NoteKind) => void;
   onOpenNote: (id: string, mode?: "view" | "edit") => void;
   highlightIds?: Set<string> | undefined;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+    data: { type: "column-body", columnId: column.id },
+  });
+  // Arraste da coluna inteira: só pela alça, para não conflitar com o título e os botões.
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setColumnRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: columnSortableId(column.id),
+    data: { type: "column", columnId: column.id },
+    transition: { duration: 220, easing: "cubic-bezier(0.2, 0, 0, 1)" },
+  });
   // Limite de render: listas grandes só montam os primeiros cards.
   const [limit, setLimit] = useState(PAGE);
   const visible = useMemo(() => notes.slice(0, limit), [notes, limit]);
   const sortableIds = useMemo(() => visible.map((n) => n.id), [visible]);
   const isNative = Boolean(column.native);
-  const { appearance } = useNoteAppearance(store.project?.id);
+  const activeProjectId = useActiveProjectId();
+  const { appearance } = useNoteAppearance(activeProjectId);
   const accent =
     column.native && appearance.nativeColumnColors
       ? (appearance.columnColors[column.native] ?? DEFAULT_COLUMN_COLORS[column.native])
@@ -91,15 +114,18 @@ function KanbanColumnBase({
 
   return (
     <div
+      ref={setColumnRef}
       className={cn(
         "flex max-h-full w-96 shrink-0 flex-col overflow-hidden rounded-lg border bg-card/70 backdrop-blur-sm",
         !accent && "border-border",
+        isDragging && "opacity-40 ring-2 ring-dashed ring-ring/40",
       )}
-      style={
-        accent
-          ? { borderColor: `${accent}99`, backgroundColor: `${accent}26` }
-          : undefined
-      }
+      style={{
+        ...(accent ? { borderColor: `${accent}99`, backgroundColor: `${accent}26` } : null),
+        transform: CSS.Translate.toString(transform),
+        transition,
+        zIndex: isDragging ? 20 : undefined,
+      }}
     >
       <div
         className={cn("h-1.5 w-full", column.color ? noteBg[column.color] : "bg-transparent")}
@@ -113,6 +139,15 @@ function KanbanColumnBase({
         )}
         style={accent ? { borderColor: `${accent}4d` } : undefined}
       >
+        <button
+          {...attributes}
+          {...listeners}
+          aria-label={`Reordenar coluna ${column.title}`}
+          title="Arraste para mudar a posição da coluna"
+          className="-ml-1 shrink-0 cursor-grab rounded p-0.5 text-muted-foreground/70 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
         {isNative ? (() => {
           const Icon = NATIVE_ICON[column.native!];
           return (
@@ -130,7 +165,7 @@ function KanbanColumnBase({
         })() : (
           <input
             value={column.title}
-            onChange={(e) => store.renameColumn(column.id, e.target.value)}
+            onChange={(e) => boardActions.renameColumn(column.id, e.target.value)}
             className="w-full bg-transparent text-sm font-semibold outline-none"
           />
         )}
@@ -168,7 +203,7 @@ function KanbanColumnBase({
                 <div className="flex flex-wrap gap-1.5">
                   <button
                     title="Sem cor"
-                    onClick={() => store.setColumnColor(column.id, null)}
+                    onClick={() => boardActions.setColumnColor(column.id, null)}
                     className={cn(
                       "h-5 w-5 rounded-full border border-border bg-background",
                       !column.color && "ring-2 ring-ring ring-offset-1 ring-offset-background",
@@ -178,7 +213,7 @@ function KanbanColumnBase({
                     <button
                       key={c}
                       title={noteLabel[c]}
-                      onClick={() => store.setColumnColor(column.id, c)}
+                      onClick={() => boardActions.setColumnColor(column.id, c)}
                       className={cn(
                         "h-5 w-5 rounded-full border border-border",
                         noteBg[c],
@@ -190,8 +225,23 @@ function KanbanColumnBase({
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem
+                disabled={index === 0}
+                onClick={() => boardActions.moveColumnBy(column.id, -1)}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Mover para a esquerda
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={index === total - 1}
+                onClick={() => boardActions.moveColumnBy(column.id, 1)}
+              >
+                <ArrowRight className="mr-2 h-4 w-4" />
+                Mover para a direita
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
                 onClick={() => {
-                  store.duplicateColumn(column.id);
+                  boardActions.duplicateColumn(column.id);
                   toast.success(`Coluna "${column.title}" duplicada`);
                 }}
               >
@@ -230,14 +280,14 @@ function KanbanColumnBase({
               <AlertDialogAction
                 onClick={() => {
                   const removedNotes = notes;
-                  store.removeColumn(column.id);
+                  boardActions.removeColumn(column.id);
                   toast.success(`Coluna "${column.title}" excluída`, {
                     description: removedNotes.length
                       ? `${removedNotes.length} nota(s) removida(s) junto.`
                       : undefined,
                     action: {
                       label: "Desfazer",
-                      onClick: () => store.restoreColumn(column, removedNotes),
+                      onClick: () => boardActions.restoreColumn(column, removedNotes),
                     },
                   });
                 }}
@@ -270,7 +320,6 @@ function KanbanColumnBase({
               >
                 <Card
                   note={n}
-                  store={store}
                   active={activeNoteId === n.id}
                   onOpen={(mode) => onOpenNote(n.id, mode)}
                 />
@@ -294,12 +343,17 @@ function KanbanColumnBase({
   );
 }
 
+// A antiga comparação incluía o `store` inteiro porque ele chegava por prop; o
+// que a coluna realmente lê dele (colunas, aparência) agora vem de assinaturas
+// diretas ao Zustand, que já se re-renderizam sozinhas quando esse dado muda —
+// então comparar só as props explícitas basta.
 export const KanbanColumn = memo(
   KanbanColumnBase,
   (prev, next) =>
     prev.column === next.column &&
     prev.notes === next.notes &&
+    prev.index === next.index &&
+    prev.total === next.total &&
     prev.activeNoteId === next.activeNoteId &&
-    prev.highlightIds === next.highlightIds &&
-    sameStoreView(prev.store, next.store),
+    prev.highlightIds === next.highlightIds,
 );

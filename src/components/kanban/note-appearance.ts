@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { NoteAppearance } from "@/hooks/useNoteAppearance";
+import type { NoteAppearance } from "@/stores/noteAppearance";
 import type { NoteColor } from "@/lib/board-types";
 
 export const noteTintVar: Record<NoteColor, string> = {

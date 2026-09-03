@@ -135,3 +135,10 @@ export function deadlineInfo(ts: number | null) {
 export function stripHtml(html: string) {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
+
+/** Tem conteúdo de verdade? O parágrafo vazio que o editor deixa não conta. */
+export function hasRichContent(html: string | null | undefined) {
+  if (!html) return false;
+  if (/<(img|table|video|hr)\b/i.test(html)) return true;
+  return stripHtml(html).length > 0;
+}

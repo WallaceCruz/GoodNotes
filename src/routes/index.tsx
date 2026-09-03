@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Calendar, ChevronRight, FileText, Folder, GanttChartSquare, Layers, LayoutGrid, Zap } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppSidebar } from "@/components/kanban/AppSidebar";
 import { AutomationsPanel } from "@/components/kanban/AutomationsPanel";
 import { CalendarView } from "@/components/kanban/CalendarView";
@@ -11,7 +11,15 @@ import { TimelineView } from "@/components/kanban/TimelineView";
 import { NoteFocusView } from "@/components/kanban/NoteFocusView";
 import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { UserMenu } from "@/components/kanban/UserMenu";
-import { useBoardStore } from "@/hooks/useBoardStore";
+import {
+  boardActions,
+  useActiveFile,
+  useActiveProject,
+  useBoardHydrated,
+  useFileColumns,
+  useFileTags,
+} from "@/stores/board";
+import { hydrateNoteAppearance } from "@/stores/noteAppearance";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 
 
@@ -41,7 +49,18 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const store = useBoardStore();
+  // Só client-side: ler o armazenamento durante o SSR faria o HTML do servidor
+  // divergir do primeiro render do navegador (o store nasce com o quadro de
+  // exemplo dos dois lados até este efeito trocar pelo dado real).
+  useEffect(() => {
+    boardActions.hydrate();
+    hydrateNoteAppearance();
+  }, []);
+  const hydrated = useBoardHydrated();
+  const activeProject = useActiveProject();
+  const activeFile = useActiveFile();
+  const fileTags = useFileTags();
+  const fileColumns = useFileColumns();
   const workspaces = useWorkspaces();
 
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
@@ -61,13 +80,13 @@ function Index() {
 
   const allTags = Array.from(
     new Set([
-      ...(store.file?.tags ?? []).map((t) => t.name),
-      ...(store.project?.files ?? []).flatMap((f) => f.notes).flatMap((n) => n.tags),
+      ...(fileTags ?? []).map((t) => t.name),
+      ...(activeProject?.files ?? []).flatMap((f) => f.notes).flatMap((n) => n.tags),
     ]),
   ).sort();
 
 
-  const projectFiles = store.project?.files;
+  const projectFiles = activeProject?.files;
   const allNotes = useMemo(() => (projectFiles ?? []).flatMap((f) => f.notes), [projectFiles]);
 
   const matches = useCallback((n: Note) => {
@@ -75,7 +94,12 @@ function Index() {
       if (!n.archived) return false;
     } else if (!filters.showArchived && n.archived) return false;
     const q = filters.query.trim().toLowerCase();
-    if (q && !`${n.title} ${stripHtml(n.content)} ${n.tags.join(" ")}`.toLowerCase().includes(q))
+    if (
+      q &&
+      !`${n.title} ${stripHtml(n.content)} ${stripHtml(n.contentBelow ?? "")} ${n.tags.join(" ")}`
+        .toLowerCase()
+        .includes(q)
+    )
       return false;
     if (filters.colors.length > 0 && !filters.colors.includes(n.color)) return false;
     if (filters.priorities.length > 0 && !(n.priority && filters.priorities.includes(n.priority)))
@@ -105,10 +129,9 @@ function Index() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
-      {!store.hydrated ? null : (
+      {!hydrated ? null : (
         <>
           <AppSidebar
-            store={store}
             collapsed={collapsed}
             onToggleCollapsed={() => setCollapsed((v) => !v)}
             inboxOpen={inboxOpen}
@@ -146,10 +169,10 @@ function Index() {
 
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
               <Folder className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">{store.project?.name ?? "-"}</span>
+              <span className="text-muted-foreground">{activeProject?.name ?? "-"}</span>
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
               <FileText className="h-4 w-4 text-muted-foreground" />
-              <h1 className="font-semibold">{store.file?.name ?? "Sem arquivo"}</h1>
+              <h1 className="font-semibold">{activeFile?.name ?? "Sem arquivo"}</h1>
               {archivedView && (
                 <span className="rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">
                   Vendo arquivadas
@@ -201,7 +224,7 @@ function Index() {
                     );
                   })}
                 </div>
-                <FiltersMenu filters={filters} allTags={allTags} store={store} onChange={setFilters} />
+                <FiltersMenu filters={filters} allTags={allTags} onChange={setFilters} />
                 <button
                   onClick={() => setAutomationsOpen((v) => !v)}
                   className={`flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent ${
@@ -217,33 +240,33 @@ function Index() {
             </header>
 
 
-            {automationsOpen && <AutomationsPanel store={store} allTags={allTags} />}
+            {automationsOpen && <AutomationsPanel allTags={allTags} />}
 
             <div className="flex min-h-0 flex-1">
               {timelineView ? (
                 <TimelineView
-                  notes={store.file?.notes.filter(matches) ?? []}
-                  columns={store.file?.columns ?? []}
-                  projectId={store.project?.id ?? null}
+                  notes={activeFile?.notes.filter(matches) ?? []}
+                  columns={fileColumns ?? []}
+                  projectId={activeProject?.id ?? null}
                   onOpenNote={openNote}
                   onChangeRange={(id, startDate, deadline) =>
-                    store.updateNote(id, { startDate, deadline })
+                    boardActions.updateNote(id, { startDate, deadline })
                   }
                 />
               ) : calendarView ? (
                 <CalendarView
-                  notes={store.file?.notes ?? []}
+                  notes={activeFile?.notes ?? []}
                   onOpenNote={openNote}
                   selectedDay={selectedDay}
                   onSelectDay={setSelectedDay}
                   onCreateNote={(deadline) => {
-                    const columnId = store.file?.columns[0]?.id;
+                    const columnId = fileColumns?.[0]?.id;
                     if (!columnId) return;
-                    const id = store.addNote(columnId, "sticky");
-                    store.updateNote(id, { deadline });
+                    const id = boardActions.addNote(columnId, "sticky");
+                    boardActions.updateNote(id, { deadline });
                     setActiveNoteId(id);
                   }}
-                  onSetDeadline={(id, deadline) => store.updateNote(id, { deadline })}
+                  onSetDeadline={(id, deadline) => boardActions.updateNote(id, { deadline })}
                 />
               ) : (
                 <>
@@ -251,7 +274,6 @@ function Index() {
                     <InboxList notes={inboxNotes} activeId={activeNoteId} onSelect={setActiveNoteId} />
                   )}
                   <KanbanBoard
-                    store={store}
                     activeNoteId={activeNoteId}
                     onOpenNote={openNote}
                     matches={matches}
@@ -264,7 +286,6 @@ function Index() {
             {activeNote && (
               <NoteFocusView
                 note={activeNote}
-                store={store}
                 mode={focusMode}
                 onClose={() => setActiveNoteId(null)}
               />

@@ -29,7 +29,12 @@ export function InboxList({
   const filtered = notes.filter((n) => {
     if (status === "active" && n.archived) return false;
     if (status === "archived" && !n.archived) return false;
-    if (q && !`${n.title} ${n.tags.join(" ")} ${stripHtml(n.content)}`.toLowerCase().includes(q))
+    if (
+      q &&
+      !`${n.title} ${n.tags.join(" ")} ${stripHtml(n.content)} ${stripHtml(n.contentBelow ?? "")}`
+        .toLowerCase()
+        .includes(q)
+    )
       return false;
     return true;
   });
