@@ -27,8 +27,8 @@ export type UserProfile = z.infer<typeof profileSchema> & {
 };
 
 export const defaultProfile: UserProfile = {
-  name: "Walle Dev",
-  email: "walle@stickyflow.app",
+  name: "Você",
+  email: "voce@exemplo.com",
   role: "Product Designer",
   bio: "Organizando ideias em notas autoadesivas todos os dias.",
   company: "Goodnotes",

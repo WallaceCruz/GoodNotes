@@ -1,6 +1,31 @@
 {
-  "name": "tanstack_start_ts",
-  "private": true,
+  "name": "goodnotes",
+  "version": "1.0.0",
+  "private": false,
+  "license": "MIT",
+  "description": "Quadro kanban de notas autoadesivas que roda inteiramente no navegador, sem servidor nem conta.",
+  "keywords": [
+    "kanban",
+    "notes",
+    "sticky-notes",
+    "react",
+    "tanstack-start",
+    "tiptap",
+    "local-first"
+  ],
+  "homepage": "https://github.com/WallaceCruz/goodnotes#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WallaceCruz/goodnotes.git",
+    "directory": "smart-notes-board"
+  },
+  "bugs": {
+    "url": "https://github.com/WallaceCruz/goodnotes/issues"
+  },
+  "author": "Wallace Cruz",
+  "engines": {
+    "node": ">=20"
+  },
   "sideEffects": false,
   "type": "module",
   "scripts": {

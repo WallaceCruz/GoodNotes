@@ -105,14 +105,13 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
 
 export type Member = { id: string; name: string };
 
+/** Responsáveis de demonstração — papéis, não pessoas. */
 export const MEMBERS: Member[] = [
-  { id: "walle", name: "Walle Dev" },
-  { id: "marina", name: "Marina Costa" },
-  { id: "paula", name: "Paula Mendes" },
-  { id: "thiago", name: "Thiago Ghisi" },
-  { id: "allan", name: "Agente Allan" },
-  { id: "angelina", name: "Agente Angelina" },
-  { id: "bruno", name: "Agente Bruno" },
+  { id: "voce", name: "Você" },
+  { id: "produto", name: "Produto" },
+  { id: "design", name: "Design" },
+  { id: "engenharia", name: "Engenharia" },
+  { id: "qa", name: "QA" },
 ];
 
 export type ChecklistItem = {

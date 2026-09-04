@@ -1,0 +1,14 @@
+# O Prettier e o ESLint deste projeto esperam LF. Sem isto, quem clona no
+# Windows recebe CRLF e o lint acusa a diferença em todo arquivo.
+* text=auto eol=lf
+
+# Binários não passam por conversão.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

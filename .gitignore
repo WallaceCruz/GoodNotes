@@ -1,0 +1,35 @@
+# Dependências
+node_modules/
+
+# Build e cache
+.output/
+.vinxi/
+.tanstack/
+dist/
+build/
+*.tsbuildinfo
+.vite/
+node_modules/.vite/
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Configuração local de ferramentas de IA (contém caminhos da máquina)
+.claude/settings.local.json
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.idea/
+*.swp
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*

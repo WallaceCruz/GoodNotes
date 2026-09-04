@@ -1,0 +1,45 @@
+name: Relatar um problema
+description: Algo não funciona como deveria
+labels: ["bug"]
+body:
+  - type: textarea
+    id: descricao
+    attributes:
+      label: O que acontece
+      description: Descreva o comportamento observado.
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que era esperado
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducao
+    attributes:
+      label: Como reproduzir
+      placeholder: |
+        1. Abrir o quadro
+        2. Clicar em...
+        3. O erro aparece
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tema
+    attributes:
+      label: Tema
+      options: [Claro, Escuro, Os dois, Não se aplica]
+    validations:
+      required: true
+
+  - type: input
+    id: ambiente
+    attributes:
+      label: Navegador e sistema
+      placeholder: Chrome 130 no Windows 11
+    validations:
+      required: true
