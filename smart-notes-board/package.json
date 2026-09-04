@@ -13,14 +13,14 @@
     "tiptap",
     "local-first"
   ],
-  "homepage": "https://github.com/WallaceCruz/goodnotes#readme",
+  "homepage": "https://github.com/WallaceCruz/GoodNotes#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/WallaceCruz/goodnotes.git",
+    "url": "git+https://github.com/WallaceCruz/GoodNotes.git",
     "directory": "smart-notes-board"
   },
   "bugs": {
-    "url": "https://github.com/WallaceCruz/goodnotes/issues"
+    "url": "https://github.com/WallaceCruz/GoodNotes/issues"
   },
   "author": "Wallace Cruz",
   "engines": {

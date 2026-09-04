@@ -10,7 +10,7 @@ mais recente.
 **Não abra uma issue pública para vulnerabilidades.**
 
 Use o canal privado do GitHub —
-[Security Advisories](https://github.com/WallaceCruz/goodnotes/security/advisories/new) —
+[Security Advisories](https://github.com/WallaceCruz/GoodNotes/security/advisories/new) —
 descrevendo o problema, como reproduzir e o impacto que você enxerga.
 
 A resposta costuma vir em até 7 dias.

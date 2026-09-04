@@ -13,7 +13,7 @@ deslizando.
 Requer [Node.js](https://nodejs.org) 20 ou superior.
 
 ```bash
-git clone https://github.com/WallaceCruz/goodnotes.git
+git clone https://github.com/WallaceCruz/GoodNotes.git
 cd goodnotes/smart-notes-board
 npm install
 npm run dev

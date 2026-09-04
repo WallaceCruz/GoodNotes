@@ -6,7 +6,7 @@ entrar sem atrito.
 ## Ambiente
 
 ```bash
-git clone https://github.com/WallaceCruz/goodnotes.git
+git clone https://github.com/WallaceCruz/GoodNotes.git
 cd goodnotes/smart-notes-board
 npm install
 npm run dev
@@ -66,6 +66,6 @@ deixando o card ofuscante sobre o quadro escuro.
 
 ## Reportando problemas
 
-Abra uma [issue](https://github.com/WallaceCruz/goodnotes/issues) descrevendo o
+Abra uma [issue](https://github.com/WallaceCruz/GoodNotes/issues) descrevendo o
 que aconteceu, o que era esperado e como reproduzir. Navegador e sistema
 operacional ajudam bastante.
