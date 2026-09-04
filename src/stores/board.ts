@@ -65,6 +65,14 @@ export type BoardActions = {
   reorderNote: (activeId: string, overId: string) => void;
   moveNote: (noteId: string, columnId: string, beforeNoteId?: string) => void;
   setNoteDone: (noteId: string, done: boolean) => void;
+  removeNotes: (noteIds: string[]) => void;
+  restoreNotes: (notes: Note[]) => void;
+
+  toggleSelectionMode: () => void;
+  setSelectionMode: (on: boolean) => void;
+  toggleNoteSelected: (noteId: string) => void;
+  selectAllNotes: (noteIds: string[]) => void;
+  clearSelection: () => void;
 
   addTag: (name: string, color: NoteColor) => void;
   renameTag: (oldName: string, newName: string) => void;
@@ -89,6 +97,9 @@ type BoardSlice = {
   hydrated: boolean;
   projectId: string | null;
   fileId: string | null;
+  /** Seleção de notas para exclusão em massa — não persiste, some ao trocar de arquivo/projeto. */
+  selectionMode: boolean;
+  selectedNoteIds: string[];
   actions: BoardActions;
 };
 
@@ -102,13 +113,16 @@ export const useBoard = create<BoardSlice>()((set, get) => {
     hydrated: false,
     projectId: null,
     fileId: null,
+    selectionMode: false,
+    selectedNoteIds: [],
 
     actions: {
       // Só no cliente e depois da montagem: ler o armazenamento durante o SSR
       // faria o HTML do servidor divergir do primeiro render do navegador.
       hydrate: () => set({ data: loadState(), hydrated: true }),
-      selectProject: (id) => set({ projectId: id }),
-      selectFile: (projectId, fileId) => set({ projectId, fileId }),
+      selectProject: (id) => set({ projectId: id, selectionMode: false, selectedNoteIds: [] }),
+      selectFile: (projectId, fileId) =>
+        set({ projectId, fileId, selectionMode: false, selectedNoteIds: [] }),
 
       addProject: () => set((s) => ({ data: projects.addProject(s.data) })),
       renameProject: (id, name) => set((s) => ({ data: projects.renameProject(s.data, id, name) })),
@@ -133,12 +147,14 @@ export const useBoard = create<BoardSlice>()((set, get) => {
 
       addColumn: () => onFile(columns.addColumn),
       renameColumn: (columnId, title) => onFile((f) => columns.renameColumn(f, columnId, title)),
-      setColumnColor: (columnId, color) => onFile((f) => columns.setColumnColor(f, columnId, color)),
+      setColumnColor: (columnId, color) =>
+        onFile((f) => columns.setColumnColor(f, columnId, color)),
       duplicateColumn: (columnId) => onFile((f) => columns.duplicateColumn(f, columnId)),
       removeColumn: (columnId) => onFile((f) => columns.removeColumn(f, columnId)),
       restoreColumn: (column, restored) =>
         onFile((f) => columns.restoreColumn(f, column, restored)),
-      reorderColumn: (activeId, overId) => onFile((f) => columns.reorderColumn(f, activeId, overId)),
+      reorderColumn: (activeId, overId) =>
+        onFile((f) => columns.reorderColumn(f, activeId, overId)),
       moveColumnBy: (columnId, delta) => onFile((f) => columns.moveColumnBy(f, columnId, delta)),
 
       addAutomation: (type, value, columnId) =>
@@ -152,7 +168,8 @@ export const useBoard = create<BoardSlice>()((set, get) => {
         return note.id;
       },
       updateNote: (noteId, patch) => onFile((f) => notes.patchNote(f, noteId, patch)),
-      setNoteArchived: (noteId, archived) => onFile((f) => notes.patchNote(f, noteId, { archived })),
+      setNoteArchived: (noteId, archived) =>
+        onFile((f) => notes.patchNote(f, noteId, { archived })),
       setNotePinned: (noteId, pinned) => onFile((f) => notes.patchNote(f, noteId, { pinned })),
       removeNote: (noteId) => onFile((f) => notes.removeNote(f, noteId)),
       restoreNote: (note) => onFile((f) => notes.restoreNote(f, note)),
@@ -169,13 +186,32 @@ export const useBoard = create<BoardSlice>()((set, get) => {
       moveNote: (noteId, columnId, beforeNoteId) =>
         onFile((f) => notes.moveNote(f, noteId, columnId, beforeNoteId)),
       setNoteDone: (noteId, done) => onFile((f) => notes.setNoteDone(f, noteId, done)),
+      removeNotes: (noteIds) => onFile((f) => notes.removeNotes(f, noteIds)),
+      restoreNotes: (restored) => onFile((f) => notes.restoreNotes(f, restored)),
+
+      toggleSelectionMode: () =>
+        set((s) => ({
+          selectionMode: !s.selectionMode,
+          selectedNoteIds: s.selectionMode ? [] : s.selectedNoteIds,
+        })),
+      setSelectionMode: (on) =>
+        set({ selectionMode: on, selectedNoteIds: on ? get().selectedNoteIds : [] }),
+      toggleNoteSelected: (noteId) =>
+        set((s) => ({
+          selectedNoteIds: s.selectedNoteIds.includes(noteId)
+            ? s.selectedNoteIds.filter((id) => id !== noteId)
+            : [...s.selectedNoteIds, noteId],
+        })),
+      selectAllNotes: (noteIds) => set({ selectedNoteIds: noteIds }),
+      clearSelection: () => set({ selectedNoteIds: [] }),
 
       addTag: (name, color) => onFile((f) => tags.addTag(f, name, color)),
       renameTag: (oldName, newName) => onFile((f) => tags.renameTag(f, oldName, newName)),
       setTagColor: (name, color) => onFile((f) => tags.setTagColor(f, name, color)),
       removeTag: (name) => onFile((f) => tags.removeTag(f, name)),
 
-      addChecklistItem: (noteId, text) => onFile((f) => checklist.addChecklistItem(f, noteId, text)),
+      addChecklistItem: (noteId, text) =>
+        onFile((f) => checklist.addChecklistItem(f, noteId, text)),
       updateChecklistItem: (noteId, itemId, patch) =>
         onFile((f) => checklist.updateChecklistItem(f, noteId, itemId, patch)),
       removeChecklistItem: (noteId, itemId) =>
@@ -200,7 +236,6 @@ export const boardActions = useBoard.getState().actions;
 const activeProject = (s: BoardSlice) => projects.resolveProject(s.data, s.projectId);
 const activeFile = (s: BoardSlice) => projects.resolveFile(activeProject(s), s.fileId);
 
-export const useBoardData = () => useBoard((s) => s.data);
 export const useBoardHydrated = () => useBoard((s) => s.hydrated);
 export const useProjects = () => useBoard((s) => s.data.projects);
 export const useActiveProject = () => useBoard(activeProject);
@@ -226,8 +261,10 @@ export function getActiveFile(): BoardFile | undefined {
   return activeFile(useBoard.getState());
 }
 
-export const useNote = (noteId: string | null) =>
-  useBoard((s) => (noteId ? activeFile(s)?.notes.find((n) => n.id === noteId) : undefined));
+export const useSelectionMode = () => useBoard((s) => s.selectionMode);
+export const useSelectedNoteIds = () => useBoard((s) => s.selectedNoteIds);
+export const useIsNoteSelected = (noteId: string) =>
+  useBoard((s) => s.selectedNoteIds.includes(noteId));
 
 // ---------------------------------------------------------------------------
 // Efeitos do quadro, fora do React: persistência e automações reagem ao estado

@@ -1,7 +1,7 @@
+import { uid } from "@/lib/id";
 import {
   collectTags,
   nativeColumns,
-  uid,
   type BoardFile,
   type BoardState,
   type Note,

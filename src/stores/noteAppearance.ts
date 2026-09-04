@@ -15,9 +15,21 @@ import type { NativeColumnKey } from "@/lib/board-types";
  * (`persist`) que qualquer outro store deste app pode reusar.
  */
 
-export type NoteStyle = "classic" | "soft" | "gradient" | "outline" | "glass" | "tape";
+export type NoteStyle =
+  | "classic"
+  | "soft"
+  | "gradient"
+  | "duo"
+  | "radial"
+  | "sunset"
+  | "paper"
+  | "outline"
+  | "glass"
+  | "neon"
+  | "tape";
 export type NoteCorners = "sharp" | "soft" | "rounded" | "xl" | "pill" | "notched";
-export type NoteShadow = "none" | "soft" | "strong";
+export type NoteShadow = "none" | "soft" | "strong" | "colored" | "inset" | "lifted";
+export type NoteBorder = "none" | "thin" | "thick" | "dashed" | "double";
 export type NoteFont = "sans" | "serif" | "mono";
 export type NoteSize = "sm" | "md" | "lg";
 export type NoteAlign = "left" | "center";
@@ -26,6 +38,7 @@ export type NoteAppearance = {
   style: NoteStyle;
   corners: NoteCorners;
   shadow: NoteShadow;
+  border: NoteBorder;
   tilt: boolean;
   font: NoteFont;
   size: NoteSize;
@@ -53,6 +66,7 @@ export const defaultNoteAppearance: NoteAppearance = {
   style: "classic",
   corners: "soft",
   shadow: "soft",
+  border: "thin",
   tilt: false,
   font: "sans",
   size: "md",
@@ -68,8 +82,13 @@ export const NOTE_STYLE_OPTIONS: { value: NoteStyle; label: string; hint: string
   { value: "classic", label: "Clássica", hint: "Cor sólida com borda discreta" },
   { value: "soft", label: "Suave", hint: "Degradê discreto de cima para baixo" },
   { value: "gradient", label: "Degradê", hint: "Transição suave da cor" },
+  { value: "duo", label: "Duotom", hint: "Degradê diagonal com cor de destaque" },
+  { value: "radial", label: "Radial", hint: "Brilho saindo do centro" },
+  { value: "sunset", label: "Aurora", hint: "Degradê em três tons" },
+  { value: "paper", label: "Papel", hint: "Textura sutil com contorno fino" },
   { value: "outline", label: "Contorno", hint: "Fundo claro com borda colorida" },
   { value: "glass", label: "Vidro", hint: "Translúcida com desfoque" },
+  { value: "neon", label: "Neon", hint: "Contorno vibrante com brilho" },
   { value: "tape", label: "Fita", hint: "Post-it com fita adesiva no topo" },
 ];
 
@@ -86,6 +105,17 @@ export const NOTE_SHADOW_OPTIONS: { value: NoteShadow; label: string }[] = [
   { value: "none", label: "Sem sombra" },
   { value: "soft", label: "Suave" },
   { value: "strong", label: "Marcante" },
+  { value: "colored", label: "Colorida" },
+  { value: "inset", label: "Interna" },
+  { value: "lifted", label: "Elevada" },
+];
+
+export const NOTE_BORDER_OPTIONS: { value: NoteBorder; label: string }[] = [
+  { value: "none", label: "Sem borda" },
+  { value: "thin", label: "Fina" },
+  { value: "thick", label: "Grossa" },
+  { value: "dashed", label: "Tracejada" },
+  { value: "double", label: "Dupla" },
 ];
 
 export const NOTE_FONT_OPTIONS: { value: NoteFont; label: string }[] = [
@@ -151,10 +181,7 @@ function migrateLegacyStorage() {
         Object.entries(projectsRaw).map(([id, v]) => [id, withDefaults(v)]),
       ),
     };
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ state, version: 0 }),
-    );
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, version: 0 }));
     window.localStorage.removeItem(LEGACY_ACCOUNT_KEY);
     window.localStorage.removeItem(LEGACY_PROJECT_KEY);
   } catch {
@@ -221,9 +248,6 @@ const useAppearanceStore = create<AppearanceState & { actions: AppearanceActions
   ),
 );
 
-/** Referência estável: importar não assina o store nem provoca re-render. */
-export const appearanceActions = useAppearanceStore.getState().actions;
-
 /**
  * Lê o `localStorage` e aplica ao store. Chamar de um `useEffect` de nível
  * de rota (nunca do corpo do componente) — assim como `boardActions.hydrate`,
@@ -241,7 +265,9 @@ export function hydrateNoteAppearance() {
  */
 export function useNoteAppearance(projectId?: string | null) {
   const account = useAppearanceStore((s) => s.account);
-  const projectOverride = useAppearanceStore((s) => (projectId ? (s.projects[projectId] ?? null) : null));
+  const projectOverride = useAppearanceStore((s) =>
+    projectId ? (s.projects[projectId] ?? null) : null,
+  );
   const actions = useAppearanceStore((s) => s.actions);
 
   return {

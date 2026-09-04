@@ -1,4 +1,10 @@
-import { uid, type BoardFile, type Column, type Note, type NoteColor } from "@/lib/board-types";
+import { uid } from "@/lib/id";
+import {
+  type BoardFile,
+  type Column,
+  type Note,
+  type NoteColor,
+} from "@/lib/board-types";
 import { reindex } from "./notes";
 
 /** Move o item do índice `from` para o `to`, sem mutar o array original. */

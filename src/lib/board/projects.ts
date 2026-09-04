@@ -1,6 +1,6 @@
+import { uid } from "@/lib/id";
 import {
   nativeColumns,
-  uid,
   type BoardFile,
   type BoardState,
   type Project,

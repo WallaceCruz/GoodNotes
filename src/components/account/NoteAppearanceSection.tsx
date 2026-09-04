@@ -14,6 +14,7 @@ import { noteSurface } from "@/components/kanban/note-appearance";
 import { useProjects } from "@/stores/board";
 import {
   NOTE_ALIGN_OPTIONS,
+  NOTE_BORDER_OPTIONS,
   NOTE_CORNER_OPTIONS,
   NOTE_FONT_OPTIONS,
   NOTE_SHADOW_OPTIONS,
@@ -23,11 +24,22 @@ import {
   hydrateNoteAppearance,
   useNoteAppearance,
   type NoteAppearance,
+  type NoteStyle,
 } from "@/stores/noteAppearance";
-import { NATIVE_COLUMNS } from "@/lib/board-types";
+import { NATIVE_COLUMNS, type NoteColor } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
 
 const ACCOUNT = "__account__";
+
+const STYLE_PREVIEW_COLOR: Partial<Record<NoteStyle, NoteColor>> = {
+  glass: "sky",
+  outline: "mint",
+  neon: "violet",
+  duo: "peach",
+  radial: "teal",
+  sunset: "coral",
+  paper: "sand",
+};
 
 function StickyPreview({
   appearance,
@@ -35,7 +47,7 @@ function StickyPreview({
   compact = false,
 }: {
   appearance: NoteAppearance;
-  color?: "amber" | "sky" | "mint";
+  color?: NoteColor;
   compact?: boolean;
 }) {
   const surface = noteSurface(appearance, color, { tilt: !compact });
@@ -161,7 +173,7 @@ export function NoteAppearanceSection() {
         <div>
           <h2 className="text-sm font-semibold">Aparência das notas</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Estilos das notas autoadesivas e dos blocos de notas, por conta ou por projeto.
+            Estilos das notas autoadesivas, por conta ou por projeto.
           </p>
         </div>
         <div className="w-60">
@@ -224,7 +236,7 @@ export function NoteAppearanceSection() {
             >
               <StickyPreview
                 appearance={{ ...appearance, style: opt.value }}
-                color={opt.value === "glass" ? "sky" : opt.value === "outline" ? "mint" : "amber"}
+                color={STYLE_PREVIEW_COLOR[opt.value] ?? "amber"}
                 compact
               />
               <p className="mt-2 text-xs font-medium">{opt.label}</p>
@@ -265,6 +277,14 @@ export function NoteAppearanceSection() {
             value={appearance.shadow}
             options={NOTE_SHADOW_OPTIONS}
             onChange={(shadow) => set({ shadow })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">Borda</Label>
+          <Chips
+            value={appearance.border}
+            options={NOTE_BORDER_OPTIONS}
+            onChange={(border) => set({ border })}
           />
         </div>
         <div className="space-y-2">

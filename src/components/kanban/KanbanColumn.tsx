@@ -118,9 +118,7 @@ function KanbanColumnBase({
         zIndex: isDragging ? 20 : undefined,
       }}
     >
-      <div
-        className={cn("h-1.5 w-full", column.color ? noteBg[column.color] : "bg-transparent")}
-      />
+      <div className={cn("h-1.5 w-full", column.color ? noteBg[column.color] : "bg-transparent")} />
 
       <div
         className={cn(
@@ -139,21 +137,23 @@ function KanbanColumnBase({
         >
           <GripVertical className="h-4 w-4" />
         </button>
-        {isNative ? (() => {
-          const Icon = NATIVE_ICON[column.native!];
-          return (
-            <span
-              title="Coluna nativa do fluxo"
-              className="flex w-full items-center gap-1.5 truncate text-sm font-semibold"
-            >
-              <Icon
-                className={cn("h-4 w-4 shrink-0", !accent && "text-muted-foreground")}
-                style={accent ? { color: accent } : undefined}
-              />
-              {column.title}
-            </span>
-          );
-        })() : (
+        {isNative ? (
+          (() => {
+            const Icon = NATIVE_ICON[column.native!];
+            return (
+              <span
+                title="Coluna nativa do fluxo"
+                className="flex w-full items-center gap-1.5 truncate text-sm font-semibold"
+              >
+                <Icon
+                  className={cn("h-4 w-4 shrink-0", !accent && "text-muted-foreground")}
+                  style={accent ? { color: accent } : undefined}
+                />
+                {column.title}
+              </span>
+            );
+          })()
+        ) : (
           <input
             value={column.title}
             onChange={(e) => boardActions.renameColumn(column.id, e.target.value)}
@@ -250,7 +250,6 @@ function KanbanColumnBase({
         </AlertDialog>
       </div>
 
-
       <div
         ref={setNodeRef}
         className={`scroll-thin flex min-h-32 flex-1 flex-col gap-3 overflow-y-auto rounded-b-lg p-2 transition-colors ${
@@ -280,7 +279,8 @@ function KanbanColumnBase({
             onClick={() => setLimit((l) => l + PAGE)}
             className="shrink-0 rounded-lg border border-dashed border-border py-2 text-xs text-muted-foreground hover:bg-accent"
           >
-            Mostrar mais {Math.min(PAGE, notes.length - visible.length)} de {notes.length - visible.length}
+            Mostrar mais {Math.min(PAGE, notes.length - visible.length)} de{" "}
+            {notes.length - visible.length}
           </button>
         )}
         {isOver && (

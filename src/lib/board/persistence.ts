@@ -1,4 +1,5 @@
 import { collectTags, ensureNativeColumns, type BoardState } from "@/lib/board-types";
+import { readRaw, writeRaw } from "@/lib/local-storage";
 import { withOrder } from "./notes";
 import { createInitialState } from "./seed";
 
@@ -28,7 +29,10 @@ export function normalize(state: BoardState): BoardState {
         archived: f.archived ?? false,
         columns: ensureNativeColumns(f.columns ?? []),
         automations: f.automations ?? [],
-        tags: collectTags((f.notes ?? []).flatMap((n) => n.tags ?? []), f.tags ?? []),
+        tags: collectTags(
+          (f.notes ?? []).flatMap((n) => n.tags ?? []),
+          f.tags ?? [],
+        ),
         notes: withOrder(f.notes ?? []).map((n) => ({
           ...n,
           contentBelow: n.contentBelow ?? "",
@@ -52,9 +56,9 @@ export function normalize(state: BoardState): BoardState {
 
 /** Lê o quadro gravado; qualquer falha cai no estado inicial em vez de quebrar. */
 export function loadState(): BoardState {
+  const raw = readRaw(STORAGE_KEY);
+  if (!raw) return createInitialState();
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return createInitialState();
     return normalize(JSON.parse(raw) as Persisted);
   } catch {
     return createInitialState();
@@ -74,33 +78,19 @@ export type BoardSaver = {
  * de uma por tecla — o estado carrega imagens em base64, então `JSON.stringify`
  * a cada tecla trava a interface.
  *
- * Estourar a cota do localStorage não pode derrubar a sessão: o erro é
- * reportado uma vez e o app segue com o estado em memória.
+ * A tolerância a cota estourada vem de `writeRaw`, a mesma usada pelas
+ * preferências do usuário.
  */
 export function createBoardSaver(delay = 500): BoardSaver {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let pending: BoardState | null = null;
-  let reportedFailure = false;
 
   const write = () => {
     if (!pending) return;
     const snapshot = pending;
     pending = null;
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ ...snapshot, version: SCHEMA_VERSION } satisfies Persisted),
-      );
-      reportedFailure = false;
-    } catch (error) {
-      if (!reportedFailure) {
-        reportedFailure = true;
-        console.error(
-          "[quadro] não foi possível salvar (armazenamento cheio?). As alterações seguem só nesta sessão.",
-          error,
-        );
-      }
-    }
+    const payload = { ...snapshot, version: SCHEMA_VERSION } satisfies Persisted;
+    writeRaw(STORAGE_KEY, JSON.stringify(payload), "quadro");
   };
 
   return {

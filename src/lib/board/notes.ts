@@ -1,7 +1,7 @@
+import { uid } from "@/lib/id";
 import {
   collectTags,
   nativeKeyOf,
-  uid,
   type BoardFile,
   type Column,
   type Note,
@@ -81,9 +81,7 @@ export function patchNote(file: BoardFile, noteId: string, patch: Partial<Note>)
   return {
     ...file,
     tags: patch.tags ? collectTags(patch.tags, file.tags) : file.tags,
-    notes: file.notes.map((n) =>
-      n.id === noteId ? { ...n, ...patch, updatedAt: Date.now() } : n,
-    ),
+    notes: file.notes.map((n) => (n.id === noteId ? { ...n, ...patch, updatedAt: Date.now() } : n)),
   };
 }
 
@@ -95,7 +93,21 @@ export function restoreNote(file: BoardFile, note: Note): BoardFile {
   return { ...file, notes: reindex([note, ...file.notes]) };
 }
 
-export function duplicateNote(file: BoardFile, noteId: string): { file: BoardFile; id: string | null } {
+/** Remove várias notas de uma vez (exclusão em massa). */
+export function removeNotes(file: BoardFile, noteIds: string[]): BoardFile {
+  const idSet = new Set(noteIds);
+  return { ...file, notes: file.notes.filter((n) => !idSet.has(n.id)) };
+}
+
+/** Devolve várias notas removidas (desfazer exclusão em massa). */
+export function restoreNotes(file: BoardFile, restored: Note[]): BoardFile {
+  return { ...file, notes: reindex([...restored, ...file.notes]) };
+}
+
+export function duplicateNote(
+  file: BoardFile,
+  noteId: string,
+): { file: BoardFile; id: string | null } {
   const source = file.notes.find((n) => n.id === noteId);
   if (!source) return { file, id: null };
   const clone: Note = {

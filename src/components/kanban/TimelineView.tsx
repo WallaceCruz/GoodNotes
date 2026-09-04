@@ -10,6 +10,7 @@ import {
   type Note,
 } from "@/lib/board-types";
 import { useNoteAppearance } from "@/stores/noteAppearance";
+import { startOfDay } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { noteBg } from "./note-style";
 import { PriorityBadge } from "./NoteMeta";
@@ -25,14 +26,19 @@ const SCALES: { value: Scale; label: string; px: number; days: number }[] = [
 const WEEKDAY = ["D", "S", "T", "Q", "Q", "S", "S"];
 const MIN_NOTE_BAR_WIDTH = 280;
 const MONTH_SHORT = [
-  "jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez",
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
 ];
-
-const startOfDay = (d: number | Date) => {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x.getTime();
-};
 
 type DragState = {
   id: string;
@@ -57,7 +63,7 @@ export function TimelineView({
 }) {
   const { appearance } = useNoteAppearance(projectId ?? null);
   const [scale, setScale] = useState<Scale>("week");
-  const [anchor, setAnchor] = useState(() => startOfDay(Date.now()));
+  const [anchor, setAnchor] = useState(() => startOfDay(Date.now()).getTime());
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [drag, setDrag] = useState<DragState | null>(null);
   const [preview, setPreview] = useState<{ start: number; end: number } | null>(null);
@@ -70,7 +76,7 @@ export function TimelineView({
     [cfg.days, rangeStart],
   );
   const gridWidth = cfg.days * cfg.px;
-  const today = startOfDay(Date.now());
+  const today = startOfDay(Date.now()).getTime();
 
   const groups = useMemo(
     () =>
@@ -101,11 +107,7 @@ export function TimelineView({
     return rangeStart + Math.floor(x / cfg.px) * DAY_MS;
   };
 
-  const beginDrag = (
-    e: React.PointerEvent,
-    note: Note,
-    mode: DragState["mode"],
-  ) => {
+  const beginDrag = (e: React.PointerEvent, note: Note, mode: DragState["mode"]) => {
     e.preventDefault();
     e.stopPropagation();
     const range = noteRange(note) ?? { start: today, end: today + DAY_MS };
@@ -171,7 +173,7 @@ export function TimelineView({
             Anterior
           </button>
           <button
-            onClick={() => setAnchor(startOfDay(Date.now()))}
+            onClick={() => setAnchor(startOfDay(Date.now()).getTime())}
             className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-accent"
           >
             Hoje
@@ -229,9 +231,7 @@ export function TimelineView({
           {groups.map(({ column, rows }) => (
             <div key={column.id}>
               <button
-                onClick={() =>
-                  setCollapsed((c) => ({ ...c, [column.id]: !c[column.id] }))
-                }
+                onClick={() => setCollapsed((c) => ({ ...c, [column.id]: !c[column.id] }))}
                 className="flex h-9 w-full items-center gap-1.5 border-b border-border/60 px-2 text-xs font-medium text-foreground hover:bg-accent"
               >
                 {collapsed[column.id] ? (
@@ -290,7 +290,7 @@ export function TimelineView({
             {/* Cabeçalho de datas */}
             <div className="sticky top-0 z-10 flex h-12 border-b border-border bg-background">
               {days.map((d) => {
-                const isToday = startOfDay(d) === today;
+                const isToday = startOfDay(d).getTime() === today;
                 const first = d.getDate() === 1;
                 return (
                   <div
@@ -317,9 +317,7 @@ export function TimelineView({
               <div key={column.id}>
                 <div
                   className="h-9 border-b border-border/60 bg-muted/30"
-                  style={
-                    accentOf(column) ? { background: `${accentOf(column)}1a` } : undefined
-                  }
+                  style={accentOf(column) ? { background: `${accentOf(column)}1a` } : undefined}
                 />
                 {!collapsed[column.id] &&
                   rows.map((n) => {
@@ -344,7 +342,7 @@ export function TimelineView({
                               className={cn(
                                 "shrink-0 border-r border-border/30",
                                 (d.getDay() === 0 || d.getDay() === 6) && "bg-muted/30",
-                                startOfDay(d) === today && "bg-primary/5",
+                                startOfDay(d).getTime() === today && "bg-primary/5",
                               )}
                             />
                           ))}
@@ -379,7 +377,9 @@ export function TimelineView({
                             >
                               {n.title || "Sem título"}
                             </span>
-                            {late && <CalendarClock className="h-3 w-3 shrink-0 text-destructive" />}
+                            {late && (
+                              <CalendarClock className="h-3 w-3 shrink-0 text-destructive" />
+                            )}
                             <span
                               onPointerDown={(e) => beginDrag(e, n, "end")}
                               className="absolute right-0 top-0 h-full w-1.5 cursor-ew-resize rounded-r-md hover:bg-foreground/20"
@@ -391,7 +391,6 @@ export function TimelineView({
                   })}
               </div>
             ))}
-
           </div>
         </div>
       </div>

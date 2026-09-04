@@ -1,80 +1,74 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useLocalStore } from "./useLocalStore";
+import { uid } from "@/lib/id";
 
 export type Workspace = { id: string; name: string; emoji: string };
 
 const KEY = "sticky-workspaces-v1";
 const ACTIVE_KEY = "sticky-workspace-active-v1";
+const LABEL = "workspaces";
 
 const DEFAULT: Workspace[] = [{ id: "ws_default", name: "Meu Workspace", emoji: "🗂️" }];
 
-function read(): Workspace[] {
-  if (typeof window === "undefined") return DEFAULT;
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return DEFAULT;
-    const parsed = JSON.parse(raw) as Workspace[];
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT;
-  } catch {
-    return DEFAULT;
-  }
+function parseWorkspaces(raw: unknown): Workspace[] | null {
+  if (!Array.isArray(raw)) return null;
+  const list = raw.filter(
+    (w): w is Workspace =>
+      !!w && typeof w.id === "string" && typeof w.name === "string" && typeof w.emoji === "string",
+  );
+  return list.length > 0 ? list : null;
 }
 
-/** Workspaces do usuário (persistidos localmente, sincronizados entre abas). */
+const parseId = (raw: unknown) => (typeof raw === "string" ? raw : null);
+
+/** Workspaces do usuário, persistidos localmente e sincronizados entre abas. */
 export function useWorkspaces() {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>(DEFAULT);
-  const [activeId, setActiveId] = useState<string>(DEFAULT[0]!.id);
+  const { value: workspaces, setValue: setWorkspaces } = useLocalStore({
+    key: KEY,
+    fallback: DEFAULT,
+    parse: parseWorkspaces,
+    label: LABEL,
+  });
+  const { value: activeId, setValue: setActiveId } = useLocalStore({
+    key: ACTIVE_KEY,
+    fallback: DEFAULT[0]!.id,
+    parse: parseId,
+    label: LABEL,
+  });
 
-  useEffect(() => {
-    const load = () => {
-      const list = read();
-      setWorkspaces(list);
-      const saved = localStorage.getItem(ACTIVE_KEY);
-      setActiveId(list.some((w) => w.id === saved) ? saved! : list[0]!.id);
-    };
-    load();
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === KEY || e.key === ACTIVE_KEY) load();
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-
-  const persist = useCallback((next: Workspace[]) => {
-    setWorkspaces(next);
-    localStorage.setItem(KEY, JSON.stringify(next));
-  }, []);
-
-  const selectWorkspace = useCallback((id: string) => {
-    setActiveId(id);
-    localStorage.setItem(ACTIVE_KEY, id);
-  }, []);
+  const selectWorkspace = useCallback((id: string) => setActiveId(id), [setActiveId]);
 
   const addWorkspace = useCallback(
     (name: string, emoji = "🗂️") => {
-      const clean = name.trim() || "Novo workspace";
-      const ws: Workspace = { id: `ws_${Math.random().toString(36).slice(2, 8)}`, name: clean, emoji };
-      persist([...read(), ws]);
-      selectWorkspace(ws.id);
-      return ws;
+      const workspace: Workspace = { id: uid("ws"), name: name.trim() || "Novo workspace", emoji };
+      setWorkspaces((current) => [...current, workspace]);
+      selectWorkspace(workspace.id);
+      return workspace;
     },
-    [persist, selectWorkspace],
+    [setWorkspaces, selectWorkspace],
   );
 
   const renameWorkspace = useCallback(
-    (id: string, name: string) => persist(read().map((w) => (w.id === id ? { ...w, name } : w))),
-    [persist],
+    (id: string, name: string) =>
+      setWorkspaces((current) => current.map((w) => (w.id === id ? { ...w, name } : w))),
+    [setWorkspaces],
   );
 
   const removeWorkspace = useCallback(
     (id: string) => {
-      const next = read().filter((w) => w.id !== id);
-      const list = next.length > 0 ? next : DEFAULT;
-      persist(list);
-      selectWorkspace(list[0]!.id);
+      let remaining = DEFAULT;
+      setWorkspaces((current) => {
+        const next = current.filter((w) => w.id !== id);
+        remaining = next.length > 0 ? next : DEFAULT;
+        return remaining;
+      });
+      selectWorkspace(remaining[0]!.id);
     },
-    [persist, selectWorkspace],
+    [setWorkspaces, selectWorkspace],
   );
 
+  // O workspace ativo pode ter sido apagado em outra aba: cair no primeiro
+  // mantém a tela coerente sem exigir recarregar.
   const active = workspaces.find((w) => w.id === activeId) ?? workspaces[0]!;
 
   return { workspaces, active, selectWorkspace, addWorkspace, renameWorkspace, removeWorkspace };

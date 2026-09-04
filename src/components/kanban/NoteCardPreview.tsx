@@ -8,6 +8,7 @@ import { CategoryBadge } from "./CategorySelect";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
 import { StatusBadge } from "./StatusSelect";
 import { noteBg } from "./note-style";
+import { NoteRichContent } from "./NoteRichContent";
 
 /**
  * Réplica somente-leitura da nota, para o `DragOverlay` do arraste.
@@ -36,7 +37,7 @@ export function NoteCardPreview({ note }: { note: Note }) {
     <div
       style={surface.style}
       className={cn(
-        "w-96 origin-center scale-[1.03] cursor-grabbing overflow-hidden border border-border/60 p-3 text-note-foreground shadow-2xl ring-2 ring-ring/40 transition-transform",
+        "w-96 origin-center scale-[1.03] cursor-grabbing overflow-hidden border-border/60 p-3 text-note-foreground shadow-2xl ring-2 ring-ring/40 transition-transform",
         appearance.style === "classic" &&
           !appearance.bgColor &&
           !note.colorHex &&
@@ -67,9 +68,9 @@ export function NoteCardPreview({ note }: { note: Note }) {
         {note.title || "Sem título"}
       </p>
 
-      <div
+      <NoteRichContent
+        html={note.content}
         className="note-prose mt-1 max-h-40 overflow-hidden text-xs"
-        dangerouslySetInnerHTML={{ __html: note.content || "" }}
       />
 
       {note.checklist.length > 0 && (
@@ -83,10 +84,7 @@ export function NoteCardPreview({ note }: { note: Note }) {
             </span>
           </div>
           <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-foreground/10">
-            <div
-              className="h-full rounded-full bg-primary"
-              style={{ width: `${checklistPct}%` }}
-            />
+            <div className="h-full rounded-full bg-primary" style={{ width: `${checklistPct}%` }} />
           </div>
         </div>
       )}

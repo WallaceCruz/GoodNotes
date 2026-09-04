@@ -1,6 +1,6 @@
+import { uid } from "@/lib/id";
 import {
   matchesAutomation,
-  uid,
   type Automation,
   type AutomationType,
   type BoardFile,

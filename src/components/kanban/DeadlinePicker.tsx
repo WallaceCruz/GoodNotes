@@ -2,6 +2,7 @@ import { CalendarClock, Clock, X } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { END_OF_DAY, addDays, withTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { deadlineInfo } from "./note-style";
 
@@ -11,16 +12,9 @@ const QUICK = [
   { label: "Em 7 dias", days: 7 },
 ];
 
-const DEFAULT_TIME = { h: 23, m: 59 };
-
-function withTime(date: Date, h: number, m: number) {
-  const x = new Date(date);
-  x.setHours(h, m, 0, 0);
-  return x.getTime();
-}
-
+/** Sem valor ainda, o prazo começa no fim do dia — mesma convenção do resto do app. */
 function timeOf(value: number | null) {
-  if (!value) return DEFAULT_TIME;
+  if (!value) return { h: END_OF_DAY.hour, m: END_OF_DAY.minute };
   const d = new Date(value);
   return { h: d.getHours(), m: d.getMinutes() };
 }

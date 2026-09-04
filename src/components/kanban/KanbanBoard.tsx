@@ -78,24 +78,34 @@ export function KanbanBoard({
   const grouped = useRef(new Map<string, Note[]>());
 
   /**
-   * Notas por coluna. Editar uma nota recria o array de `file.notes`, o que
-   * geraria um array novo para *toda* coluna e re-renderizaria o quadro inteiro;
-   * reaproveitar a referência anterior quando o conteúdo é o mesmo faz só a
-   * coluna afetada (e, dentro dela, só o card alterado) re-renderizar.
+   * Notas por coluna, em uma passada só pela lista — varrer todas as notas uma
+   * vez por coluna multiplicava o custo pelo número de colunas, que é
+   * justamente o que cresce quando o quadro cresce.
+   *
+   * Reaproveitar o array anterior quando o conteúdo é idêntico também importa:
+   * editar uma nota recria `file.notes`, e sem isso *toda* coluna receberia um
+   * array novo e o quadro inteiro re-renderizaria. Com a comparação, só a
+   * coluna afetada (e dentro dela só o card alterado) re-renderiza.
    */
   const notesByColumn = useMemo(() => {
     const next = new Map<string, Note[]>();
-    for (const c of file?.columns ?? []) {
-      const list = (file?.notes ?? [])
-        .filter((n) => n.columnId === c.id && matches(n))
-        .sort(
-          (a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || a.order - b.order,
-        );
-      const previous = grouped.current.get(c.id);
-      const unchanged =
-        previous?.length === list.length && list.every((n, i) => previous[i] === n);
-      next.set(c.id, unchanged ? previous : list);
+    for (const column of file?.columns ?? []) next.set(column.id, []);
+
+    for (const note of file?.notes ?? []) {
+      if (!matches(note)) continue;
+      next.get(note.columnId)?.push(note);
     }
+
+    // Fixadas primeiro; o resto na ordem que o usuário arrastou.
+    for (const [columnId, list] of next) {
+      list.sort(
+        (a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || a.order - b.order,
+      );
+      const previous = grouped.current.get(columnId);
+      const unchanged = previous?.length === list.length && list.every((n, i) => previous[i] === n);
+      if (unchanged) next.set(columnId, previous);
+    }
+
     grouped.current = next;
     return next;
   }, [file?.columns, file?.notes, matches]);

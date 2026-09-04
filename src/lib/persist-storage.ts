@@ -1,35 +1,17 @@
 import type { StateStorage } from "zustand/middleware";
+import { readRaw, removeKey, writeRaw } from "./local-storage";
 
 /**
- * Storage adapter for Zustand's `persist` middleware that is safe to import
- * from code that also renders on the server (TanStack Start does SSR).
- * `localStorage` doesn't exist there, so every method checks for `window`
- * first instead of letting the reference error propagate.
+ * Ponte entre o `persist` do Zustand e o armazenamento local do app.
  *
- * A write that fails (quota exceeded) is reported once and otherwise
- * swallowed: losing a persisted preference should never crash the app.
+ * O middleware trabalha com texto já serializado, então aqui só repassamos —
+ * as garantias (SSR sem `window`, cota estourada que não derruba a sessão)
+ * vêm de `local-storage`, as mesmas que os hooks de preferência usam.
  */
 export function createSsrSafeStorage(logLabel: string): StateStorage {
-  let reportedFailure = false;
   return {
-    getItem: (name) => (typeof window === "undefined" ? null : window.localStorage.getItem(name)),
-    setItem: (name, value) => {
-      if (typeof window === "undefined") return;
-      try {
-        window.localStorage.setItem(name, value);
-        reportedFailure = false;
-      } catch (error) {
-        if (reportedFailure) return;
-        reportedFailure = true;
-        console.error(
-          `[${logLabel}] não foi possível salvar (armazenamento cheio?). As alterações seguem só nesta sessão.`,
-          error,
-        );
-      }
-    },
-    removeItem: (name) => {
-      if (typeof window === "undefined") return;
-      window.localStorage.removeItem(name);
-    },
+    getItem: (name) => readRaw(name),
+    setItem: (name, value) => writeRaw(name, value, logLabel),
+    removeItem: (name) => removeKey(name),
   };
 }

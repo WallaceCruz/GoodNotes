@@ -1,4 +1,11 @@
-import type { NoteColor, Priority } from "@/lib/board-types";
+import { deadlineStatus } from "@/lib/board/deadline";
+import type { NoteColor, NoteStatus, Priority } from "@/lib/board-types";
+
+/**
+ * Mapas de cor e classe das notas. Só aparência: a regra por trás de cada
+ * valor (o que é um prazo atrasado, o que conta como conteúdo) mora em
+ * `lib/board/*` e `lib/*`, e aqui só decidimos como isso é pintado.
+ */
 
 export const noteBg: Record<NoteColor, string> = {
   rose: "bg-note-rose",
@@ -48,22 +55,6 @@ export const noteLabel: Record<NoteColor, string> = {
   white: "Branco",
 };
 
-export const noteAccent: Record<NoteColor, string> = {
-  rose: "bg-note-rose/60",
-  amber: "bg-note-amber/60",
-  lime: "bg-note-lime/60",
-  sky: "bg-note-sky/60",
-  violet: "bg-note-violet/60",
-  peach: "bg-note-peach/60",
-  teal: "bg-note-teal/60",
-  indigo: "bg-note-indigo/60",
-  sand: "bg-note-sand/60",
-  mint: "bg-note-mint/60",
-  coral: "bg-note-coral/60",
-  slate: "bg-note-slate/60",
-  white: "bg-note-white/60",
-};
-
 export const priorityClass: Record<Priority, string> = {
   urgent: "border-transparent bg-prio-urgent text-prio-urgent-foreground",
   high: "border-transparent bg-prio-high text-prio-high-foreground",
@@ -71,74 +62,23 @@ export const priorityClass: Record<Priority, string> = {
   low: "border-transparent bg-prio-low text-prio-low-foreground",
 };
 
-export function timeAgo(ts: number) {
-  const diff = Math.max(0, Date.now() - ts);
-  const m = Math.round(diff / 60000);
-  if (m < 1) return "agora";
-  if (m < 60) return `${m} min`;
-  const h = Math.round(m / 60);
-  if (h < 24) return `${h} h`;
-  const d = Math.round(h / 24);
-  return d === 1 ? "Ontem" : `${d} d`;
+export const statusClass: Record<NoteStatus, string> = {
+  done: "border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  doing: "border-blue-500/50 bg-blue-500/15 text-blue-700 dark:text-blue-300",
+  pending: "border-amber-500/50 bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  undone: "border-destructive/50 bg-destructive/15 text-destructive",
+  rescheduled: "border-purple-500/50 bg-purple-500/15 text-purple-700 dark:text-purple-300",
+};
+
+/** Urgência do prazo traduzida em cor: vencido, perto de vencer ou tranquilo. */
+export function deadlineTone(diff: number): string {
+  if (diff < 0) return "border-destructive/50 bg-destructive/15";
+  if (diff <= 2) return "border-note-peach bg-note-peach";
+  return "border-border bg-muted";
 }
 
-export function toDateInput(ts: number | null) {
-  if (!ts) return "";
-  const d = new Date(ts);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-export function fromDateInput(value: string): number | null {
-  if (!value) return null;
-  const [y, m, d] = value.split("-").map(Number);
-  if (!y || !m || !d) return null;
-  return new Date(y, m - 1, d, 23, 59, 59).getTime();
-}
-
-export function formatTime(ts: number) {
-  return new Date(ts).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-}
-
-export function deadlineInfo(ts: number | null) {
-  if (!ts) return null;
-  const dayMs = 86_400_000;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(ts);
-  target.setHours(0, 0, 0, 0);
-  const diff = Math.round((target.getTime() - today.getTime()) / dayMs);
-  const time = formatTime(ts);
-  const label =
-    diff < 0
-      ? `Atrasado ${Math.abs(diff)}d`
-      : diff === 0
-        ? `Vence hoje ${time}`
-        : diff === 1
-          ? `Vence amanhã ${time}`
-          : `Em ${diff} dias`;
-  const tone =
-    diff < 0
-      ? "border-destructive/50 bg-destructive/15"
-      : diff <= 2
-        ? "border-note-peach bg-note-peach"
-        : "border-border bg-muted";
-  return {
-    diff,
-    label,
-    tone,
-    time,
-    date: `${new Date(ts).toLocaleDateString("pt-BR")} ${time}`,
-  };
-}
-
-export function stripHtml(html: string) {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-}
-
-/** Tem conteúdo de verdade? O parágrafo vazio que o editor deixa não conta. */
-export function hasRichContent(html: string | null | undefined) {
-  if (!html) return false;
-  if (/<(img|table|video|hr)\b/i.test(html)) return true;
-  return stripHtml(html).length > 0;
+/** Prazo pronto para exibir: o texto vem do domínio, a cor vem daqui. */
+export function deadlineInfo(timestamp: number | null) {
+  const status = deadlineStatus(timestamp);
+  return status && { ...status, tone: deadlineTone(status.diff) };
 }

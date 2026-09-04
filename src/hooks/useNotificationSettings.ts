@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useLocalStore } from "./useLocalStore";
 
 export type NotificationSettings = {
   enabled: boolean;
@@ -33,38 +34,32 @@ export const defaultNotificationSettings: NotificationSettings = {
   emailAddress: "",
 };
 
-
 const KEY = "sticky-flow:notifications";
 
+/** Preferências gravadas por versões antigas podem não ter todos os campos. */
+function parseSettings(raw: unknown): NotificationSettings | null {
+  if (!raw || typeof raw !== "object") return null;
+  return { ...defaultNotificationSettings, ...(raw as Partial<NotificationSettings>) };
+}
+
 export function useNotificationSettings() {
-  const [settings, setSettings] = useState<NotificationSettings>(defaultNotificationSettings);
-  const [hydrated, setHydrated] = useState(false);
+  const {
+    value: settings,
+    setValue,
+    hydrated,
+  } = useLocalStore({
+    key: KEY,
+    fallback: defaultNotificationSettings,
+    parse: parseSettings,
+    label: "notificações",
+  });
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setSettings({ ...defaultNotificationSettings, ...JSON.parse(raw) });
-    } catch {
-      /* ignore */
-    }
-    setHydrated(true);
-  }, []);
+  const update = useCallback(
+    (patch: Partial<NotificationSettings>) => setValue((current) => ({ ...current, ...patch })),
+    [setValue],
+  );
 
-  const update = useCallback((patch: Partial<NotificationSettings>) => {
-    setSettings((prev) => {
-      const next = { ...prev, ...patch };
-      try {
-        localStorage.setItem(KEY, JSON.stringify(next));
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  }, []);
-
-  const reset = useCallback(() => {
-    update(defaultNotificationSettings);
-  }, [update]);
+  const reset = useCallback(() => setValue(defaultNotificationSettings), [setValue]);
 
   return { settings, update, reset, hydrated };
 }

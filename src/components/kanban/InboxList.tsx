@@ -2,7 +2,8 @@ import { Archive, MessageSquare, Search, X } from "lucide-react";
 import { useState } from "react";
 import { type Note } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
-import { stripHtml, timeAgo } from "./note-style";
+import { timeAgo } from "@/lib/date";
+import { stripHtml } from "@/lib/html";
 import { DeadlineBadge } from "./NoteMeta";
 
 type Status = "all" | "active" | "archived";
@@ -87,7 +88,6 @@ export function InboxList({
             </button>
           )}
         </div>
-
       </div>
 
       <div className="scroll-thin flex-1 overflow-y-auto">

@@ -1,3 +1,5 @@
+import { uid } from "@/lib/id";
+
 export type NoteColor =
   | "rose"
   | "amber"
@@ -67,14 +69,6 @@ export const STATUS_HINT: Record<NoteStatus, string> = {
   rescheduled: "Passou para outro horário/dia",
 };
 
-export const STATUS_CLASS: Record<NoteStatus, string> = {
-  done: "border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
-  doing: "border-blue-500/50 bg-blue-500/15 text-blue-700 dark:text-blue-300",
-  pending: "border-amber-500/50 bg-amber-500/15 text-amber-700 dark:text-amber-300",
-  undone: "border-destructive/50 bg-destructive/15 text-destructive",
-  rescheduled: "border-purple-500/50 bg-purple-500/15 text-purple-700 dark:text-purple-300",
-};
-
 export type CategoryDef = { id: string; icon: string; name: string };
 
 export const DEFAULT_CATEGORIES: CategoryDef[] = [
@@ -99,7 +93,6 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
   { id: "externas", icon: "tree", name: "Atividades externas" },
   { id: "relaxamento", icon: "leaf", name: "Relaxamento" },
 ];
-
 
 export type Member = { id: string; name: string };
 
@@ -165,25 +158,17 @@ export type Note = {
   height?: number | null;
 };
 
-
 export type TagDef = {
   name: string;
   color: NoteColor;
 };
-
-export const TAG_PALETTE: NoteColor[] = NOTE_COLORS;
 
 export function tagColorOf(tags: TagDef[], name: string): NoteColor {
   return tags.find((t) => t.name === name)?.color ?? "slate";
 }
 
 export type NativeColumnKey =
-  | "backlog"
-  | "research"
-  | "discovery"
-  | "doing"
-  | "validation"
-  | "done";
+  "backlog" | "research" | "discovery" | "doing" | "validation" | "done";
 
 export const NATIVE_COLUMNS: Array<{ key: NativeColumnKey; title: string }> = [
   { key: "backlog", title: "Backlog" },
@@ -194,55 +179,6 @@ export const NATIVE_COLUMNS: Array<{ key: NativeColumnKey; title: string }> = [
   { key: "done", title: "Concluído" },
 ];
 
-/** Paleta fixa das colunas nativas (usada quando o usuário liga "colunas coloridas"). */
-export const NATIVE_COLUMN_THEME: Record<
-  NativeColumnKey,
-  { bar: string; header: string; body: string; border: string; icon: string }
-> = {
-  backlog: {
-    bar: "bg-neutral-400",
-    header: "bg-neutral-500/12",
-    body: "bg-neutral-500/[0.06]",
-    border: "border-neutral-500/30",
-    icon: "text-neutral-500",
-  },
-  research: {
-    bar: "bg-pink-400",
-    header: "bg-pink-500/12",
-    body: "bg-pink-500/[0.06]",
-    border: "border-pink-500/30",
-    icon: "text-pink-500",
-  },
-  discovery: {
-    bar: "bg-purple-400",
-    header: "bg-purple-500/12",
-    body: "bg-purple-500/[0.06]",
-    border: "border-purple-500/30",
-    icon: "text-purple-500",
-  },
-  doing: {
-    bar: "bg-blue-400",
-    header: "bg-blue-500/12",
-    body: "bg-blue-500/[0.06]",
-    border: "border-blue-500/30",
-    icon: "text-blue-500",
-  },
-  validation: {
-    bar: "bg-amber-400",
-    header: "bg-amber-500/12",
-    body: "bg-amber-500/[0.06]",
-    border: "border-amber-500/30",
-    icon: "text-amber-500",
-  },
-  done: {
-    bar: "bg-emerald-400",
-    header: "bg-emerald-500/12",
-    body: "bg-emerald-500/[0.06]",
-    border: "border-emerald-500/30",
-    icon: "text-emerald-500",
-  },
-};
-
 // Títulos antigos que devem ser reaproveitados como colunas nativas.
 const LEGACY_TITLE_MAP: Record<string, NativeColumnKey> = {
   backlog: "backlog",
@@ -250,8 +186,8 @@ const LEGACY_TITLE_MAP: Record<string, NativeColumnKey> = {
   discovery: "discovery",
   fazendo: "doing",
   "em andamento": "doing",
-  "doing": "doing",
-  "validação": "validation",
+  doing: "doing",
+  validação: "validation",
   validacao: "validation",
   "em revisão": "validation",
   "em revisao": "validation",
@@ -262,7 +198,6 @@ const LEGACY_TITLE_MAP: Record<string, NativeColumnKey> = {
   "concluído (done)": "done",
   done: "done",
 };
-
 
 export type Column = {
   id: string;
@@ -331,9 +266,6 @@ export type Project = {
 export type BoardState = {
   projects: Project[];
 };
-
-export const uid = () => Math.random().toString(36).slice(2, 10);
-
 
 export function matchesAutomation(rule: Automation, note: Note): boolean {
   switch (rule.type) {

@@ -1,185 +1,55 @@
-import {
-  GanttChartSquare,
-  Archive,
-  ArchiveRestore,
-  CalendarDays,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  ChevronsUpDown,
-  FileText,
-  Folder,
-  FolderOpen,
-  Home,
-  Inbox,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-  UserPlus,
-  Users,
-  X,
-} from "lucide-react";
 import { useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { BoardFile } from "@/lib/board-types";
-import { boardActions, useActiveFileId, useProjects } from "@/stores/board";
-import { useTeams } from "@/hooks/useTeams";
-import { useWorkspaces } from "@/hooks/useWorkspaces";
-import { cn } from "@/lib/utils";
+import { PanelLeftClose, Search, X } from "lucide-react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrandLogo } from "./BrandLogo";
 import { UserMenu } from "./UserMenu";
+import { CollapsedSidebar } from "./sidebar/CollapsedSidebar";
+import { ProjectTree } from "./sidebar/ProjectTree";
+import { SidebarNav } from "./sidebar/SidebarNav";
+import { TeamsSection } from "./sidebar/TeamsSection";
+import { WorkspaceSwitcher } from "./sidebar/WorkspaceSwitcher";
+import type { BoardView } from "./board-view";
 
-
-const ICON = "h-[18px] w-[18px] shrink-0";
-const ROW =
-  "group flex min-h-9 w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors";
-const ACTION =
-  "flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-sidebar-accent hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100";
-
-function NameTooltip({ name, children }: { name: string; children: React.ReactNode }) {
-  return (
-    <Tooltip delayDuration={400}>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent side="right" className="max-w-64 break-words">
-        {name || "Sem nome"}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
+/**
+ * Barra lateral do app.
+ *
+ * Aqui ficam só a moldura e a busca; cada seção (workspace, navegação, árvore
+ * de projetos, times) é um componente que busca os próprios dados. Por isso a
+ * barra recebe apenas o estado que a página realmente controla — qual visão
+ * está aberta e se o inbox aparece — em vez de um booleano por tela.
+ */
 export function AppSidebar({
   collapsed,
   onToggleCollapsed,
   inboxOpen,
   onToggleInbox,
-  onGoHome,
-  archivedView,
-  onToggleArchivedView,
-  calendarView,
-  onToggleCalendarView,
-  timelineView,
-  onToggleTimelineView,
+  view,
+  onSelectView,
 }: {
   collapsed: boolean;
   onToggleCollapsed: () => void;
   inboxOpen: boolean;
   onToggleInbox: () => void;
-  onGoHome: () => void;
-  archivedView: boolean;
-  onToggleArchivedView: () => void;
-  calendarView: boolean;
-  onToggleCalendarView: () => void;
-  timelineView: boolean;
-  onToggleTimelineView: () => void;
+  view: BoardView;
+  onSelectView: (view: BoardView) => void;
 }) {
-  const [open, setOpen] = useState<Record<string, boolean>>({});
-  const [teamsOpen, setTeamsOpen] = useState(true);
   const [query, setQuery] = useState("");
-  const ws = useWorkspaces();
-  const teams = useTeams();
-  const allProjects = useProjects();
-  const activeFileId = useActiveFileId();
-  const showArchived = archivedView;
-  const q = query.trim().toLowerCase();
-  const isOpen = (id: string) => (q ? true : (open[id] ?? true));
-  const projects = allProjects
-    .filter((p) => showArchived || !p.archived)
-    .filter(
-      (p) =>
-        !q ||
-        p.name.toLowerCase().includes(q) ||
-        p.files.some((f) => f.name.toLowerCase().includes(q)),
-    );
-  const visibleFiles = (files: BoardFile[]) =>
-    files
-      .filter((f) => showArchived || !f.archived)
-      .filter((f) => !q || f.name.toLowerCase().includes(q));
-
 
   if (collapsed) {
     return (
-      <aside className="flex w-14 shrink-0 flex-col items-center gap-2 border-r border-border bg-sidebar py-3">
-        <button
-          onClick={onToggleCollapsed}
-          aria-label="Expandir menu lateral"
-          className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-        >
-          <PanelLeftOpen className={ICON} />
-        </button>
-        <BrandLogo compact />
-        <button
-          onClick={onGoHome}
-          aria-label="Home (kanban)"
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
-            !archivedView && !calendarView && !timelineView && "bg-sidebar-accent text-foreground",
-          )}
-        >
-          <Home className={ICON} />
-        </button>
-        <button
-          onClick={onToggleInbox}
-          aria-label={inboxOpen ? "Recolher inbox" : "Expandir inbox"}
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
-            inboxOpen && "bg-sidebar-accent text-foreground",
-          )}
-        >
-          <Inbox className={ICON} />
-        </button>
-        <button
-          onClick={onToggleTimelineView}
-          aria-label="Linha do tempo"
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
-            timelineView && "bg-sidebar-accent text-foreground",
-          )}
-        >
-          <GanttChartSquare className={ICON} />
-        </button>
-        <button
-          onClick={onToggleCalendarView}
-          aria-label="Calendário"
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
-            calendarView && "bg-sidebar-accent text-foreground",
-          )}
-        >
-          <CalendarDays className={ICON} />
-        </button>
-        <button
-          onClick={onToggleArchivedView}
-          aria-label="Arquivados"
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground",
-            archivedView && "bg-sidebar-accent text-foreground",
-          )}
-        >
-          <Archive className={ICON} />
-        </button>
-        <Folder className={cn(ICON, "text-muted-foreground")} />
-        <div className="mt-auto">
-          <UserMenu />
-        </div>
-      </aside>
+      <CollapsedSidebar
+        view={view}
+        onSelectView={onSelectView}
+        inboxOpen={inboxOpen}
+        onToggleInbox={onToggleInbox}
+        onExpand={onToggleCollapsed}
+      />
     );
   }
 
   return (
     <TooltipProvider>
       <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-sidebar">
-        {/* Marca do SaaS */}
         <div className="flex items-center justify-between gap-2 px-3 pt-3">
           <BrandLogo />
           <button
@@ -191,63 +61,8 @@ export function AppSidebar({
           </button>
         </div>
 
-        {/* Seletor de workspace logo abaixo da marca */}
-        <div className="px-3 pb-2 pt-1.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex min-w-0 w-full items-center gap-2 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-sidebar-accent">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-sm">
-                  {ws.active.emoji}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                  {ws.active.name}
-                </span>
-                <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
-              {ws.workspaces.map((w) => (
-                <DropdownMenuItem key={w.id} onClick={() => ws.selectWorkspace(w.id)}>
-                  <span>{w.emoji}</span>
-                  <span className="flex-1 truncate">{w.name}</span>
-                  {w.id === ws.active.id && <Check className="h-4 w-4" />}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => {
-                  const name = window.prompt("Nome do workspace", "Novo workspace");
-                  if (name !== null) ws.addWorkspace(name);
-                }}
-              >
-                <Plus className="h-4 w-4" />
-                Novo workspace
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  const name = window.prompt("Renomear workspace", ws.active.name);
-                  if (name?.trim()) ws.renameWorkspace(ws.active.id, name.trim());
-                }}
-              >
-                <Pencil className="h-4 w-4" />
-                Renomear atual
-              </DropdownMenuItem>
-              {ws.workspaces.length > 1 && (
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => ws.removeWorkspace(ws.active.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Excluir atual
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <WorkspaceSwitcher />
 
-
-        {/* Busca de projetos e arquivos */}
         <div className="px-3 pb-2">
           <div className="flex items-center gap-2 rounded-md border border-sidebar-border bg-background px-2 py-1.5">
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -270,288 +85,16 @@ export function AppSidebar({
           </div>
         </div>
 
-        <nav className="space-y-0.5 px-2">
-          <button
-            onClick={onGoHome}
-            className={cn(
-              ROW,
-              "text-sidebar-foreground hover:bg-sidebar-accent",
-              !archivedView && !calendarView && !timelineView && "bg-sidebar-accent font-medium text-foreground",
-            )}
-          >
-            <Home className={cn(ICON, "text-muted-foreground")} />
-            Home
-          </button>
-          <button
-            onClick={onToggleInbox}
-            className={cn(
-              ROW,
-              "text-sidebar-foreground hover:bg-sidebar-accent",
-              inboxOpen && "bg-sidebar-accent font-medium text-foreground",
-            )}
-          >
-            <Inbox className={cn(ICON, "text-muted-foreground")} />
-            Inbox
-            <span className="ml-auto text-[11px] text-muted-foreground">
-              {inboxOpen ? "Ocultar" : "Mostrar"}
-            </span>
-          </button>
-          <button
-            onClick={onToggleTimelineView}
-            className={cn(
-              ROW,
-              "text-sidebar-foreground hover:bg-sidebar-accent",
-              timelineView && "bg-sidebar-accent font-medium text-foreground",
-            )}
-          >
-            <GanttChartSquare className={cn(ICON, "text-muted-foreground")} />
-            Linha do tempo
-          </button>
-          <button
-            onClick={onToggleCalendarView}
-            className={cn(
-              ROW,
-              "text-sidebar-foreground hover:bg-sidebar-accent",
-              calendarView && "bg-sidebar-accent font-medium text-foreground",
-            )}
-          >
-            <CalendarDays className={cn(ICON, "text-muted-foreground")} />
-            Calendário
-          </button>
-          <button
-            onClick={onToggleArchivedView}
-            className={cn(
-              ROW,
-              "text-sidebar-foreground hover:bg-sidebar-accent",
-              showArchived && "bg-sidebar-accent font-medium text-foreground",
-            )}
-          >
-            <Archive className={cn(ICON, "text-muted-foreground")} />
-            Arquivados
-          </button>
-        </nav>
+        <SidebarNav
+          view={view}
+          onSelectView={onSelectView}
+          inboxOpen={inboxOpen}
+          onToggleInbox={onToggleInbox}
+        />
 
-        <div className="mt-5 flex items-center justify-between px-4">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Meus projetos
-          </span>
-          <button
-            onClick={boardActions.addProject}
-            aria-label="Adicionar projeto"
-            className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        </div>
+        <ProjectTree query={query} showArchived={view === "archived"} />
 
-        <div className="scroll-thin mt-1 flex-1 overflow-y-auto px-2 pb-4">
-          {projects.map((p) => {
-            const expanded = isOpen(p.id);
-            const hasActiveFile = p.files.some((f) => activeFileId === f.id);
-            return (
-              <div key={p.id} className={cn("mt-0.5", p.archived && "opacity-60")}>
-                <div
-                  className={cn(
-                    ROW,
-                    "hover:bg-sidebar-accent/70",
-                    hasActiveFile && "bg-sidebar-accent/40",
-                  )}
-                >
-                  <button
-                    onClick={() => setOpen((o) => ({ ...o, [p.id]: !expanded }))}
-                    aria-label={expanded ? "Recolher projeto" : "Expandir projeto"}
-                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {expanded ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                  </button>
-                  {expanded ? (
-                    <FolderOpen className={cn(ICON, "text-muted-foreground")} />
-                  ) : (
-                    <Folder className={cn(ICON, "text-muted-foreground")} />
-                  )}
-                  <NameTooltip name={p.name}>
-                    <input
-                      value={p.name}
-                      onChange={(e) => boardActions.renameProject(p.id, e.target.value)}
-                      title={p.name}
-                      className="min-w-0 flex-1 truncate bg-transparent text-sm font-medium outline-none"
-                    />
-                  </NameTooltip>
-                  <button
-                    onClick={() => boardActions.addFile(p.id)}
-                    aria-label="Adicionar arquivo"
-                    className={ACTION}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => boardActions.setProjectArchived(p.id, !p.archived)}
-                    aria-label={p.archived ? "Restaurar projeto" : "Arquivar projeto"}
-                    className={ACTION}
-                  >
-                    {p.archived ? (
-                      <ArchiveRestore className="h-3.5 w-3.5" />
-                    ) : (
-                      <Archive className="h-3.5 w-3.5" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => boardActions.removeProject(p.id)}
-                    aria-label="Excluir projeto"
-                    className={ACTION}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-
-                {expanded &&
-                  visibleFiles(p.files)
-                    .map((f) => {
-                      const selected = activeFileId === f.id;
-                      return (
-                        <div
-                          key={f.id}
-                          onClick={() => boardActions.selectFile(p.id, f.id)}
-                          className={cn(
-                            ROW,
-                            "relative ml-6 w-[calc(100%-1.5rem)] cursor-pointer hover:bg-sidebar-accent/70",
-                            selected &&
-                              "bg-sidebar-accent font-medium text-foreground before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5 before:rounded-full before:bg-primary",
-                            f.archived && "opacity-60",
-                          )}
-                        >
-                          <FileText
-                            className={cn(
-                              ICON,
-                              selected ? "text-primary" : "text-muted-foreground",
-                            )}
-                          />
-                          <NameTooltip name={f.name}>
-                            <input
-                              value={f.name}
-                              onChange={(e) => boardActions.renameFile(p.id, f.id, e.target.value)}
-                              title={f.name}
-                              className="min-w-0 flex-1 truncate bg-transparent outline-none"
-                            />
-                          </NameTooltip>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              boardActions.setFileArchived(p.id, f.id, !f.archived);
-                            }}
-                            aria-label={f.archived ? "Restaurar arquivo" : "Arquivar arquivo"}
-                            className={ACTION}
-                          >
-                            {f.archived ? (
-                              <ArchiveRestore className="h-3.5 w-3.5" />
-                            ) : (
-                              <Archive className="h-3.5 w-3.5" />
-                            )}
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              boardActions.removeFile(p.id, f.id);
-                            }}
-                            aria-label="Excluir arquivo"
-                            className={ACTION}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      );
-                    })}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="border-t border-border px-2 py-2">
-          <div className="flex items-center justify-between px-2">
-            <button
-              onClick={() => setTeamsOpen((v) => !v)}
-              className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {teamsOpen ? (
-                <ChevronDown className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronRight className="h-3.5 w-3.5" />
-              )}
-              Times
-            </button>
-            <button
-              onClick={() => teams.addTeam()}
-              aria-label="Adicionar time"
-              className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          </div>
-
-          {teamsOpen && (
-            <div className="scroll-thin mt-1 max-h-56 overflow-y-auto">
-              {teams.teams.length === 0 && (
-                <p className="px-2 py-1.5 text-xs text-muted-foreground">Nenhum time ainda.</p>
-              )}
-              {teams.teams.map((t) => (
-                <div key={t.id} className="mt-0.5">
-                  <div className={cn(ROW, "hover:bg-sidebar-accent/70")}>
-                    <Users className={cn(ICON, "text-muted-foreground")} />
-                    <NameTooltip name={t.name}>
-                      <input
-                        value={t.name}
-                        onChange={(e) => teams.renameTeam(t.id, e.target.value)}
-                        title={t.name}
-                        className="min-w-0 flex-1 truncate bg-transparent text-sm font-medium outline-none"
-                      />
-                    </NameTooltip>
-                    <button
-                      onClick={() => {
-                        const name = window.prompt("Nome do membro");
-                        if (name) teams.addMember(t.id, name);
-                      }}
-                      aria-label="Adicionar membro"
-                      className={ACTION}
-                    >
-                      <UserPlus className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => teams.removeTeam(t.id)}
-                      aria-label="Excluir time"
-                      className={ACTION}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                  {t.members.map((m) => (
-                    <div
-                      key={m.id}
-                      className={cn(ROW, "ml-6 w-[calc(100%-1.5rem)] hover:bg-sidebar-accent/70")}
-                    >
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary">
-                        {m.name.slice(0, 1).toUpperCase()}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-sm">{m.name}</span>
-                      <button
-                        onClick={() => teams.removeMember(t.id, m.id)}
-                        aria-label="Remover membro"
-                        className={ACTION}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-
+        <TeamsSection />
 
         <div className="border-t border-border p-2">
           <UserMenu variant="full" className="w-full" />

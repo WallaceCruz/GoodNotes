@@ -1,4 +1,8 @@
-import { uid, type BoardFile, type NoteImage } from "@/lib/board-types";
+import { uid } from "@/lib/id";
+import {
+  type BoardFile,
+  type NoteImage,
+} from "@/lib/board-types";
 
 /** Itens de checklist e imagens de uma nota — coleções internas, mesma forma. */
 

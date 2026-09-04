@@ -22,8 +22,13 @@ const surface: Record<NoteAppearance["style"], string> = {
   classic: "note-surface-classic",
   soft: "note-surface-soft",
   gradient: "note-surface-gradient",
+  duo: "note-surface-duo",
+  radial: "note-surface-radial",
+  sunset: "note-surface-sunset",
+  paper: "note-surface-paper",
   outline: "note-surface-outline",
   glass: "note-surface-glass",
+  neon: "note-surface-neon",
   tape: "note-surface-tape",
 };
 
@@ -40,6 +45,17 @@ const shadow: Record<NoteAppearance["shadow"], string> = {
   none: "shadow-none hover:shadow-card",
   soft: "shadow-card hover:shadow-card-hover",
   strong: "shadow-focus hover:shadow-focus",
+  colored: "note-shadow-colored",
+  inset: "note-shadow-inset",
+  lifted: "note-shadow-lifted",
+};
+
+const borderWidth: Record<NoteAppearance["border"], string> = {
+  none: "border-0",
+  thin: "border",
+  thick: "border-2",
+  dashed: "border-2 border-dashed",
+  double: "border-4 border-double",
 };
 
 const font: Record<NoteAppearance["font"], string> = {
@@ -70,6 +86,7 @@ function shared(appearance: NoteAppearance): string[] {
   return [
     corners[appearance.corners] ?? corners.soft,
     shadow[appearance.shadow] ?? shadow.soft,
+    borderWidth[appearance.border] ?? borderWidth.thin,
     font[appearance.font] ?? font.sans,
     size[appearance.size] ?? size.md,
     align[appearance.align] ?? align.left,

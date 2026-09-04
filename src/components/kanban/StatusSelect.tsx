@@ -1,13 +1,8 @@
 import { CalendarClock, CheckCircle2, Circle, Loader, XCircle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import {
-  NOTE_STATUSES,
-  STATUS_CLASS,
-  STATUS_HINT,
-  STATUS_LABEL,
-  type NoteStatus,
-} from "@/lib/board-types";
+import { NOTE_STATUSES, STATUS_HINT, STATUS_LABEL, type NoteStatus } from "@/lib/board-types";
 import { cn } from "@/lib/utils";
+import { statusClass } from "./note-style";
 
 export const STATUS_ICON: Record<NoteStatus, LucideIcon> = {
   done: CheckCircle2,
@@ -24,7 +19,7 @@ export function StatusBadge({ status }: { status: NoteStatus }) {
       title={STATUS_HINT[status]}
       className={cn(
         "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-medium",
-        STATUS_CLASS[status],
+        statusClass[status],
       )}
     >
       <Icon className="h-3 w-3" />
@@ -52,7 +47,7 @@ export function StatusSelect({
             className={cn(
               "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs",
               value === s
-                ? STATUS_CLASS[s]
+                ? statusClass[s]
                 : "border-border bg-background text-muted-foreground hover:bg-accent",
             )}
           >

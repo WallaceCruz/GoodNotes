@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useLocalStore } from "./useLocalStore";
 import { z } from "zod";
 
 export const profileSchema = z.object({
@@ -37,7 +38,6 @@ export const defaultProfile: UserProfile = {
 };
 
 const KEY = "sticky-flow:profile";
-const EVENT = "sticky-flow:profile-change";
 
 export function initials(name: string) {
   return name
@@ -53,46 +53,28 @@ export function validateField(field: ProfileField, value: string): string | null
   return result.success ? null : (result.error.issues[0]?.message ?? "Valor inválido");
 }
 
-function read(): UserProfile {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return { ...defaultProfile, ...JSON.parse(raw) };
-  } catch {
-    /* ignore */
-  }
-  return defaultProfile;
+/** Campos ausentes (perfil gravado antes de um campo existir) caem no padrão. */
+function parseProfile(raw: unknown): UserProfile | null {
+  if (!raw || typeof raw !== "object") return null;
+  return { ...defaultProfile, ...(raw as Partial<UserProfile>) };
 }
 
 export function useUserProfile() {
-  const [profile, setProfile] = useState<UserProfile>(defaultProfile);
-  const [hydrated, setHydrated] = useState(false);
+  const {
+    value: profile,
+    setValue,
+    hydrated,
+  } = useLocalStore({
+    key: KEY,
+    fallback: defaultProfile,
+    parse: parseProfile,
+    label: "perfil",
+  });
 
-  useEffect(() => {
-    setProfile(read());
-    setHydrated(true);
-    const sync = () => setProfile(read());
-    window.addEventListener(EVENT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(EVENT, sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
-
-  const update = useCallback((patch: Partial<UserProfile>) => {
-    setProfile((prev) => {
-      const next = { ...prev, ...patch };
-      queueMicrotask(() => {
-        try {
-          localStorage.setItem(KEY, JSON.stringify(next));
-        } catch {
-          /* ignore */
-        }
-        window.dispatchEvent(new Event(EVENT));
-      });
-      return next;
-    });
-  }, []);
+  const update = useCallback(
+    (patch: Partial<UserProfile>) => setValue((current) => ({ ...current, ...patch })),
+    [setValue],
+  );
 
   return { profile, update, hydrated };
 }

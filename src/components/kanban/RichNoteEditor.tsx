@@ -11,6 +11,7 @@ import { TableMenu } from "./TableMenu";
 import { BLOCK_DRAG_MIME, insertBlock, readAsDataUrl, type BlockKind } from "./editor-blocks";
 import { DraggableImage, Video, collectImages } from "./editor-extensions";
 import { cn } from "@/lib/utils";
+import { NoteRichContent } from "./NoteRichContent";
 
 /**
  * Superfície de edição da nota. Formatação e inserção de blocos vivem no painel
@@ -168,7 +169,10 @@ function RichNoteEditorBase({
   const deleteImage = (src: string) => {
     setHovered(null);
     withImageNode(src, (pos, size) => {
-      editorRef.current?.chain().deleteRange({ from: pos, to: pos + size }).run();
+      editorRef.current
+        ?.chain()
+        .deleteRange({ from: pos, to: pos + size })
+        .run();
     });
   };
 
@@ -202,19 +206,28 @@ function RichNoteEditorBase({
         onMouseLeave={() => setHovered(null)}
         onClick={(e) => {
           const target = e.target as HTMLElement;
-          if (target.tagName === "IMG") {
-            setLightbox((target as HTMLImageElement).src);
-            return;
+          // Um clique na imagem apenas revela as ferramentas e deixa o editor
+          // selecionar o nó — antes ele abria o visualizador e devolvia, o que
+          // tornava impossível posicionar o cursor ou arrastar a imagem. Como
+          // toque não tem `hover`, é também aqui que as ferramentas aparecem
+          // no celular.
+          if (target.tagName === "IMG" && mounted) {
+            showImageTools(target as HTMLImageElement);
           }
           if (!mounted) setMounted(true);
+        }}
+        onDoubleClick={(e) => {
+          const target = e.target as HTMLElement;
+          if (target.tagName === "IMG") setLightbox((target as HTMLImageElement).src);
         }}
       >
         {mounted ? (
           <EditorContent editor={editor} />
         ) : (
-          <div
+          <NoteRichContent
+            html={content}
+            fallback="<p></p>"
             className={cn("cursor-text", minHeight)}
-            dangerouslySetInnerHTML={{ __html: content || "<p></p>" }}
           />
         )}
 

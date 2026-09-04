@@ -8,38 +8,13 @@ import {
   type NoteColor,
   type Priority,
 } from "@/lib/board-types";
+import { activeFilterCount, emptyFilters, type Filters } from "@/lib/board/filters";
 import { cn } from "@/lib/utils";
 import { noteBg, noteLabel, priorityClass } from "./note-style";
 import { TagManager } from "./TagEditor";
 import { useState } from "react";
 import { boardActions, useFileTags } from "@/stores/board";
 import { tagColorOf } from "@/lib/board-types";
-
-export type Filters = {
-  query: string;
-  colors: NoteColor[];
-  tags: string[];
-  priorities: Priority[];
-  showArchived: boolean;
-};
-
-export const emptyFilters: Filters = {
-  query: "",
-  colors: [],
-  tags: [],
-  priorities: [],
-  showArchived: false,
-};
-
-export function activeFilterCount(f: Filters) {
-  return (
-    (f.query.trim() ? 1 : 0) +
-    f.colors.length +
-    f.tags.length +
-    f.priorities.length +
-    (f.showArchived ? 1 : 0)
-  );
-}
 
 export function FiltersMenu({
   filters,
@@ -215,7 +190,8 @@ export function FiltersMenu({
                     className={cn(
                       "rounded-full border border-foreground/10 px-2 py-0.5 text-[11px] text-foreground/80",
                       noteBg[tagColorOf(tagDefs, t)],
-                      filters.tags.includes(t) && "ring-2 ring-ring ring-offset-1 ring-offset-popover",
+                      filters.tags.includes(t) &&
+                        "ring-2 ring-ring ring-offset-1 ring-offset-popover",
                     )}
                   >
                     #{t}

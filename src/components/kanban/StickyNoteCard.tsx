@@ -1,16 +1,23 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { memo } from "react";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Maximize2, Pin } from "lucide-react";
+import { GripVertical, Maximize2, Pin, Square, SquareCheck } from "lucide-react";
 import { effectiveStatus, noteAssignees, type Note } from "@/lib/board-types";
-import { boardActions, useActiveProjectId, useFileColumns } from "@/stores/board";
+import {
+  boardActions,
+  useActiveProjectId,
+  useFileColumns,
+  useIsNoteSelected,
+  useSelectionMode,
+} from "@/stores/board";
 import { cn } from "@/lib/utils";
 import { NoteOptionsMenu } from "./NoteOptionsMenu";
 import { AssigneeSelect } from "./AssigneeSelect";
 import { BelowChecklistNote } from "./BelowChecklistNote";
 import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "./ChecklistEditor";
-import { hasRichContent, noteBg } from "./note-style";
+import { hasRichContent } from "@/lib/html";
+import { noteBg } from "./note-style";
 import { noteSurface } from "./note-appearance";
 import { useNoteAppearance } from "@/stores/noteAppearance";
 import { DeadlineBadge, PriorityBadge } from "./NoteMeta";
@@ -40,7 +47,8 @@ function StickyNoteCardBase({
   const columns = useFileColumns() ?? [];
   const status = effectiveStatus(note, columns);
   const done = status === "done";
-
+  const selectionMode = useSelectionMode();
+  const selected = useIsNoteSelected(note.id);
 
   return (
     <div
@@ -51,8 +59,11 @@ function StickyNoteCardBase({
         transition,
         zIndex: isDragging ? 30 : undefined,
       }}
+      onClick={() => {
+        if (selectionMode) boardActions.toggleNoteSelected(note.id);
+      }}
       className={cn(
-        "group relative overflow-hidden border border-border/60 text-note-foreground transition-all duration-200",
+        "group relative overflow-hidden border-border/60 text-note-foreground transition-all duration-200",
         appearance.style === "classic" &&
           !appearance.bgColor &&
           !note.colorHex &&
@@ -62,41 +73,71 @@ function StickyNoteCardBase({
         note.archived && "opacity-60 grayscale",
         done && "opacity-70",
         active && "ring-2 ring-ring",
+        selectionMode && "cursor-pointer",
+        selected && "ring-2 ring-primary",
       )}
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className="-mx-1 flex cursor-grab items-center gap-1 rounded px-1 pb-1.5 active:cursor-grabbing"
-      >
-        <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
-        <input
-          type="checkbox"
-          checked={done}
-          aria-label="Marcar tarefa como concluída"
-          title="Marcar como concluída"
-          onPointerDown={(e) => e.stopPropagation()}
-          onChange={(e) => boardActions.setNoteDone(note.id, e.target.checked)}
-          className="h-3.5 w-3.5 cursor-pointer accent-emerald-600"
-        />
-        {note.pinned && <Pin className="h-3.5 w-3.5 text-foreground/70" />}
-        <div
-          className="ml-auto flex items-center gap-1"
-          onPointerDown={(e) => e.stopPropagation()}
+      {selectionMode ? (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            boardActions.toggleNoteSelected(note.id);
+          }}
+          className={cn(
+            "-mx-1 mb-1.5 flex w-[calc(100%+0.5rem)] items-center gap-2 rounded px-1.5 py-1 text-xs font-medium transition-colors",
+            selected ? "bg-primary/15 text-primary" : "text-foreground/60 hover:bg-foreground/5",
+          )}
         >
-          <button
-            aria-label="Expandir nota"
-            title="Expandir nota"
-            onClick={() => onOpen("view")}
-            className="flex h-6 w-6 items-center justify-center rounded text-foreground/60 opacity-0 transition-opacity hover:bg-foreground/10 hover:text-foreground group-hover:opacity-100"
+          {selected ? (
+            <SquareCheck className="h-4 w-4 shrink-0" />
+          ) : (
+            <Square className="h-4 w-4 shrink-0" />
+          )}
+          {selected ? "Selecionada" : "Selecionar nota"}
+          {note.pinned && <Pin className="ml-auto h-3.5 w-3.5 shrink-0 text-foreground/70" />}
+        </button>
+      ) : (
+        <div
+          {...attributes}
+          {...listeners}
+          className="-mx-1 flex cursor-grab items-center gap-1 rounded px-1 pb-1.5 active:cursor-grabbing"
+        >
+          <GripVertical className="h-3.5 w-3.5 text-foreground/40" />
+          <input
+            type="checkbox"
+            checked={done}
+            aria-label="Marcar tarefa como concluída"
+            title="Marcar como concluída"
+            onPointerDown={(e) => e.stopPropagation()}
+            onChange={(e) => boardActions.setNoteDone(note.id, e.target.checked)}
+            className="h-3.5 w-3.5 cursor-pointer accent-emerald-600"
+          />
+          {note.pinned && <Pin className="h-3.5 w-3.5 text-foreground/70" />}
+          <div
+            className="ml-auto flex items-center gap-1"
+            onPointerDown={(e) => e.stopPropagation()}
           >
-            <Maximize2 className="h-3.5 w-3.5" />
-          </button>
-          <NoteOptionsMenu note={note} onOpen={() => onOpen("edit")} />
+            <button
+              aria-label="Expandir nota"
+              title="Expandir nota"
+              onClick={() => onOpen("view")}
+              className="flex h-6 w-6 items-center justify-center rounded text-foreground/60 opacity-0 transition-opacity hover:bg-foreground/10 hover:text-foreground group-hover:opacity-100"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+            <NoteOptionsMenu note={note} onOpen={() => onOpen("edit")} />
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="flex flex-wrap items-center gap-1 pb-1" onPointerDown={(e) => e.stopPropagation()}>
+      <div
+        className={cn(
+          "flex flex-wrap items-center gap-1 pb-1",
+          selectionMode && "pointer-events-none",
+        )}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         {status && <StatusBadge status={status} />}
         {note.category && <CategoryBadge category={note.category} />}
         {note.priority && <PriorityBadge priority={note.priority} />}
@@ -107,14 +148,22 @@ function StickyNoteCardBase({
         value={note.title}
         onChange={(e) => onChange({ title: e.target.value })}
         aria-label="Título da nota"
-        className="note-title-color w-full bg-transparent text-[1.15em] font-semibold leading-snug outline-none"
+        readOnly={selectionMode}
+        className={cn(
+          "note-title-color w-full bg-transparent text-[1.15em] font-semibold leading-snug outline-none",
+          selectionMode && "pointer-events-none",
+        )}
       />
 
       <div
         // Rola em vez de cortar: sem limite o card estica e domina a coluna, e
         // com `overflow-hidden` o texto além da altura ficava inacessível.
         // `pr-2` mantém o texto fora da barra de rolagem.
-        className={cn("scroll-thin overflow-y-auto pr-2", !note.height && "max-h-96")}
+        className={cn(
+          "scroll-thin overflow-y-auto pr-2",
+          !note.height && "max-h-96",
+          selectionMode && "pointer-events-none select-none",
+        )}
         style={note.height ? { height: note.height } : undefined}
       >
         <RichNoteEditor
@@ -144,15 +193,22 @@ function StickyNoteCardBase({
         )}
       </div>
 
-      <CardResizeHandle
-        height={note.height}
-        defaultHeight={160}
-        min={96}
-        onChange={(h) => onChange({ height: h })}
-        onReset={() => onChange({ height: null })}
-      />
+      {!selectionMode && (
+        <CardResizeHandle
+          height={note.height}
+          defaultHeight={160}
+          min={96}
+          onChange={(h) => onChange({ height: h })}
+          onReset={() => onChange({ height: null })}
+        />
+      )}
 
-      <footer className="mt-1 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2">
+      <footer
+        className={cn(
+          "mt-1 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-2",
+          selectionMode && "pointer-events-none",
+        )}
+      >
         <AssigneeSelect
           value={noteAssignees(note)}
           onChange={(names) => onChange({ assignees: names, assignee: names[0] ?? null })}
