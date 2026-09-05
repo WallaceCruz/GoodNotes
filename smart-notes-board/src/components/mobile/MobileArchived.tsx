@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ArchiveRestore, ChevronRight, Inbox } from "lucide-react";
-import { emptyFilters, matchesFilters } from "@/lib/board/filters";
+import { matchesFilters, type Filters } from "@/lib/board/filters";
 import { boardActions } from "@/stores/board";
 import { toastUndo } from "@/lib/toast";
 import { formatDate } from "@/lib/date";
@@ -17,23 +17,21 @@ import type { Note } from "@/lib/board/model";
  */
 export function MobileArchived({
   notes,
-  query,
+  filters,
   onOpenNote,
 }: {
   notes: Note[];
-  query: string;
+  /** Busca e filtros do cabeçalho, aplicados aqui para cada tela decidir se
+      olha as ativas ou as arquivadas. */
+  filters: Filters;
   onOpenNote: (id: string) => void;
 }) {
   const archived = useMemo(
     () =>
       notes
-        .filter(
-          (note) =>
-            note.archived &&
-            matchesFilters(note, { ...emptyFilters, query }, { archivedOnly: true }),
-        )
+        .filter((note) => matchesFilters(note, filters, { archivedOnly: true }))
         .sort((a, b) => b.updatedAt - a.updatedAt),
-    [notes, query],
+    [notes, filters],
   );
 
   if (archived.length === 0) {
@@ -41,9 +39,9 @@ export function MobileArchived({
       <div className="flex flex-1 flex-col items-center justify-center gap-2 px-8 pb-36 text-center">
         <Inbox className="h-7 w-7 text-muted-foreground" />
         <p className="text-base font-semibold">
-          {query ? "Nenhuma arquivada encontrada" : "Nenhuma nota arquivada"}
+          {filters.query ? "Nenhuma arquivada encontrada" : "Nenhuma nota arquivada"}
         </p>
-        {!query && (
+        {!filters.query && (
           <p className="text-sm text-muted-foreground">
             Arquivar tira a nota da agenda sem apagá-la. As arquivadas aparecem aqui.
           </p>

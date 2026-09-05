@@ -23,9 +23,12 @@ const links = [
 
 export function UserMenu({
   variant = "compact",
+  size = "sm",
   className,
 }: {
   variant?: "compact" | "full";
+  /** `lg` iguala o alvo aos botões vizinhos no cabeçalho do celular. */
+  size?: "sm" | "lg";
   className?: string;
 }) {
   const { profile } = useUserProfile();
@@ -37,13 +40,19 @@ export function UserMenu({
         <button
           aria-label="Menu do usuário"
           className={cn(
-            "flex items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-accent",
+            "flex items-center gap-2 text-left hover:bg-accent",
+            size === "lg" ? "shrink-0 rounded-full p-0" : "rounded-md px-1 py-1",
             className,
           )}
         >
-          <Avatar className="h-8 w-8">
+          <Avatar className={size === "lg" ? "h-10 w-10" : "h-8 w-8"}>
             {profile.avatar && <AvatarImage src={profile.avatar} alt={`Foto de ${profile.name}`} />}
-            <AvatarFallback className="bg-primary text-[11px] font-semibold text-primary-foreground">
+            <AvatarFallback
+              className={cn(
+                "bg-primary font-semibold text-primary-foreground",
+                size === "lg" ? "text-[13px]" : "text-[11px]",
+              )}
+            >
               {initials(profile.name) || "SF"}
             </AvatarFallback>
           </Avatar>

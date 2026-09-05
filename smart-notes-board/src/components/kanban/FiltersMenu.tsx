@@ -20,10 +20,13 @@ import { tagColorOf } from "@/lib/board/tags";
 export function FiltersMenu({
   filters,
   allTags,
+  compact = false,
   onChange,
 }: {
   filters: Filters;
   allTags: string[];
+  /** Alvo redondo só com ícone, do tamanho dos vizinhos no cabeçalho do celular. */
+  compact?: boolean;
   onChange: (f: Filters) => void;
 }) {
   const count = activeFilterCount(filters);
@@ -60,14 +63,25 @@ export function FiltersMenu({
           aria-label="Filtros"
           title="Filtros"
           className={cn(
-            "relative flex items-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent",
-            count > 0 && "border-primary/50 bg-primary/10 text-foreground",
+            "relative flex items-center text-muted-foreground hover:bg-accent",
+            compact
+              ? "h-10 w-10 shrink-0 justify-center rounded-full"
+              : "gap-1.5 rounded-md border border-border px-2 py-1.5 text-xs",
+            count > 0 &&
+              (compact
+                ? "bg-primary/10 text-foreground"
+                : "border-primary/50 bg-primary/10 text-foreground"),
           )}
         >
-          <Filter className="h-4 w-4" />
-          Filtros
+          <Filter className={compact ? "h-[18px] w-[18px]" : "h-4 w-4"} />
+          {!compact && "Filtros"}
           {count > 0 && (
-            <span className="ml-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+            <span
+              className={cn(
+                "flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground",
+                compact ? "absolute -right-0.5 -top-0.5" : "ml-0.5",
+              )}
+            >
               {count}
             </span>
           )}

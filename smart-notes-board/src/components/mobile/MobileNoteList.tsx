@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Check, ChevronRight, Paperclip } from "lucide-react";
 import { agendaGroups } from "@/lib/board/agenda";
 import { isNoteDone } from "@/lib/board/status";
-import { emptyFilters, matchesFilters } from "@/lib/board/filters";
+import { matchesFilters, type Filters } from "@/lib/board/filters";
 import { boardActions } from "@/stores/board";
 import { toastUndo } from "@/lib/toast";
 import { formatDate } from "@/lib/date";
@@ -96,19 +96,20 @@ function TaskRow({ note, columns, onOpen }: { note: Note; columns: Column[]; onO
 export function MobileNoteList({
   notes,
   columns,
-  query,
+  filters,
   onOpenNote,
 }: {
   notes: Note[];
   columns: Column[];
-  /** Vem do campo de busca do cabeçalho, compartilhado com o calendário. */
-  query: string;
+  /** Busca e filtros do cabeçalho, aplicados aqui para cada tela decidir se
+      olha as ativas ou as arquivadas. */
+  filters: Filters;
   onOpenNote: (id: string) => void;
 }) {
   const groups = useMemo(() => {
-    const visible = notes.filter((note) => matchesFilters(note, { ...emptyFilters, query }));
+    const visible = notes.filter((note) => matchesFilters(note, filters));
     return agendaGroups(visible, columns);
-  }, [notes, columns, query]);
+  }, [notes, columns, filters]);
 
   const total = groups.reduce((soma, grupo) => soma + grupo.notes.length, 0);
 
@@ -117,7 +118,7 @@ export function MobileNoteList({
       <div className="scroll-thin min-h-0 flex-1 overflow-y-auto pb-36">
         {total === 0 && (
           <p className="px-6 py-16 text-center text-sm text-muted-foreground">
-            {query ? "Nenhuma nota encontrada." : "Nada por aqui ainda."}
+            {filters.query ? "Nenhuma nota encontrada." : "Nada por aqui ainda."}
           </p>
         )}
 

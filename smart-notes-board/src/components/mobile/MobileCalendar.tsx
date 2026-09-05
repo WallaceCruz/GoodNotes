@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { byDeadline, calendarDays, notesByDay } from "@/lib/board/calendar";
 import { isNoteDone } from "@/lib/board/status";
-import { emptyFilters, matchesFilters } from "@/lib/board/filters";
+import { matchesFilters, type Filters } from "@/lib/board/filters";
 import { boardActions } from "@/stores/board";
 import { toastUndo } from "@/lib/toast";
 import { dayKey, formatTime } from "@/lib/date";
@@ -37,14 +37,14 @@ const MESES = [
 export function MobileCalendar({
   notes,
   columns,
-  query,
+  filters,
   onOpenNote,
 }: {
   notes: Note[];
   columns: Column[];
-  /** Mesma busca do cabeçalho: filtrar aqui também evita que o ponto no dia
+  /** Mesmos filtros do cabeçalho: aplicá-los aqui evita que o ponto no dia
       prometa uma nota que a lista de baixo não mostra. */
-  query: string;
+  filters: Filters;
   onOpenNote: (id: string) => void;
 }) {
   const hoje = dayKey(new Date());
@@ -52,9 +52,8 @@ export function MobileCalendar({
   const [selecionado, setSelecionado] = useState(hoje);
 
   const ativas = useMemo(
-    () =>
-      notes.filter((note) => !note.archived && matchesFilters(note, { ...emptyFilters, query })),
-    [notes, query],
+    () => notes.filter((note) => !note.archived && matchesFilters(note, filters)),
+    [notes, filters],
   );
   const porDia = useMemo(() => notesByDay(ativas), [ativas]);
   const dias = useMemo(() => calendarDays("month", selecionado, cursor), [selecionado, cursor]);

@@ -13,6 +13,7 @@ import { DeadlineBadge, PriorityBadge } from "@/components/note/NoteMeta";
 export function NotificationsMenu({
   notes,
   withInbox = false,
+  compact = false,
   onSelect,
 }: {
   notes: Note[];
@@ -24,6 +25,8 @@ export function NotificationsMenu({
    * a mesma coisa duas vezes na mesma tela.
    */
   withInbox?: boolean;
+  /** Alvo redondo maior, para o cabeçalho do celular. */
+  compact?: boolean;
   onSelect: (id: string) => void;
 }) {
   const { settings, update, reset } = useNotificationSettings();
@@ -86,9 +89,16 @@ export function NotificationsMenu({
           <button
             aria-label="Notificações de prazo"
             title="Notificações de prazo"
-            className="relative rounded-md p-1.5 text-muted-foreground hover:bg-accent"
+            className={cn(
+              "relative flex items-center justify-center text-muted-foreground hover:bg-accent",
+              compact ? "h-10 w-10 shrink-0 rounded-full" : "rounded-md p-1.5",
+            )}
           >
-            {settings.enabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+            {settings.enabled ? (
+              <Bell className={compact ? "h-[18px] w-[18px]" : "h-4 w-4"} />
+            ) : (
+              <BellOff className={compact ? "h-[18px] w-[18px]" : "h-4 w-4"} />
+            )}
             {alerts.length > 0 && (
               <span
                 className={cn(

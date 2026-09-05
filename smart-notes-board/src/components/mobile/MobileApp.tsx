@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { Archive, CalendarDays, Folder, Plus, Search, StickyNote, X } from "lucide-react";
-import { boardActions, useActiveFile, useFileColumns } from "@/stores/board";
+import { boardActions, useActiveFile, useFileColumns, useFileTags } from "@/stores/board";
+import { emptyFilters, type Filters } from "@/lib/board/filters";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "@/components/app/UserMenu";
+import { FiltersMenu } from "@/components/kanban/FiltersMenu";
 import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { MobileArchived } from "./MobileArchived";
 import { MobileCalendar } from "./MobileCalendar";
@@ -30,12 +32,21 @@ export function MobileApp() {
   const [tab, setTab] = useState<MobileTab>("notas");
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const [projectsOpen, setProjectsOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [filters, setFilters] = useState<Filters>(emptyFilters);
 
   const activeFile = useActiveFile();
   const columns = useFileColumns();
+  const fileTags = useFileTags();
 
   const notes = useMemo(() => activeFile?.notes ?? [], [activeFile]);
+
+  const allTags = useMemo(
+    () =>
+      Array.from(
+        new Set([...fileTags.map((tag) => tag.name), ...notes.flatMap((note) => note.tags)]),
+      ).sort(),
+    [fileTags, notes],
+  );
   const openNote = notes.find((note) => note.id === openNoteId) ?? null;
 
   const createNote = () => {
@@ -54,32 +65,49 @@ export function MobileApp() {
           <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full bg-muted px-3.5 py-2.5">
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              value={filters.query}
+              onChange={(event) => setFilters({ ...filters, query: event.target.value })}
               placeholder="Buscar nas notas"
               aria-label="Buscar nas notas"
               className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
             />
-            {query && (
-              <button onClick={() => setQuery("")} aria-label="Limpar busca" className="shrink-0">
+            {filters.query && (
+              <button
+                onClick={() => setFilters({ ...filters, query: "" })}
+                aria-label="Limpar busca"
+                className="shrink-0"
+              >
                 <X className="h-4 w-4 text-muted-foreground" />
               </button>
             )}
           </div>
 
-          <NotificationsMenu notes={notes} withInbox onSelect={setOpenNoteId} />
-          <UserMenu />
+          {/* Os tres ocupam o mesmo alvo de 40px e dividem o mesmo eixo, para
+              a faixa nao ficar com controles de alturas diferentes. */}
+          <FiltersMenu filters={filters} allTags={allTags} compact onChange={setFilters} />
+          <NotificationsMenu notes={notes} withInbox compact onSelect={setOpenNoteId} />
+          <UserMenu size="lg" />
         </div>
       </header>
 
       {tab === "notas" && (
-        <MobileNoteList notes={notes} columns={columns} query={query} onOpenNote={setOpenNoteId} />
+        <MobileNoteList
+          notes={notes}
+          columns={columns}
+          filters={filters}
+          onOpenNote={setOpenNoteId}
+        />
       )}
       {tab === "calendario" && (
-        <MobileCalendar notes={notes} columns={columns} query={query} onOpenNote={setOpenNoteId} />
+        <MobileCalendar
+          notes={notes}
+          columns={columns}
+          filters={filters}
+          onOpenNote={setOpenNoteId}
+        />
       )}
       {tab === "arquivadas" && (
-        <MobileArchived notes={notes} query={query} onOpenNote={setOpenNoteId} />
+        <MobileArchived notes={notes} filters={filters} onOpenNote={setOpenNoteId} />
       )}
 
       {/*
