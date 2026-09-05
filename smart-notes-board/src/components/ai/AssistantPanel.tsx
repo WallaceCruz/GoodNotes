@@ -14,7 +14,12 @@ import {
   StickyNote,
   X,
 } from "lucide-react";
-import { askAssistant, createClient, describeError, type ChatMessage } from "@/lib/ai/assistant";
+import {
+  askAssistant,
+  describeError,
+  type ChatMessage,
+  type ContextBlock,
+} from "@/lib/ai/assistant";
 import {
   SYSTEM_PROMPT,
   describeExtras,
@@ -24,7 +29,8 @@ import {
 } from "@/lib/ai/context";
 import { SUGGESTIONS } from "@/lib/ai/suggestions";
 import { attachmentBlocks, fileBlocks } from "@/lib/ai/attachments";
-import { AI_MODELS, useAiSettings } from "@/lib/ai/settings";
+import { useAiSettings } from "@/lib/ai/settings";
+import { PROVIDERS, providerInfo } from "@/lib/ai/providers";
 import { useConversations, type Conversation } from "@/lib/ai/history";
 import { AssistantSettings } from "./AssistantSettings";
 import { ClaudeMark } from "./ClaudeMark";
@@ -72,7 +78,7 @@ function Markdown({ text }: { text: string }) {
  * deve invalidar o prefixo que a API mantém em cache.
  */
 export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: () => void }) {
-  const { settings, update, configured } = useAiSettings();
+  const { settings, apiKey, model, setProvider, setModel, configured } = useAiSettings();
   const [showSettings, setShowSettings] = useState(!configured);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
@@ -96,7 +102,7 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
   const abortRef = useRef<AbortController | null>(null);
   const fimRef = useRef<HTMLDivElement>(null);
   const contexto = scopeLabel(scope);
-  const modelo = AI_MODELS.find((m) => m.id === settings.model);
+  const provedor = providerInfo(settings.provider);
 
   useEffect(() => {
     fimRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -146,32 +152,25 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
 
     const partes = [describeScope(scope), describeExtras(extraNotes)].filter(Boolean);
     const contextoTexto = partes.join("\n\n");
-    const historico: Anthropic.MessageParam[] = [
-      ...messages.map((m) => ({ role: m.role, content: m.text })),
+    const blocos: ContextBlock[] = [
+      ...daNota.blocks,
+      ...doChat.blocks,
       {
-        role: "user" as const,
-        content: [
-          ...daNota.blocks,
-          ...doChat.blocks,
-          {
-            type: "text" as const,
-            text: contextoTexto
-              ? `<contexto>\n${contextoTexto}\n</contexto>\n\n${pergunta}`
-              : pergunta,
-          },
-        ],
+        kind: "text",
+        text: contextoTexto ? `<contexto>\n${contextoTexto}\n</contexto>\n\n${pergunta}` : pergunta,
       },
     ];
 
     try {
-      await askAssistant({
-        client: createClient(settings.apiKey),
-        model: settings.model,
+      await askAssistant(settings.provider, {
+        apiKey,
+        model,
         system: SYSTEM_PROMPT,
-        history: historico,
+        history: messages.map((m) => ({ role: m.role, text: m.text })),
+        blocks: blocos,
         signal: controller.signal,
         handlers: {
-          onText: (chunk) =>
+          onText: (chunk: string) =>
             setMessages((atuais) =>
               atuais.map((m) => (m.id === resposta.id ? { ...m, text: m.text + chunk } : m)),
             ),
@@ -338,8 +337,9 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
                     <div key={m.id} className={cn("mb-3", m.role === "user" && "flex justify-end")}>
                       {m.role === "assistant" && (
                         <span className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                          <ClaudeMark className="h-3 w-3" />
-                          {modelo?.label ?? "Claude"}
+                          {settings.provider === "anthropic" && <ClaudeMark className="h-3 w-3" />}
+                          {provedor.label}
+                          <span className="text-muted-foreground/70">{model}</span>
                         </span>
                       )}
                       <div
@@ -521,31 +521,49 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
                       aria-expanded={modelOpen}
                       className="flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1.5 text-[12px] font-medium transition-colors hover:bg-accent"
                     >
-                      <ClaudeMark className="h-3.5 w-3.5 text-[#cc785c]" />
-                      {modelo?.label ?? "Modelo"}
+                      {settings.provider === "anthropic" && (
+                        <ClaudeMark className="h-3.5 w-3.5 text-[#cc785c]" />
+                      )}
+                      <span className="max-w-[9rem] truncate">{model}</span>
                       <ChevronDown className="h-3 w-3 text-muted-foreground" />
                     </button>
 
+                    {/* Trocar de provedor aqui é o caminho curto; a lista
+                        completa de modelos vive nas configurações, junto da
+                        chave que dá acesso a ela. */}
                     {modelOpen && (
-                      <div className="absolute bottom-full left-0 z-10 mb-1.5 w-56 overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
-                        {AI_MODELS.map((m) => (
-                          <button
-                            key={m.id}
-                            onClick={() => {
-                              update({ model: m.id });
-                              setModelOpen(false);
-                            }}
-                            className={cn(
-                              "block w-full px-3 py-2 text-left transition-colors hover:bg-accent",
-                              settings.model === m.id && "bg-accent",
-                            )}
-                          >
-                            <span className="block text-[12px] font-medium">{m.label}</span>
-                            <span className="block text-[10px] text-muted-foreground">
-                              {m.hint}
-                            </span>
-                          </button>
-                        ))}
+                      <div className="absolute bottom-full left-0 z-10 mb-1.5 w-60 overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
+                        {PROVIDERS.map((p) => {
+                          const temChave = settings.keys[p.id].trim().length > 0;
+                          return (
+                            <button
+                              key={p.id}
+                              onClick={() => {
+                                setProvider(p.id);
+                                setModelOpen(false);
+                                if (!temChave) setShowSettings(true);
+                              }}
+                              className={cn(
+                                "block w-full px-3 py-2 text-left transition-colors hover:bg-accent",
+                                settings.provider === p.id && "bg-accent",
+                              )}
+                            >
+                              <span className="block text-[12px] font-medium">{p.label}</span>
+                              <span className="block truncate text-[10px] text-muted-foreground">
+                                {temChave ? settings.models[p.id] : "Sem chave configurada"}
+                              </span>
+                            </button>
+                          );
+                        })}
+                        <button
+                          onClick={() => {
+                            setModelOpen(false);
+                            setShowSettings(true);
+                          }}
+                          className="block w-full border-t border-border px-3 py-2 text-left text-[11px] text-muted-foreground transition-colors hover:bg-accent"
+                        >
+                          Escolher outro modelo…
+                        </button>
                       </div>
                     )}
                   </div>

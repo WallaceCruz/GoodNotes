@@ -1,4 +1,4 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import type { ContextBlock } from "@/lib/ai/assistant";
 import { getFile } from "@/lib/attachment-files";
 import { formatBytes } from "@/lib/board/attachments";
 import type { NoteAttachment } from "@/lib/board/model";
@@ -40,14 +40,14 @@ async function paraBase64(blob: Blob): Promise<string> {
 }
 
 export type AttachmentBlocks = {
-  blocks: Anthropic.ContentBlockParam[];
+  blocks: ContextBlock[];
   /** Anexos que não puderam entrar, para o painel avisar em vez de omitir. */
   skipped: string[];
 };
 
 /** Converte os anexos em blocos de conteúdo para a mensagem. */
 export async function attachmentBlocks(attachments: NoteAttachment[]): Promise<AttachmentBlocks> {
-  const blocks: Anthropic.ContentBlockParam[] = [];
+  const blocks: ContextBlock[] = [];
   const skipped: string[] = [];
 
   for (const anexo of attachments) {
@@ -64,16 +64,17 @@ export async function attachmentBlocks(attachments: NoteAttachment[]): Promise<A
 
     if (anexo.type === "application/pdf") {
       blocks.push({
-        type: "document",
-        source: { type: "base64", media_type: "application/pdf", data: await paraBase64(arquivo) },
-        title: anexo.name,
+        kind: "document",
+        name: anexo.name,
+        mediaType: "application/pdf",
+        base64: await paraBase64(arquivo),
       });
       continue;
     }
 
     if (ehTexto(anexo.type, anexo.name)) {
       blocks.push({
-        type: "text",
+        kind: "text",
         text: `<anexo nome="${anexo.name}">\n${await arquivo.text()}\n</anexo>`,
       });
       continue;
@@ -93,7 +94,7 @@ export async function attachmentBlocks(attachments: NoteAttachment[]): Promise<A
  * página — anexar de novo é mais barato que guardar megabytes por conversa.
  */
 export async function fileBlocks(files: File[]): Promise<AttachmentBlocks> {
-  const blocks: Anthropic.ContentBlockParam[] = [];
+  const blocks: ContextBlock[] = [];
   const skipped: string[] = [];
 
   for (const arquivo of files) {
@@ -104,16 +105,17 @@ export async function fileBlocks(files: File[]): Promise<AttachmentBlocks> {
 
     if (arquivo.type === "application/pdf") {
       blocks.push({
-        type: "document",
-        source: { type: "base64", media_type: "application/pdf", data: await paraBase64(arquivo) },
-        title: arquivo.name,
+        kind: "document",
+        name: arquivo.name,
+        mediaType: "application/pdf",
+        base64: await paraBase64(arquivo),
       });
       continue;
     }
 
     if (ehTexto(arquivo.type, arquivo.name)) {
       blocks.push({
-        type: "text",
+        kind: "text",
         text: `<anexo nome="${arquivo.name}">\n${await arquivo.text()}\n</anexo>`,
       });
       continue;
