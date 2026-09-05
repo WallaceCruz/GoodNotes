@@ -1,26 +1,13 @@
 import { useMemo, useState } from "react";
-import { CalendarDays, Check, FileText, Layers, ListChecks, Plus } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  boardActions,
-  useActiveFile,
-  useActiveFileId,
-  useActiveProject,
-  useFileColumns,
-  useProjects,
-} from "@/stores/board";
+import { CalendarDays, Folder, ListChecks, Plus, Search, X } from "lucide-react";
+import { boardActions, useActiveFile, useFileColumns } from "@/stores/board";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "@/components/app/UserMenu";
+import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { MobileCalendar } from "./MobileCalendar";
 import { MobileNoteList } from "./MobileNoteList";
 import { MobileNoteScreen } from "./MobileNoteScreen";
+import { MobileProjectsSheet } from "./MobileProjectsSheet";
 
 type MobileTab = "tarefas" | "calendario";
 
@@ -40,11 +27,10 @@ const TABS = [
 export function MobileApp() {
   const [tab, setTab] = useState<MobileTab>("tarefas");
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
+  const [projectsOpen, setProjectsOpen] = useState(false);
+  const [query, setQuery] = useState("");
 
-  const projects = useProjects();
-  const activeProject = useActiveProject();
   const activeFile = useActiveFile();
-  const activeFileId = useActiveFileId();
   const columns = useFileColumns();
 
   const notes = useMemo(() => activeFile?.notes ?? [], [activeFile]);
@@ -58,56 +44,40 @@ export function MobileApp() {
 
   return (
     <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-background text-foreground">
-      <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left">
-              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold">
-                {activeFile?.name ?? "Sem arquivo"}
-              </span>
-              <Layers className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="max-h-[70vh] w-64 overflow-y-auto">
-            {projects
-              .filter((project) => !project.archived)
-              .map((project) => (
-                <div key={project.id}>
-                  <DropdownMenuLabel className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    {project.name}
-                  </DropdownMenuLabel>
-                  {project.files
-                    .filter((file) => !file.archived)
-                    .map((file) => (
-                      <DropdownMenuItem
-                        key={file.id}
-                        onClick={() => boardActions.selectFile(project.id, file.id)}
-                      >
-                        <FileText className="h-4 w-4" />
-                        <span className="flex-1 truncate">{file.name}</span>
-                        {activeFileId === file.id && <Check className="h-4 w-4" />}
-                      </DropdownMenuItem>
-                    ))}
-                  <DropdownMenuSeparator />
-                </div>
-              ))}
-            <DropdownMenuItem
-              onClick={() => activeProject && boardActions.addFile(activeProject.id)}
-            >
-              <Plus className="h-4 w-4" />
-              Novo arquivo
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <header className="shrink-0 border-b border-border px-3 pb-2 pt-2.5">
+        <div className="flex items-center gap-2">
+          {/* A busca ocupa a linha: e' o controle mais usado, e no polegar um
+              campo largo erra menos que um icone. Sino e avatar ficam ao lado,
+              como alvos redondos de tamanho confortavel. */}
+          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full bg-muted px-3.5 py-2.5">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar nas notas"
+              aria-label="Buscar nas notas"
+              className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
+            />
+            {query && (
+              <button onClick={() => setQuery("")} aria-label="Limpar busca" className="shrink-0">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            )}
+          </div>
 
-        <UserMenu />
+          <NotificationsMenu notes={notes} onSelect={setOpenNoteId} />
+          <UserMenu />
+        </div>
+
+        <p className="truncate px-1 pt-1.5 text-[11px] text-muted-foreground">
+          {activeFile?.name ?? "Sem arquivo"}
+        </p>
       </header>
 
       {tab === "tarefas" ? (
-        <MobileNoteList notes={notes} columns={columns} onOpenNote={setOpenNoteId} />
+        <MobileNoteList notes={notes} columns={columns} query={query} onOpenNote={setOpenNoteId} />
       ) : (
-        <MobileCalendar notes={notes} columns={columns} onOpenNote={setOpenNoteId} />
+        <MobileCalendar notes={notes} columns={columns} query={query} onOpenNote={setOpenNoteId} />
       )}
 
       {/*
@@ -118,20 +88,32 @@ export function MobileApp() {
       */}
       <nav className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center pb-[max(1rem,env(safe-area-inset-bottom))]">
         <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-border/70 bg-popover/90 p-1.5 shadow-lg backdrop-blur-md">
+          <button
+            onClick={() => setProjectsOpen(true)}
+            aria-label="Projetos"
+            title="Projetos"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Folder className="h-[18px] w-[18px]" />
+          </button>
+
+          {/* Só a aba ativa mostra o rótulo: com quatro controles, quatro
+              rótulos não caberiam numa tela de 375px sem apertar os alvos. */}
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
+              aria-label={label}
               aria-pressed={tab === id}
               className={cn(
-                "flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium transition-colors",
+                "flex h-10 items-center gap-1.5 rounded-full text-[13px] font-medium transition-colors",
                 tab === id
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-primary px-4 text-primary-foreground"
+                  : "w-10 justify-center text-muted-foreground hover:text-foreground",
               )}
             >
-              <Icon className="h-4 w-4" />
-              {label}
+              <Icon className="h-[18px] w-[18px] shrink-0" />
+              {tab === id && label}
             </button>
           ))}
 
@@ -146,6 +128,8 @@ export function MobileApp() {
           </button>
         </div>
       </nav>
+
+      {projectsOpen && <MobileProjectsSheet onClose={() => setProjectsOpen(false)} />}
 
       {openNote && <MobileNoteScreen note={openNote} onClose={() => setOpenNoteId(null)} />}
     </div>

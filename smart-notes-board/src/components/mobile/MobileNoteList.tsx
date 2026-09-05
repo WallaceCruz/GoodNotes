@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Check, ChevronRight, Paperclip, Search, X } from "lucide-react";
+import { useMemo } from "react";
+import { Check, ChevronRight, Paperclip } from "lucide-react";
 import { agendaGroups } from "@/lib/board/agenda";
 import { isNoteDone } from "@/lib/board/status";
 import { emptyFilters, matchesFilters } from "@/lib/board/filters";
@@ -96,14 +96,15 @@ function TaskRow({ note, columns, onOpen }: { note: Note; columns: Column[]; onO
 export function MobileNoteList({
   notes,
   columns,
+  query,
   onOpenNote,
 }: {
   notes: Note[];
   columns: Column[];
+  /** Vem do campo de busca do cabeçalho, compartilhado com o calendário. */
+  query: string;
   onOpenNote: (id: string) => void;
 }) {
-  const [query, setQuery] = useState("");
-
   const groups = useMemo(() => {
     const visible = notes.filter((note) => matchesFilters(note, { ...emptyFilters, query }));
     return agendaGroups(visible, columns);
@@ -113,24 +114,6 @@ export function MobileNoteList({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 px-4 pb-2">
-        <div className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2.5">
-          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar nas notas"
-            aria-label="Buscar nas notas"
-            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-          />
-          {query && (
-            <button onClick={() => setQuery("")} aria-label="Limpar busca">
-              <X className="h-4 w-4 text-muted-foreground" />
-            </button>
-          )}
-        </div>
-      </div>
-
       <div className="scroll-thin min-h-0 flex-1 overflow-y-auto pb-28">
         {total === 0 && (
           <p className="px-6 py-16 text-center text-sm text-muted-foreground">
