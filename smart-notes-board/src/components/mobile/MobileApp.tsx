@@ -4,6 +4,8 @@ import { boardActions, useActiveFile, useFileColumns, useFileTags } from "@/stor
 import { emptyFilters, type Filters } from "@/lib/board/filters";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "@/components/app/UserMenu";
+import { AssistantButton } from "@/components/ai/AssistantButton";
+import type { AiScope } from "@/lib/ai/context";
 import { FiltersMenu } from "@/components/kanban/FiltersMenu";
 import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { MobileArchived } from "./MobileArchived";
@@ -48,6 +50,12 @@ export function MobileApp() {
     [fileTags, notes],
   );
   const openNote = notes.find((note) => note.id === openNoteId) ?? null;
+
+  const aiScope: AiScope = openNote
+    ? { kind: "note", note: openNote }
+    : activeFile
+      ? { kind: "file", file: activeFile }
+      : { kind: "none" };
 
   const createNote = () => {
     const columnId = columns[0]?.id;
@@ -123,6 +131,11 @@ export function MobileApp() {
         sem atravessar a tela. A altura vem da barra (2.5rem de botao + 0.75rem
         de moldura) mais o respiro entre as duas.
       */}
+      <AssistantButton
+        scope={aiScope}
+        className="absolute bottom-[calc(max(1rem,env(safe-area-inset-bottom))+8.5rem)] right-4 z-30"
+      />
+
       <button
         onClick={createNote}
         aria-label="Nova nota"

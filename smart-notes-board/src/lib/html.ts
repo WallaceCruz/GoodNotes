@@ -26,6 +26,24 @@ export function sanitizeHtml(html: string | null | undefined): string {
 }
 
 /** HTML → texto puro, para busca e prévias. */
+const ESCAPES: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+};
+
+/**
+ * Texto puro virando conteúdo de nota.
+ *
+ * O `sanitizeHtml` limpa o que já é HTML; aqui a entrada não é HTML nenhum, e
+ * escapar antes evita que um `<` digitado por alguém — ou devolvido por um
+ * modelo — vire marcação.
+ */
+export function escapeHtml(text: string): string {
+  return text.replace(/[&<>"]/g, (char) => ESCAPES[char] ?? char);
+}
+
 export function stripHtml(html: string): string {
   return html
     .replace(/<[^>]*>/g, " ")

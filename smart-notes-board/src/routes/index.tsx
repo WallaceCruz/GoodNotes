@@ -23,6 +23,8 @@ import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { SelectionToolbar } from "@/components/kanban/SelectionToolbar";
 import { TimelineView } from "@/components/kanban/TimelineView";
 import { UserMenu } from "@/components/app/UserMenu";
+import { AssistantButton } from "@/components/ai/AssistantButton";
+import type { AiScope } from "@/lib/ai/context";
 import { toggleBoardView, type BoardView } from "@/components/kanban/board-view";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
@@ -141,6 +143,13 @@ function Index() {
   );
 
   const activeNote = allNotes.find((note) => note.id === activeNoteId) ?? null;
+
+  // O assistente fala sobre a nota aberta; sem nenhuma aberta, sobre o arquivo.
+  const aiScope: AiScope = activeNote
+    ? { kind: "note", note: activeNote }
+    : activeFile
+      ? { kind: "file", file: activeFile }
+      : { kind: "none" };
   const showsBoard = view === "kanban" || view === "archived";
 
   if (!hydrated) return <div className="h-screen w-full bg-background" />;
@@ -289,6 +298,8 @@ function Index() {
         {activeNote && (
           <NoteFocusView note={activeNote} mode={focusMode} onClose={() => setActiveNoteId(null)} />
         )}
+
+        <AssistantButton scope={aiScope} className="fixed bottom-5 right-5 z-40" />
       </div>
     </div>
   );

@@ -60,6 +60,8 @@ export type BoardActions = {
   removeAutomation: (id: string) => void;
 
   addNote: (columnId: string) => string;
+  /** Cria uma nota já preenchida, para a ferramenta do assistente. */
+  addNoteFromAssistant: (title: string, body: string, tags: string[]) => string;
   updateNote: (noteId: string, patch: Partial<Note>) => void;
   setNoteArchived: (noteId: string, archived: boolean) => void;
   setNotePinned: (noteId: string, pinned: boolean) => void;
@@ -176,6 +178,17 @@ export const useBoard = create<BoardSlice>()((set, get) => {
         const note = notes.createNote(columnId);
         onFile((f) => notes.addNote(f, note));
         return note.id;
+      },
+      addNoteFromAssistant: (title, body, tags) => {
+        let id = "";
+        onFile((f) => {
+          const columnId = f.columns[0]?.id;
+          if (!columnId) return f;
+          const note = notes.fromPlainText(columnId, title, body, tags);
+          id = note.id;
+          return notes.addNote(f, note);
+        });
+        return id;
       },
       updateNote: (noteId, patch) => onFile((f) => notes.patchNote(f, noteId, patch)),
       setNoteArchived: (noteId, archived) =>

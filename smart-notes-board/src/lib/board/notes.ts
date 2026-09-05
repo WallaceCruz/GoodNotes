@@ -3,6 +3,7 @@ import { DAY_MS } from "@/lib/date";
 import { type BoardFile, type Column, type Note } from "@/lib/board/model";
 import { nativeKeyOf } from "@/lib/board/native-columns";
 import { collectTags } from "@/lib/board/tags";
+import { escapeHtml } from "@/lib/html";
 
 /**
  * Operações de nota. Funções puras sobre `BoardFile`: nada de React aqui, para
@@ -71,6 +72,25 @@ export function createNote(columnId: string): Note {
     deadline: null,
     archived: false,
     order: -1,
+  };
+}
+
+/**
+ * Nota criada a partir de texto puro — o formato que o assistente devolve.
+ *
+ * O editor guarda HTML, então parágrafos em branco viram <p> e quebras
+ * simples viram <br>; sem isso o texto chegaria numa linha só.
+ */
+export function fromPlainText(columnId: string, title: string, body: string, tags: string[]): Note {
+  const html = body
+    .split(/\n{2,}/)
+    .map((paragrafo) => `<p>${escapeHtml(paragrafo).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+  return {
+    ...createNote(columnId),
+    title,
+    content: html,
+    ...(tags.length ? { tags } : {}),
   };
 }
 
