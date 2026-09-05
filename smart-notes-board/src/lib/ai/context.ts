@@ -69,6 +69,20 @@ export function describeScope(scope: AiScope): string {
   return "";
 }
 
+/**
+ * Notas que a pessoa escolheu a mais, além do escopo automático.
+ *
+ * Vão detalhadas: se alguém foi ao trabalho de selecionar uma nota, quer que o
+ * modelo leia o conteúdo dela, não só o título.
+ */
+export function describeExtras(notes: Note[]): string {
+  if (notes.length === 0) return "";
+  return [
+    `# Notas escolhidas (${notes.length})`,
+    ...notes.map((note) => describeNote(note, true)),
+  ].join("\n\n");
+}
+
 export const SYSTEM_PROMPT = `Você é o assistente do Goodnotes, um app de notas autoadesivas em kanban.
 
 Ajuda quem usa a escrever, revisar, resumir, organizar e criar notas. Responde

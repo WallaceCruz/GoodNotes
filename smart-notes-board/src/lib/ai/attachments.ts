@@ -84,3 +84,43 @@ export async function attachmentBlocks(attachments: NoteAttachment[]): Promise<A
 
   return { blocks, skipped };
 }
+
+/**
+ * O mesmo, para arquivos que a pessoa solta no chat.
+ *
+ * Estes não passam pelo IndexedDB: são da conversa, não da nota, e viram
+ * blocos direto do `File`. Por isso também não sobrevivem a recarregar a
+ * página — anexar de novo é mais barato que guardar megabytes por conversa.
+ */
+export async function fileBlocks(files: File[]): Promise<AttachmentBlocks> {
+  const blocks: Anthropic.ContentBlockParam[] = [];
+  const skipped: string[] = [];
+
+  for (const arquivo of files) {
+    if (arquivo.size > MAX_INLINE_BYTES) {
+      skipped.push(`${arquivo.name} (${formatBytes(arquivo.size)}, grande demais)`);
+      continue;
+    }
+
+    if (arquivo.type === "application/pdf") {
+      blocks.push({
+        type: "document",
+        source: { type: "base64", media_type: "application/pdf", data: await paraBase64(arquivo) },
+        title: arquivo.name,
+      });
+      continue;
+    }
+
+    if (ehTexto(arquivo.type, arquivo.name)) {
+      blocks.push({
+        type: "text",
+        text: `<anexo nome="${arquivo.name}">\n${await arquivo.text()}\n</anexo>`,
+      });
+      continue;
+    }
+
+    skipped.push(`${arquivo.name} (formato ${arquivo.type || "desconhecido"})`);
+  }
+
+  return { blocks, skipped };
+}
