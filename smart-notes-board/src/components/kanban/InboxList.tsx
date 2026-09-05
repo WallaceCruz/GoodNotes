@@ -34,7 +34,6 @@ export function InboxList({
       <header className="flex items-center gap-2 border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold">Inbox</h2>
         <span className="text-xs text-muted-foreground">{entries.length}</span>
-        <span className="ml-auto text-[11px] text-muted-foreground">Comentários do time</span>
       </header>
 
       <div className="border-b border-border px-3 py-2">
