@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Archive, CalendarDays, Folder, ListChecks, Plus, Search, X } from "lucide-react";
+import { Archive, CalendarDays, Folder, Plus, Search, StickyNote, X } from "lucide-react";
 import { boardActions, useActiveFile, useFileColumns } from "@/stores/board";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "@/components/app/UserMenu";
@@ -10,13 +10,13 @@ import { MobileNoteList } from "./MobileNoteList";
 import { MobileNoteScreen } from "./MobileNoteScreen";
 import { MobileProjectsSheet } from "./MobileProjectsSheet";
 
-type MobileTab = "tarefas" | "calendario" | "arquivadas";
+type MobileTab = "notas" | "calendario" | "arquivadas";
 
 const TABS = [
-  { id: "tarefas", label: "Tarefas", icon: ListChecks },
+  { id: "notas", label: "Notas", icon: StickyNote },
   { id: "calendario", label: "Calendário", icon: CalendarDays },
   { id: "arquivadas", label: "Arquivadas", icon: Archive },
-] as const satisfies ReadonlyArray<{ id: MobileTab; label: string; icon: typeof ListChecks }>;
+] as const satisfies ReadonlyArray<{ id: MobileTab; label: string; icon: typeof StickyNote }>;
 
 /**
  * O app no celular.
@@ -27,7 +27,7 @@ const TABS = [
  * o fluxo do kanban continua acessível pelo campo "Coluna" na tela da nota.
  */
 export function MobileApp() {
-  const [tab, setTab] = useState<MobileTab>("tarefas");
+  const [tab, setTab] = useState<MobileTab>("notas");
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const [projectsOpen, setProjectsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -46,7 +46,7 @@ export function MobileApp() {
 
   return (
     <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-background text-foreground">
-      <header className="shrink-0 border-b border-border px-3 pb-2 pt-2.5">
+      <header className="shrink-0 border-b border-border px-3 py-2.5">
         <div className="flex items-center gap-2">
           {/* A busca ocupa a linha: e' o controle mais usado, e no polegar um
               campo largo erra menos que um icone. Sino e avatar ficam ao lado,
@@ -70,17 +70,9 @@ export function MobileApp() {
           <NotificationsMenu notes={notes} withInbox onSelect={setOpenNoteId} />
           <UserMenu />
         </div>
-
-        {/* Com seis controles, a barra nao cabe rotulo fixo; o nome da visao
-            atual vem para ca, junto do arquivo. */}
-        <p className="truncate px-1 pt-1.5 text-[11px] text-muted-foreground">
-          {activeFile?.name ?? "Sem arquivo"}
-          <span aria-hidden> · </span>
-          <span className="text-foreground/70">{TABS.find((t) => t.id === tab)?.label}</span>
-        </p>
       </header>
 
-      {tab === "tarefas" && (
+      {tab === "notas" && (
         <MobileNoteList notes={notes} columns={columns} query={query} onOpenNote={setOpenNoteId} />
       )}
       {tab === "calendario" && (
