@@ -1,8 +1,8 @@
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NATIVE_COLUMNS } from "@/lib/board/native-columns";
-import { DEFAULT_COLUMN_COLORS, type NoteAppearance } from "@/lib/note-appearance";
+import { DEFAULT_COLUMN_COLORS, type NoteAppearance } from "@/lib/note-theme/note-appearance";
+import { notify } from "@/lib/notify";
 
 /** Cor de cada coluna do fluxo, com o valor padrão como ponto de retorno. */
 export function NativeColumnColors({
@@ -48,7 +48,7 @@ export function NativeColumnColors({
           size="sm"
           onClick={() => {
             onChange({ ...DEFAULT_COLUMN_COLORS });
-            toast("Cores das colunas restauradas");
+            notify.show("Cores das colunas restauradas");
           }}
         >
           Restaurar cores das colunas

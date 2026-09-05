@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useLocalStore } from "@/hooks/useLocalStore";
 import { uid } from "@/lib/id";
-import type { ChatMessage } from "@/lib/ai/assistant";
+import type { ChatMessage } from "@/lib/ai/types";
 
 /**
  * As conversas anteriores.

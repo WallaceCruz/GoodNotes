@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { NoteRichContent } from "@/components/note/NoteRichContent";
 import { DeadlineBadge, PriorityBadge } from "@/components/note/NoteMeta";
 import type { Note } from "@/lib/board/model";

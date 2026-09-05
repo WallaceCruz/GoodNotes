@@ -10,7 +10,7 @@ import { RichNoteEditor } from "@/components/editor/RichNoteEditor";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/date";
 import { hasRichContent } from "@/lib/html";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { NoteRichContent } from "@/components/note/NoteRichContent";
 
 // Guarda a rolagem da página de detalhes por nota, para reabrir onde parou.

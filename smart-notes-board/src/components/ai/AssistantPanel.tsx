@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import type Anthropic from "@anthropic-ai/sdk";
 import {
   ArrowUp,
   ChevronDown,
@@ -15,12 +14,8 @@ import {
   StickyNote,
   X,
 } from "lucide-react";
-import {
-  askAssistant,
-  describeError,
-  type ChatMessage,
-  type ContextBlock,
-} from "@/lib/ai/assistant";
+import { askAssistant, describeError } from "@/lib/ai/assistant";
+import type { ChatMessage, ContextBlock } from "@/lib/ai/types";
 import {
   SYSTEM_PROMPT,
   describeExtras,
@@ -205,7 +200,7 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
         },
       });
     } catch (erro) {
-      if (!controller.signal.aborted) setError(describeError(erro));
+      if (!controller.signal.aborted) setError(await describeError(settings.provider, erro));
     } finally {
       setRunning(false);
       abortRef.current = null;

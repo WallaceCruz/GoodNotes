@@ -10,7 +10,7 @@ import {
 } from "@/lib/board/model";
 import { activeFilterCount, emptyFilters, type Filters } from "@/lib/board/filters";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel, priorityClass } from "@/components/note/note-style";
+import { noteBg, noteLabel, priorityClass } from "@/lib/note-theme/note-style";
 import { PriorityChip } from "@/components/note/PrioritySelect";
 import { TagManager } from "@/components/note/tag/TagManager";
 import { useState } from "react";

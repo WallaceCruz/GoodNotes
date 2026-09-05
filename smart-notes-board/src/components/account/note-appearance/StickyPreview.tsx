@@ -1,6 +1,6 @@
-import { noteSurface } from "@/components/note/note-appearance";
+import { noteSurface } from "@/lib/note-theme/note-surface";
 import { cn } from "@/lib/utils";
-import type { NoteAppearance } from "@/lib/note-appearance";
+import type { NoteAppearance } from "@/lib/note-theme/note-appearance";
 import type { NoteColor } from "@/lib/board/model";
 
 /**

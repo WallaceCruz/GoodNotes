@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, Loader2, Trash2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { AccountLayout } from "@/components/account/AccountLayout";
 import { AvatarCropDialog } from "@/components/account/AvatarCropDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { initials, useUserProfile, validateField, type ProfileField } from "@/hooks/useUserProfile";
 import { cn } from "@/lib/utils";
+import { notify } from "@/lib/notify";
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -100,11 +100,11 @@ function PerfilPage() {
   const onAvatar = (file?: File) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("Escolha um arquivo de imagem");
+      notify.error("Escolha um arquivo de imagem");
       return;
     }
     if (file.size > MAX_AVATAR_BYTES) {
-      toast.error("A imagem deve ter no máximo 2 MB");
+      notify.error("A imagem deve ter no máximo 2 MB");
       return;
     }
     setCropFile(file);
@@ -134,7 +134,7 @@ function PerfilPage() {
                   variant="ghost"
                   onClick={() => {
                     update({ avatar: null });
-                    toast("Foto removida");
+                    notify.show("Foto removida");
                   }}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -160,7 +160,7 @@ function PerfilPage() {
             onConfirm={(dataUrl) => {
               update({ avatar: dataUrl });
               setCropFile(null);
-              toast.success("Foto atualizada");
+              notify.success("Foto atualizada");
             }}
           />
           <span

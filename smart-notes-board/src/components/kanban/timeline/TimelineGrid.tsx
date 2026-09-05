@@ -4,7 +4,7 @@ import { DAY_MS, startOfDay } from "@/lib/date";
 import { isNoteDone } from "@/lib/board/status";
 import { barGeometry, isOverdue, type TimelineRow } from "@/lib/board/timeline";
 import { cn } from "@/lib/utils";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { GROUP_HEIGHT, ROW_HEIGHT } from "./TimelineNoteList";
 import { MIN_BAR_WIDTH, MONTH_SHORT, WEEKDAY_INITIAL } from "./timeline-scale";
 import type { NoteRange } from "@/lib/board/timeline";

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TagManager } from "@/components/note/tag/TagManager";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { tagColorOf } from "@/lib/board/tags";
 import { boardActions, useFileTags } from "@/stores/board";
 import { cn } from "@/lib/utils";

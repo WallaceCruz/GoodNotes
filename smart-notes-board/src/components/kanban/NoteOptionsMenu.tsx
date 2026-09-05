@@ -15,8 +15,6 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
-import { toastUndo } from "@/lib/toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,10 +39,11 @@ import { initials } from "@/lib/text";
 import { boardActions, useFileTags } from "@/stores/board";
 import { addDays, endOfDay } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel, priorityClass } from "@/components/note/note-style";
+import { noteBg, noteLabel, priorityClass } from "@/lib/note-theme/note-style";
 import { PrioritySelect } from "@/components/note/PrioritySelect";
 import { StatusSelect } from "@/components/note/StatusSelect";
 import { TagManager } from "@/components/note/tag/TagManager";
+import { notify } from "@/lib/notify";
 
 const QUICK_DEADLINE = [
   { label: "Hoje", days: 0 },
@@ -111,7 +110,7 @@ export function NoteOptionsMenu({ note, onOpen }: { note: Note; onOpen: () => vo
           <DropdownMenuItem
             onClick={() => {
               boardActions.duplicateNote(note.id);
-              toast.success("Nota duplicada");
+              notify.success("Nota duplicada");
             }}
           >
             <Copy className="h-4 w-4" />
@@ -261,7 +260,7 @@ export function NoteOptionsMenu({ note, onOpen }: { note: Note; onOpen: () => vo
             className="text-destructive focus:text-destructive"
             onClick={() => {
               boardActions.removeNote(note.id);
-              toastUndo(`"${title}" excluída`, () => boardActions.restoreNote(note));
+              notify.undo(`"${title}" excluída`, () => boardActions.restoreNote(note));
             }}
           >
             <Trash2 className="h-4 w-4" />

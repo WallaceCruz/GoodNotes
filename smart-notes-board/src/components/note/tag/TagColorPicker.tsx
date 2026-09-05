@@ -1,7 +1,7 @@
 import { Palette } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { NOTE_COLORS, type NoteColor } from "@/lib/board/model";
-import { noteBg, noteLabel } from "@/components/note/note-style";
+import { noteBg, noteLabel } from "@/lib/note-theme/note-style";
 import { cn } from "@/lib/utils";
 
 /** Paleta das cores de nota, para pintar uma tag. */

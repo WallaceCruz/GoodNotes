@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useProjects } from "@/stores/board";
@@ -12,12 +11,13 @@ import {
   NOTE_SHADOW_OPTIONS,
   NOTE_SIZE_OPTIONS,
   type NoteAppearance,
-} from "@/lib/note-appearance";
+} from "@/lib/note-theme/note-appearance";
 import { ACCOUNT_SCOPE, AppearanceScopePicker } from "./note-appearance/AppearanceScopePicker";
 import { ChipField, ColorField, ToggleField } from "./note-appearance/appearance-fields";
 import { NativeColumnColors } from "./note-appearance/NativeColumnColors";
 import { StickyPreview } from "./note-appearance/StickyPreview";
 import { StylePicker } from "./note-appearance/StylePicker";
+import { notify } from "@/lib/notify";
 
 /** Ajustes de aparência das notas, aplicáveis à conta ou a um projeto. */
 export function NoteAppearanceSection() {
@@ -42,7 +42,7 @@ export function NoteAppearanceSection() {
 
   const set = (patch: Partial<NoteAppearance>) => {
     if (inheritsAccountDefault) {
-      toast("Ative a personalização deste projeto para editar");
+      notify.show("Ative a personalização deste projeto para editar");
       return;
     }
     update(patch);
@@ -68,7 +68,9 @@ export function NoteAppearanceSection() {
           checked={hasProjectOverride}
           onChange={(enabled) => {
             setProjectOverride(enabled);
-            toast(enabled ? "Projeto com aparência própria" : "Projeto herdando o padrão da conta");
+            notify.show(
+              enabled ? "Projeto com aparência própria" : "Projeto herdando o padrão da conta",
+            );
           }}
         />
       )}
@@ -175,7 +177,9 @@ export function NoteAppearanceSection() {
           size="sm"
           onClick={() => {
             reset();
-            toast(projectId ? "Projeto restaurado ao padrão da conta" : "Aparência restaurada");
+            notify.show(
+              projectId ? "Projeto restaurado ao padrão da conta" : "Aparência restaurada",
+            );
           }}
         >
           Restaurar aparência padrão

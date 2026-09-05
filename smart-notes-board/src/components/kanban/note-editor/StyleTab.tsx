@@ -1,6 +1,6 @@
 import { NOTE_COLORS, type Note } from "@/lib/board/model";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel } from "@/components/note/note-style";
+import { noteBg, noteLabel } from "@/lib/note-theme/note-style";
 import { Group } from "./panel-controls";
 
 /** Cor de fundo desta nota específica e a altura que ela ocupa no quadro. */

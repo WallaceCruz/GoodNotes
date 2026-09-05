@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL, type Priority } from "@/lib/board/model";
 import { cn } from "@/lib/utils";
-import { priorityClass } from "@/components/note/note-style";
+import { priorityClass } from "@/lib/note-theme/note-style";
 
 /**
  * Prioridade como chip.

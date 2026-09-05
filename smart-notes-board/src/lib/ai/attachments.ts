@@ -1,4 +1,4 @@
-import type { ContextBlock } from "@/lib/ai/assistant";
+import type { ContextBlock } from "@/lib/ai/types";
 import { getFile } from "@/lib/attachment-files";
 import { formatBytes } from "@/lib/board/attachments";
 import type { NoteAttachment } from "@/lib/board/model";
@@ -39,14 +39,31 @@ async function paraBase64(blob: Blob): Promise<string> {
   return btoa(binario);
 }
 
+/**
+ * De onde vêm os bytes de um anexo.
+ *
+ * A conversão em si não tem nada a ver com IndexedDB — ela só precisa do Blob.
+ * Declarar a origem como parâmetro deixa isso explícito e permite testar o
+ * módulo, ou alimentá-lo de outro lugar, sem um banco no meio.
+ */
+export type FileLoader = (id: string) => Promise<Blob | undefined>;
+
 export type AttachmentBlocks = {
   blocks: ContextBlock[];
   /** Anexos que não puderam entrar, para o painel avisar em vez de omitir. */
   skipped: string[];
 };
 
-/** Converte os anexos em blocos de conteúdo para a mensagem. */
-export async function attachmentBlocks(attachments: NoteAttachment[]): Promise<AttachmentBlocks> {
+/**
+ * Converte os anexos em blocos de conteúdo para a mensagem.
+ *
+ * `loadFile` vem com o IndexedDB ligado por padrão, que é de onde os anexos das
+ * notas saem neste app; passar outro é o que torna a função testável.
+ */
+export async function attachmentBlocks(
+  attachments: NoteAttachment[],
+  loadFile: FileLoader = getFile,
+): Promise<AttachmentBlocks> {
   const blocks: ContextBlock[] = [];
   const skipped: string[] = [];
 
@@ -56,7 +73,7 @@ export async function attachmentBlocks(attachments: NoteAttachment[]): Promise<A
       continue;
     }
 
-    const arquivo = await getFile(anexo.id);
+    const arquivo = await loadFile(anexo.id);
     if (!arquivo) {
       skipped.push(`${anexo.name} (não está neste navegador)`);
       continue;

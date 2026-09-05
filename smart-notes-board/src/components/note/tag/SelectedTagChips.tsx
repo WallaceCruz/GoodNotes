@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { tagColorOf } from "@/lib/board/tags";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { cn } from "@/lib/utils";
 import type { TagDef } from "@/lib/board/model";
 

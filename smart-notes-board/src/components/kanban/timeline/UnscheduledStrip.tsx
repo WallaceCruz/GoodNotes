@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import type { Note } from "@/lib/board/model";
 
 /**

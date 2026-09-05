@@ -35,11 +35,9 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { toast } from "sonner";
-import { toastUndo } from "@/lib/toast";
 import { type Column, type Note, type NativeColumnKey } from "@/lib/board/model";
 import { boardActions, useActiveProjectId } from "@/stores/board";
-import { DEFAULT_COLUMN_COLORS } from "@/lib/note-appearance";
+import { DEFAULT_COLUMN_COLORS } from "@/lib/note-theme/note-appearance";
 import { useNoteAppearance } from "@/stores/note-appearance";
 
 const NATIVE_ICON: Record<NativeColumnKey, typeof Inbox> = {
@@ -52,8 +50,9 @@ const NATIVE_ICON: Record<NativeColumnKey, typeof Inbox> = {
 };
 import { cn } from "@/lib/utils";
 import { columnSortableId } from "./column-drag";
-import { noteBg, noteHeaderBg } from "@/components/note/note-style";
+import { noteBg, noteHeaderBg } from "@/lib/note-theme/note-style";
 import { StickyNoteCard } from "./StickyNoteCard";
+import { notify } from "@/lib/notify";
 
 const PAGE = 30;
 
@@ -207,7 +206,7 @@ function KanbanColumnBase({
               <DropdownMenuItem
                 onClick={() => {
                   boardActions.duplicateColumn(column.id);
-                  toast.success(`Coluna "${column.title}" duplicada`);
+                  notify.success(`Coluna "${column.title}" duplicada`);
                 }}
               >
                 <Copy className="mr-2 h-4 w-4" />
@@ -241,7 +240,7 @@ function KanbanColumnBase({
                 onClick={() => {
                   const removedNotes = notes;
                   boardActions.removeColumn(column.id);
-                  toastUndo(
+                  notify.undo(
                     `Coluna "${column.title}" excluída`,
                     () => boardActions.restoreColumn(column, removedNotes),
                     {

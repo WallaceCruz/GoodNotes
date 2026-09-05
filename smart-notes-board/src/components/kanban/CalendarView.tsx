@@ -11,7 +11,7 @@ import {
 } from "@/lib/board/calendar";
 import { CalendarSidebar } from "./calendar/CalendarSidebar";
 import { CalendarToolbar } from "./calendar/CalendarToolbar";
-import { SNAP_OPTIONS, type CalendarFilters } from "./calendar/calendar-ui";
+import { SNAP_OPTIONS, type CalendarFilters } from "@/lib/board/calendar-ui";
 import { MonthGrid } from "./calendar/MonthGrid";
 import { NotePreviewDialog } from "./calendar/NotePreviewDialog";
 import { TimeGrid } from "./calendar/TimeGrid";

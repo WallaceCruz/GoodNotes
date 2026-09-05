@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Check } from "lucide-react";
-import { toast } from "sonner";
 import { AccountLayout } from "@/components/account/AccountLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUserProfile, type UserProfile } from "@/hooks/useUserProfile";
 import { cn } from "@/lib/utils";
+import { notify } from "@/lib/notify";
 
 const plans: {
   id: UserProfile["plan"];
@@ -113,7 +113,7 @@ function PlanosPage() {
                 disabled={current}
                 onClick={() => {
                   update({ plan: p.id });
-                  toast.success(`Plano ${p.name} selecionado`);
+                  notify.success(`Plano ${p.name} selecionado`);
                 }}
               >
                 {current ? "Plano atual" : `Escolher ${p.name}`}

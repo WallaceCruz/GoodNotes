@@ -1,7 +1,7 @@
 import { CalendarClock } from "lucide-react";
 import { PRIORITY_ICON, PRIORITY_LABEL, type Priority } from "@/lib/board/model";
 import { cn } from "@/lib/utils";
-import { deadlineInfo, priorityClass } from "@/components/note/note-style";
+import { deadlineInfo, priorityClass } from "@/lib/note-theme/note-style";
 
 export function PriorityBadge({ priority }: { priority: Priority }) {
   return (

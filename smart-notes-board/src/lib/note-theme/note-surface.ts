@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
-import type { NoteAppearance } from "@/lib/note-appearance";
+import type { NoteAppearance } from "@/lib/note-theme/note-appearance";
 import type { NoteColor } from "@/lib/board/model";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 
 export const noteTintVar: Record<NoteColor, string> = {
   rose: "var(--note-rose)",

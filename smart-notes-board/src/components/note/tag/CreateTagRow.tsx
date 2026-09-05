@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { cn } from "@/lib/utils";
 import type { NoteColor } from "@/lib/board/model";
 

@@ -2,7 +2,7 @@ import { CalendarClock, CheckCircle2, Circle, Loader, XCircle } from "lucide-rea
 import type { LucideIcon } from "lucide-react";
 import { NOTE_STATUSES, STATUS_HINT, STATUS_LABEL, type NoteStatus } from "@/lib/board/model";
 import { cn } from "@/lib/utils";
-import { statusClass } from "@/components/note/note-style";
+import { statusClass } from "@/lib/note-theme/note-style";
 
 const STATUS_ICON: Record<NoteStatus, LucideIcon> = {
   done: CheckCircle2,

@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { CircleHelp, CreditCard, LogOut, Moon, Settings, Sun, User } from "lucide-react";
-import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -14,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/hooks/useTheme";
 import { initials, useUserProfile } from "@/hooks/useUserProfile";
 import { cn } from "@/lib/utils";
+import { notify } from "@/lib/notify";
 
 const links = [
   { label: "Perfil", icon: User, to: "/perfil" },
@@ -98,12 +98,12 @@ export function UserMenu({
           />
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => toast("Ajuda em breve")}>
+        <DropdownMenuItem onClick={() => notify.show("Ajuda em breve")}>
           <CircleHelp className="h-4 w-4" />
           Ajuda
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => toast("Sessão encerrada")}>
+        <DropdownMenuItem onClick={() => notify.show("Sessão encerrada")}>
           <LogOut className="h-4 w-4" />
           Sair
         </DropdownMenuItem>

@@ -4,7 +4,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { END_OF_DAY, addDays, withTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { deadlineInfo } from "@/components/note/note-style";
+import { deadlineInfo } from "@/lib/note-theme/note-style";
 
 const QUICK = [
   { label: "Hoje", days: 0 },

@@ -3,7 +3,7 @@ import { dateFromDayKey, formatTime } from "@/lib/date";
 import { stripHtml } from "@/lib/html";
 import { hasConflict } from "@/lib/board/calendar";
 import { cn } from "@/lib/utils";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { DeadlineBadge, PriorityBadge } from "@/components/note/NoteMeta";
 import type { Note } from "@/lib/board/model";
 

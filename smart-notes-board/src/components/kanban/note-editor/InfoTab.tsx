@@ -5,7 +5,7 @@ import { noteAssignees } from "@/lib/board/notes";
 import { boardActions, useActiveFile, useActiveProject, useFileColumns } from "@/stores/board";
 import { timeAgo } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { priorityClass } from "@/components/note/note-style";
+import { priorityClass } from "@/lib/note-theme/note-style";
 import { AssigneeSelect } from "@/components/note/AssigneeSelect";
 import { CategorySelect } from "@/components/note/CategorySelect";
 import { DeadlinePicker } from "@/components/note/DeadlinePicker";

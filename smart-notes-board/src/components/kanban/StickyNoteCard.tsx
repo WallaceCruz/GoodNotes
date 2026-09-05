@@ -19,7 +19,7 @@ import { BelowChecklistNote } from "@/components/editor/BelowChecklistNote";
 import { CardResizeHandle } from "./CardResizeHandle";
 import { ChecklistEditor } from "@/components/note/ChecklistEditor";
 import { hasRichContent } from "@/lib/html";
-import { noteSurface } from "@/components/note/note-appearance";
+import { noteSurface } from "@/lib/note-theme/note-surface";
 import { NoteBadges } from "@/components/note/note-parts";
 import { useNoteAppearance } from "@/stores/note-appearance";
 import { RichNoteEditor } from "@/components/editor/RichNoteEditor";

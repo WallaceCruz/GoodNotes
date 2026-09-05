@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Check, Search, X } from "lucide-react";
 import { emptyFilters, matchesFilters } from "@/lib/board/filters";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { cn } from "@/lib/utils";
 import type { Note } from "@/lib/board/model";
 

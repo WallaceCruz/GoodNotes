@@ -5,7 +5,7 @@ import { isNoteDone } from "@/lib/board/status";
 import { useActiveProjectId, useFileColumns, useFileTags } from "@/stores/board";
 import { useNoteAppearance } from "@/stores/note-appearance";
 import { cn } from "@/lib/utils";
-import { noteSurface } from "@/components/note/note-appearance";
+import { noteSurface } from "@/lib/note-theme/note-surface";
 import { AssigneeStack, ChecklistBar, NoteBadges, TagChips } from "@/components/note/note-parts";
 import { NoteRichContent } from "@/components/note/NoteRichContent";
 

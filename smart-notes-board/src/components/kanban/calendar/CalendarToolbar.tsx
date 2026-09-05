@@ -1,7 +1,7 @@
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CalendarViewMode } from "@/lib/board/calendar";
-import { SNAP_OPTIONS, VIEW_LABEL, type CalendarFilters } from "./calendar-ui";
+import { SNAP_OPTIONS, VIEW_LABEL, type CalendarFilters } from "@/lib/board/calendar-ui";
 
 function FilterChip({
   label,

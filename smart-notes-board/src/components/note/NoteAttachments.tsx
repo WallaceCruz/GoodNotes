@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { Download, Loader2, Paperclip, Trash2, Upload } from "lucide-react";
-import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { boardActions } from "@/stores/board";
 import { formatBytes } from "@/lib/board/attachments";
@@ -8,6 +7,7 @@ import { MAX_ATTACHMENT_BYTES, deleteFile, downloadFile, putFile } from "@/lib/a
 import { uid } from "@/lib/id";
 import { cn } from "@/lib/utils";
 import type { NoteAttachment } from "@/lib/board/model";
+import { notify } from "@/lib/notify";
 
 function AttachmentRow({
   attachment,
@@ -26,7 +26,7 @@ function AttachmentRow({
       <button
         onClick={() => {
           void downloadFile(attachment.id, attachment.name).then((ok) => {
-            if (!ok) toast.error("Arquivo não encontrado neste navegador");
+            if (!ok) notify.error("Arquivo não encontrado neste navegador");
           });
         }}
         aria-label={`Baixar ${attachment.name}`}
@@ -72,7 +72,7 @@ export function NoteAttachments({
     try {
       for (const file of Array.from(files)) {
         if (file.size > MAX_ATTACHMENT_BYTES) {
-          toast.error(`"${file.name}" passa de ${formatBytes(MAX_ATTACHMENT_BYTES)}`);
+          notify.error(`"${file.name}" passa de ${formatBytes(MAX_ATTACHMENT_BYTES)}`);
           continue;
         }
         const id = uid();
@@ -86,7 +86,7 @@ export function NoteAttachments({
         });
       }
     } catch {
-      toast.error("Não foi possível guardar o anexo neste navegador");
+      notify.error("Não foi possível guardar o anexo neste navegador");
     } finally {
       setEnviando(false);
       if (inputRef.current) inputRef.current.value = "";

@@ -4,11 +4,11 @@ import { agendaGroups } from "@/lib/board/agenda";
 import { isNoteDone } from "@/lib/board/status";
 import { matchesFilters, type Filters } from "@/lib/board/filters";
 import { boardActions } from "@/stores/board";
-import { toastUndo } from "@/lib/toast";
 import { formatDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { PRIORITY_LABEL, type Column, type Note } from "@/lib/board/model";
+import { notify } from "@/lib/notify";
 
 const PRIORITY_DOT: Record<string, string> = {
   urgent: "bg-prio-urgent",
@@ -24,7 +24,7 @@ function TaskRow({ note, columns, onOpen }: { note: Note; columns: Column[]; onO
   const toggle = () => {
     boardActions.setNoteDone(note.id, !done);
     if (!done) {
-      toastUndo(`"${note.title || "Nota"}" concluída`, () =>
+      notify.undo(`"${note.title || "Nota"}" concluída`, () =>
         boardActions.setNoteDone(note.id, false),
       );
     }

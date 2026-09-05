@@ -30,7 +30,7 @@ export function AssistantSettings({ onDone }: { onDone: () => void }) {
     try {
       setCatalogo(await listModels(settings.provider, apiKey));
     } catch (e) {
-      setErro(describeError(e));
+      setErro(await describeError(settings.provider, e));
       setCatalogo(null);
     } finally {
       setBuscando(false);

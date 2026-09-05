@@ -4,7 +4,7 @@ import { effectiveStatus } from "@/lib/board/status";
 import { tagColorOf } from "@/lib/board/tags";
 import { initials } from "@/lib/text";
 import { cn } from "@/lib/utils";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { CategoryBadge } from "@/components/note/CategorySelect";
 import { DeadlineBadge, PriorityBadge } from "@/components/note/NoteMeta";
 import { StatusBadge } from "@/components/note/StatusSelect";

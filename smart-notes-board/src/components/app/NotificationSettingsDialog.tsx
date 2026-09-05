@@ -1,5 +1,4 @@
 import { BellRing, RotateCcw } from "lucide-react";
-import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +15,7 @@ import {
   type NotificationSettings,
 } from "@/hooks/useNotificationSettings";
 import { cn } from "@/lib/utils";
+import { notify } from "@/lib/notify";
 
 function Row({
   title,
@@ -184,7 +184,7 @@ export function NotificationSettingsDialog({
           <button
             onClick={() => {
               onReset();
-              toast.success("Configurações restauradas");
+              notify.success("Configurações restauradas");
             }}
             className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent"
           >
@@ -194,7 +194,7 @@ export function NotificationSettingsDialog({
           <button
             onClick={() => {
               onOpenChange(false);
-              toast.success("Preferências de lembrete salvas");
+              notify.success("Preferências de lembrete salvas");
             }}
             className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
           >

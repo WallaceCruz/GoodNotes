@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { minutesBeforeLabel, useNotificationSettings } from "@/hooks/useNotificationSettings";
 import type { Note } from "@/lib/board/model";
 import { cn } from "@/lib/utils";
-import { deadlineInfo } from "@/components/note/note-style";
+import { deadlineInfo } from "@/lib/note-theme/note-style";
 import { NotificationSettingsDialog } from "./NotificationSettingsDialog";
 import { DeadlineBadge, PriorityBadge } from "@/components/note/NoteMeta";
 

@@ -1,7 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 import { formatTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { noteBg, noteLabel } from "@/components/note/note-style";
+import { noteBg, noteLabel } from "@/lib/note-theme/note-style";
 import type { Note } from "@/lib/board/model";
 
 /**

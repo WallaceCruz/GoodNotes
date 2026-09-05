@@ -19,14 +19,14 @@ import {
 } from "@dnd-kit/sortable";
 import { GripVertical, Plus } from "lucide-react";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
 import type { BoardFile, Note } from "@/lib/board/model";
 import { boardActions, getActiveFile, useActiveFile } from "@/stores/board";
 import { cn } from "@/lib/utils";
 import { KanbanColumn } from "./KanbanColumn";
 import { NoteCardPreview } from "./NoteCardPreview";
 import { columnIdOf, columnSortableId } from "./column-drag";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
+import { notify } from "@/lib/notify";
 
 // Mantém a posição do scroll do quadro ao abrir/fechar a página de detalhes.
 let savedBoardScroll = { top: 0, left: 0 };
@@ -155,7 +155,7 @@ export function KanbanBoard({
       if (!toId || toId === fromId) return;
       boardActions.reorderColumn(fromId, toId);
       const column = activeFile.columns.find((c) => c.id === fromId);
-      if (column) toast.success(`Coluna "${column.title}" movida`);
+      if (column) notify.success(`Coluna "${column.title}" movida`);
       return;
     }
 
@@ -168,15 +168,15 @@ export function KanbanBoard({
       const sameColumn = overNote.columnId === note?.columnId;
       boardActions.reorderNote(noteId, overId);
       const column = activeFile.columns.find((c) => c.id === overNote.columnId);
-      if (sameColumn) toast.success(`"${note?.title || "Nota"}" reordenada`);
-      else if (column) toast.success(`"${note?.title || "Nota"}" movida para ${column.title}`);
+      if (sameColumn) notify.success(`"${note?.title || "Nota"}" reordenada`);
+      else if (column) notify.success(`"${note?.title || "Nota"}" movida para ${column.title}`);
       return;
     }
     const target = resolveTarget(activeFile, noteId, overId);
     if (!target) return;
     boardActions.moveNote(noteId, target.columnId, target.beforeId);
     const column = activeFile.columns.find((c) => c.id === target.columnId);
-    if (column) toast.success(`"${note?.title || "Nota"}" movida para ${column.title}`);
+    if (column) notify.success(`"${note?.title || "Nota"}" movida para ${column.title}`);
   };
 
   const dragging = file.notes.find((n) => n.id === draggingId);

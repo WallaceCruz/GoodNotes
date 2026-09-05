@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { toast } from "sonner";
 import { AccountLayout } from "@/components/account/AccountLayout";
 import { NoteAppearanceSection } from "@/components/account/NoteAppearanceSection";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ import {
   minutesBeforeLabel,
   useNotificationSettings,
 } from "@/hooks/useNotificationSettings";
+import { notify } from "@/lib/notify";
 
 export const Route = createFileRoute("/configuracoes")({
   head: () => ({
@@ -156,12 +156,12 @@ function ConfiguracoesPage() {
           variant="outline"
           onClick={() => {
             reset();
-            toast("Preferências restauradas");
+            notify.show("Preferências restauradas");
           }}
         >
           Restaurar padrões
         </Button>
-        <Button onClick={() => toast.success("Configurações salvas")}>Salvar agora</Button>
+        <Button onClick={() => notify.success("Configurações salvas")}>Salvar agora</Button>
       </div>
     </AccountLayout>
   );

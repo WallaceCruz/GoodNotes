@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, Pencil, Trash2 } from "lucide-react";
 import { boardActions } from "@/stores/board";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { cn } from "@/lib/utils";
 import { TagColorPicker } from "./TagColorPicker";
 import type { NoteColor } from "@/lib/board/model";

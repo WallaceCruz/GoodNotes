@@ -2,7 +2,7 @@ import { dayKey } from "@/lib/date";
 import { byDeadline, hasConflict } from "@/lib/board/calendar";
 import { cn } from "@/lib/utils";
 import { CalendarNoteChip } from "./CalendarNoteChip";
-import { WEEKDAYS } from "./calendar-ui";
+import { WEEKDAYS } from "@/lib/board/calendar-ui";
 import type { Note } from "@/lib/board/model";
 
 /** Quantas notas cabem numa célula do mês antes de virar "+N mais". */

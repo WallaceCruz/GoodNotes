@@ -1,5 +1,4 @@
 import { MousePointerClick, Trash2, X } from "lucide-react";
-import { toastUndo } from "@/lib/toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { boardActions, useActiveFile, useSelectedNoteIds } from "@/stores/board";
+import { notify } from "@/lib/notify";
 
 /**
  * Barra de exclusão em massa: aparece no lugar do quadro normal enquanto o
@@ -27,7 +27,7 @@ export function SelectionToolbar() {
     const removed = (activeFile?.notes ?? []).filter((n) => selectedIds.includes(n.id));
     boardActions.removeNotes(selectedIds);
     boardActions.toggleSelectionMode();
-    toastUndo(`${removed.length} nota(s) excluída(s)`, () => boardActions.restoreNotes(removed));
+    notify.undo(`${removed.length} nota(s) excluída(s)`, () => boardActions.restoreNotes(removed));
   };
 
   return (

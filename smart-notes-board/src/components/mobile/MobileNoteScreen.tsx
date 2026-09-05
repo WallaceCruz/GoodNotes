@@ -1,11 +1,10 @@
 import { Archive, ArchiveRestore, ArrowLeft, Trash2 } from "lucide-react";
-import { toastUndo } from "@/lib/toast";
 import { PRIORITIES, PRIORITY_ICON, PRIORITY_LABEL } from "@/lib/board/model";
 import { noteAssignees } from "@/lib/board/notes";
 import { boardActions, useFileColumns } from "@/stores/board";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/date";
-import { priorityClass } from "@/components/note/note-style";
+import { priorityClass } from "@/lib/note-theme/note-style";
 import { AssigneeSelect } from "@/components/note/AssigneeSelect";
 import { CategorySelect } from "@/components/note/CategorySelect";
 import { ChecklistEditor } from "@/components/note/ChecklistEditor";
@@ -18,6 +17,7 @@ import { NoteComments } from "@/components/note/NoteComments";
 import { NoteAttachments } from "@/components/note/NoteAttachments";
 import { NoteDates } from "@/components/note/NoteDates";
 import type { Note } from "@/lib/board/model";
+import { notify } from "@/lib/notify";
 
 /** O rótulo é opcional: alguns editores já trazem o próprio cabeçalho. */
 function Field({ label, children }: { label?: string; children: React.ReactNode }) {
@@ -72,7 +72,7 @@ export function MobileNoteScreen({ note, onClose }: { note: Note; onClose: () =>
             const removed = note;
             boardActions.removeNote(note.id);
             onClose();
-            toastUndo(`"${note.title || "Nota"}" excluída`, () =>
+            notify.undo(`"${note.title || "Nota"}" excluída`, () =>
               boardActions.restoreNote(removed),
             );
           }}

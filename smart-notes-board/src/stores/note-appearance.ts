@@ -5,7 +5,7 @@ import {
   DEFAULT_COLUMN_COLORS,
   defaultNoteAppearance,
   type NoteAppearance,
-} from "@/lib/note-appearance";
+} from "@/lib/note-theme/note-appearance";
 
 /**
  * Aparência das notas, com herança projeto → conta.

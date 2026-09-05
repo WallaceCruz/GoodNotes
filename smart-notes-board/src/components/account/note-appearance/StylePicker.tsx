@@ -1,6 +1,10 @@
 import { StickyPreview } from "./StickyPreview";
 import { cn } from "@/lib/utils";
-import { NOTE_STYLE_OPTIONS, type NoteAppearance, type NoteStyle } from "@/lib/note-appearance";
+import {
+  NOTE_STYLE_OPTIONS,
+  type NoteAppearance,
+  type NoteStyle,
+} from "@/lib/note-theme/note-appearance";
 import type { NoteColor } from "@/lib/board/model";
 
 /**

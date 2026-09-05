@@ -2,11 +2,11 @@ import { useMemo } from "react";
 import { ArchiveRestore, ChevronRight, Inbox } from "lucide-react";
 import { matchesFilters, type Filters } from "@/lib/board/filters";
 import { boardActions } from "@/stores/board";
-import { toastUndo } from "@/lib/toast";
 import { formatDate } from "@/lib/date";
-import { noteBg } from "@/components/note/note-style";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { cn } from "@/lib/utils";
 import type { Note } from "@/lib/board/model";
+import { notify } from "@/lib/notify";
 
 /**
  * As notas arquivadas.
@@ -57,7 +57,7 @@ export function MobileArchived({
           <button
             onClick={() => {
               boardActions.setNoteArchived(note.id, false);
-              toastUndo(`"${note.title || "Nota"}" desarquivada`, () =>
+              notify.undo(`"${note.title || "Nota"}" desarquivada`, () =>
                 boardActions.setNoteArchived(note.id, true),
               );
             }}

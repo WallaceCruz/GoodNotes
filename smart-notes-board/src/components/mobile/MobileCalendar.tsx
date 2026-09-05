@@ -4,12 +4,12 @@ import { byDeadline, calendarDays, notesByDay } from "@/lib/board/calendar";
 import { isNoteDone } from "@/lib/board/status";
 import { matchesFilters, type Filters } from "@/lib/board/filters";
 import { boardActions } from "@/stores/board";
-import { toastUndo } from "@/lib/toast";
 import { dayKey, formatTime } from "@/lib/date";
-import { WEEKDAYS } from "@/components/kanban/calendar/calendar-ui";
-import { noteBg } from "@/components/note/note-style";
+import { WEEKDAYS } from "@/lib/board/calendar-ui";
+import { noteBg } from "@/lib/note-theme/note-style";
 import { cn } from "@/lib/utils";
 import type { Column, Note } from "@/lib/board/model";
+import { notify } from "@/lib/notify";
 
 const MESES = [
   "janeiro",
@@ -158,7 +158,7 @@ export function MobileCalendar({
                     onClick={() => {
                       boardActions.setNoteDone(note.id, !done);
                       if (!done) {
-                        toastUndo(`"${note.title || "Nota"}" concluída`, () =>
+                        notify.undo(`"${note.title || "Nota"}" concluída`, () =>
                           boardActions.setNoteDone(note.id, false),
                         );
                       }
