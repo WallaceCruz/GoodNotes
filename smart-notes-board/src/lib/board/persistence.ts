@@ -42,6 +42,9 @@ export function normalize(state: BoardState): BoardState {
           checklist: n.checklist ?? [],
           images: n.images ?? [],
           comments: n.comments ?? [],
+          attachments: n.attachments ?? [],
+          // Sem data de criação registrada, a última edição é a melhor aproximação.
+          createdAt: n.createdAt ?? n.updatedAt ?? Date.now(),
           priority: n.priority ?? null,
           status: n.status ?? null,
           category: n.category ?? null,

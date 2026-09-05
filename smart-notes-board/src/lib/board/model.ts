@@ -134,6 +134,23 @@ export type ChecklistItem = {
   done: boolean;
 };
 
+/**
+ * Anexo de uma nota.
+ *
+ * Só os metadados vivem aqui. O arquivo em si fica no IndexedDB (ver
+ * `lib/attachment-files.ts`): serializar binário dentro do quadro estouraria a
+ * cota do armazenamento local e faria o app parar de salvar tudo — notas,
+ * comentários e colunas junto.
+ */
+export type NoteAttachment = {
+  id: string;
+  name: string;
+  /** Bytes do arquivo original, para exibir o tamanho sem carregá-lo. */
+  size: number;
+  type: string;
+  addedAt: number;
+};
+
 export type NoteImage = {
   id: string;
   url: string;
@@ -154,11 +171,13 @@ export type Note = {
   assignee: string | null;
   /** Responsáveis adicionais (multi). `assignee` permanece como o primeiro da lista. */
   assignees?: string[];
+  createdAt: number;
   updatedAt: number;
   tags: string[];
   checklist: ChecklistItem[];
   showChecklist: boolean;
   comments: Comment[];
+  attachments: NoteAttachment[];
   images: NoteImage[];
   priority: Priority | null;
   status: NoteStatus | null;

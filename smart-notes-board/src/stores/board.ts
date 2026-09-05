@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type {
+  NoteAttachment,
   AutomationType,
   BoardFile,
   BoardState,
@@ -16,6 +17,7 @@ import * as notes from "@/lib/board/notes";
 import * as projects from "@/lib/board/projects";
 import * as tags from "@/lib/board/tags";
 import * as comments from "@/lib/board/comments";
+import * as attachments from "@/lib/board/attachments";
 import { loadState } from "@/lib/board/persistence";
 import { createInitialState } from "@/lib/board/seed";
 
@@ -80,6 +82,9 @@ export type BoardActions = {
   renameTag: (oldName: string, newName: string) => void;
   setTagColor: (name: string, color: NoteColor) => void;
   removeTag: (name: string) => void;
+
+  addAttachment: (noteId: string, attachment: NoteAttachment) => void;
+  removeAttachment: (noteId: string, attachmentId: string) => void;
 
   addComment: (noteId: string, author: string, text: string) => void;
   removeComment: (noteId: string, commentId: string) => void;
@@ -209,6 +214,11 @@ export const useBoard = create<BoardSlice>()((set, get) => {
         })),
       selectAllNotes: (noteIds) => set({ selectedNoteIds: noteIds }),
       clearSelection: () => set({ selectedNoteIds: [] }),
+
+      addAttachment: (noteId, attachment) =>
+        onFile((f) => attachments.addAttachment(f, noteId, attachment)),
+      removeAttachment: (noteId, attachmentId) =>
+        onFile((f) => attachments.removeAttachment(f, noteId, attachmentId)),
 
       addComment: (noteId, author, text) =>
         onFile((f) => comments.addComment(f, noteId, author, text)),

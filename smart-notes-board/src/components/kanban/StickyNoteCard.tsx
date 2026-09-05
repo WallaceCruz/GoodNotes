@@ -25,6 +25,8 @@ import { useNoteAppearance } from "@/stores/note-appearance";
 import { RichNoteEditor } from "@/components/editor/RichNoteEditor";
 import { TagEditor } from "@/components/note/TagEditor";
 import { NoteComments } from "@/components/note/NoteComments";
+import { NoteAttachments } from "@/components/note/NoteAttachments";
+import { NoteDates } from "@/components/note/NoteDates";
 
 function StickyNoteCardBase({
   note,
@@ -207,6 +209,8 @@ function StickyNoteCardBase({
           <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} />
         </div>
         <NoteComments noteId={note.id} comments={note.comments} compact />
+        <NoteAttachments noteId={note.id} attachments={note.attachments} compact />
+        <NoteDates createdAt={note.createdAt} updatedAt={note.updatedAt} className="w-full" />
       </footer>
     </div>
   );

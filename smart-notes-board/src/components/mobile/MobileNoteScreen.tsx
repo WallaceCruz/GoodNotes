@@ -15,6 +15,8 @@ import { PrioritySelect } from "@/components/note/PrioritySelect";
 import { StatusSelect } from "@/components/note/StatusSelect";
 import { TagEditor } from "@/components/note/TagEditor";
 import { NoteComments } from "@/components/note/NoteComments";
+import { NoteAttachments } from "@/components/note/NoteAttachments";
+import { NoteDates } from "@/components/note/NoteDates";
 import type { Note } from "@/lib/board/model";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -148,6 +150,10 @@ export function MobileNoteScreen({ note, onClose }: { note: Note; onClose: () =>
           <NoteComments noteId={note.id} comments={note.comments} />
         </Field>
 
+        <Field label="Anexos">
+          <NoteAttachments noteId={note.id} attachments={note.attachments} />
+        </Field>
+
         <Field label="Responsáveis">
           <AssigneeSelect
             value={noteAssignees(note)}
@@ -160,6 +166,12 @@ export function MobileNoteScreen({ note, onClose }: { note: Note; onClose: () =>
         <Field label="Categoria">
           <CategorySelect value={note.category} onChange={(category) => onChange({ category })} />
         </Field>
+
+        <NoteDates
+          createdAt={note.createdAt}
+          updatedAt={note.updatedAt}
+          className="justify-center pb-2 pt-1"
+        />
       </div>
     </div>
   );

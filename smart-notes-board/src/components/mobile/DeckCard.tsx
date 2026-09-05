@@ -1,4 +1,4 @@
-import { CheckCircle2, MessageSquare, Pin } from "lucide-react";
+import { CheckCircle2, MessageSquare, Paperclip, Pin } from "lucide-react";
 import { type Column, type Note } from "@/lib/board/model";
 import { noteAssignees } from "@/lib/board/notes";
 import { useActiveProjectId, useFileTags } from "@/stores/board";
@@ -93,6 +93,12 @@ export function DeckCard({ note, columns }: { note: Note; columns: Column[] }) {
           <span className="flex shrink-0 items-center gap-1 text-[11px] text-foreground/60">
             <MessageSquare className="h-3 w-3" />
             {note.comments.length}
+          </span>
+        )}
+        {note.attachments.length > 0 && (
+          <span className="flex shrink-0 items-center gap-1 text-[11px] text-foreground/60">
+            <Paperclip className="h-3 w-3" />
+            {note.attachments.length}
           </span>
         )}
       </footer>
