@@ -1,19 +1,32 @@
 import { useMemo, useState } from "react";
-import { CalendarDays, Folder, ListChecks, Plus, Search, X } from "lucide-react";
+import {
+  Archive,
+  CalendarDays,
+  Folder,
+  ListChecks,
+  MessageSquare,
+  Plus,
+  Search,
+  X,
+} from "lucide-react";
 import { boardActions, useActiveFile, useFileColumns } from "@/stores/board";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "@/components/app/UserMenu";
 import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
+import { MobileArchived } from "./MobileArchived";
 import { MobileCalendar } from "./MobileCalendar";
+import { MobileInbox } from "./MobileInbox";
 import { MobileNoteList } from "./MobileNoteList";
 import { MobileNoteScreen } from "./MobileNoteScreen";
 import { MobileProjectsSheet } from "./MobileProjectsSheet";
 
-type MobileTab = "tarefas" | "calendario";
+type MobileTab = "tarefas" | "calendario" | "inbox" | "arquivadas";
 
 const TABS = [
   { id: "tarefas", label: "Tarefas", icon: ListChecks },
   { id: "calendario", label: "Calendário", icon: CalendarDays },
+  { id: "inbox", label: "Inbox", icon: MessageSquare },
+  { id: "arquivadas", label: "Arquivadas", icon: Archive },
 ] as const satisfies ReadonlyArray<{ id: MobileTab; label: string; icon: typeof ListChecks }>;
 
 /**
@@ -69,15 +82,24 @@ export function MobileApp() {
           <UserMenu />
         </div>
 
+        {/* Com seis controles, a barra nao cabe rotulo fixo; o nome da visao
+            atual vem para ca, junto do arquivo. */}
         <p className="truncate px-1 pt-1.5 text-[11px] text-muted-foreground">
           {activeFile?.name ?? "Sem arquivo"}
+          <span aria-hidden> · </span>
+          <span className="text-foreground/70">{TABS.find((t) => t.id === tab)?.label}</span>
         </p>
       </header>
 
-      {tab === "tarefas" ? (
+      {tab === "tarefas" && (
         <MobileNoteList notes={notes} columns={columns} query={query} onOpenNote={setOpenNoteId} />
-      ) : (
+      )}
+      {tab === "calendario" && (
         <MobileCalendar notes={notes} columns={columns} query={query} onOpenNote={setOpenNoteId} />
+      )}
+      {tab === "inbox" && <MobileInbox notes={notes} query={query} onOpenNote={setOpenNoteId} />}
+      {tab === "arquivadas" && (
+        <MobileArchived notes={notes} query={query} onOpenNote={setOpenNoteId} />
       )}
 
       {/*
@@ -97,23 +119,23 @@ export function MobileApp() {
             <Folder className="h-[18px] w-[18px]" />
           </button>
 
-          {/* Só a aba ativa mostra o rótulo: com quatro controles, quatro
-              rótulos não caberiam numa tela de 375px sem apertar os alvos. */}
+          {/* Só ícones: seis rótulos não caberiam em 375px sem espremer os
+              alvos de toque. O nome da visão ativa fica no cabeçalho. */}
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
               aria-label={label}
+              title={label}
               aria-pressed={tab === id}
               className={cn(
-                "flex h-10 items-center gap-1.5 rounded-full text-[13px] font-medium transition-colors",
+                "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
                 tab === id
-                  ? "bg-primary px-4 text-primary-foreground"
-                  : "w-10 justify-center text-muted-foreground hover:text-foreground",
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <Icon className="h-[18px] w-[18px] shrink-0" />
-              {tab === id && label}
+              <Icon className="h-[18px] w-[18px]" />
             </button>
           ))}
 
