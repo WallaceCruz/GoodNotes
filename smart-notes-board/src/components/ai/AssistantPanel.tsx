@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
+  Folder,
   PanelLeft,
   Paperclip,
   Plus,
@@ -36,8 +37,9 @@ import { AssistantSettings } from "./AssistantSettings";
 import { ClaudeMark } from "./ClaudeMark";
 import { ConversationList } from "./ConversationList";
 import { NotePicker } from "./NotePicker";
+import { WorkspacePicker } from "./WorkspacePicker";
 import { boardActions, useActiveFile } from "@/stores/board";
-import type { Note } from "@/lib/board/model";
+import type { BoardFile, Note } from "@/lib/board/model";
 import { uid } from "@/lib/id";
 import { cn } from "@/lib/utils";
 
@@ -89,6 +91,12 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
   const [addOpen, setAddOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showNotePicker, setShowNotePicker] = useState(false);
+  const [showWorkspacePicker, setShowWorkspacePicker] = useState(false);
+
+  // O escopo automatico e' o que esta aberto no quadro. Estes dois o
+  // sobrescrevem: um arquivo escolhido a mao, ou nenhum contexto.
+  const [scopeOverride, setScopeOverride] = useState<BoardFile | null>(null);
+  const [scopeDismissed, setScopeDismissed] = useState(false);
 
   // O que a pessoa juntou a mais: notas do quadro e arquivos soltos no chat.
   const [extraNotes, setExtraNotes] = useState<Note[]>([]);
@@ -101,7 +109,12 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
 
   const abortRef = useRef<AbortController | null>(null);
   const fimRef = useRef<HTMLDivElement>(null);
-  const contexto = scopeLabel(scope);
+  const escopo: AiScope = scopeOverride
+    ? { kind: "file", file: scopeOverride }
+    : scopeDismissed
+      ? { kind: "none" }
+      : scope;
+  const contexto = scopeLabel(escopo);
   const provedor = providerInfo(settings.provider);
 
   useEffect(() => {
@@ -137,7 +150,7 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
 
     // Anexos da nota e arquivos soltos no chat viram blocos próprios: PDF a API
     // lê como documento, texto vai como texto. O que não couber é avisado.
-    const daNota = await attachmentBlocks(scope.kind === "note" ? scope.note.attachments : []);
+    const daNota = await attachmentBlocks(escopo.kind === "note" ? escopo.note.attachments : []);
     const doChat = await fileBlocks(extraFiles);
     const recusados = [...daNota.skipped, ...doChat.skipped];
     if (recusados.length) {
@@ -150,7 +163,7 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
       );
     }
 
-    const partes = [describeScope(scope), describeExtras(extraNotes)].filter(Boolean);
+    const partes = [describeScope(escopo), describeExtras(extraNotes)].filter(Boolean);
     const contextoTexto = partes.join("\n\n");
     const blocos: ContextBlock[] = [
       ...daNota.blocks,
@@ -208,6 +221,8 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
     setMessages([]);
     setExtraNotes([]);
     setExtraFiles([]);
+    setScopeOverride(null);
+    setScopeDismissed(false);
     setError(null);
     setExpanded(false);
     setShowHistory(false);
@@ -388,8 +403,10 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
             {/* Um cartão só: contexto, campo e controles moram juntos. */}
             <div className="p-3">
               <div className="rounded-xl border border-border bg-background p-2 focus-within:border-foreground/25">
+                {/* O contexto é automático, mas não é obrigatório: às vezes a
+                    pergunta não tem nada a ver com o que está aberto. */}
                 {contexto && (
-                  <div className="mb-1 flex items-center gap-2 rounded-lg bg-muted px-2 py-1.5">
+                  <div className="group/contexto mb-1 flex items-center gap-2 rounded-lg bg-muted px-2 py-1.5">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-background">
                       <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                     </span>
@@ -401,6 +418,17 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
                         {contexto.hint}
                       </span>
                     </span>
+                    <button
+                      onClick={() => {
+                        setScopeOverride(null);
+                        setScopeDismissed(true);
+                      }}
+                      aria-label="Remover contexto da conversa"
+                      title="Remover contexto"
+                      className="shrink-0 rounded-md p-1 text-muted-foreground opacity-0 transition hover:bg-background hover:text-foreground focus-visible:opacity-100 group-hover/contexto:opacity-100"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 )}
 
@@ -495,6 +523,16 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
                         >
                           <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
                           Anexar documento
+                        </button>
+                        <button
+                          onClick={() => {
+                            setAddOpen(false);
+                            setShowWorkspacePicker(true);
+                          }}
+                          className="flex w-full items-center gap-2.5 border-t border-border px-3 py-2.5 text-left text-[13px] transition-colors hover:bg-accent"
+                        >
+                          <Folder className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          Escolher workspace
                         </button>
                       </div>
                     )}
@@ -602,6 +640,18 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
             onOpen={abrirConversa}
             onRemove={remove}
             onClose={() => setShowHistory(false)}
+          />
+        )}
+
+        {showWorkspacePicker && (
+          <WorkspacePicker
+            activeFileId={scopeOverride?.id ?? activeFile?.id ?? null}
+            onSelect={(file) => {
+              setScopeOverride(file);
+              setScopeDismissed(false);
+              setShowWorkspacePicker(false);
+            }}
+            onClose={() => setShowWorkspacePicker(false)}
           />
         )}
 
