@@ -1,31 +1,20 @@
 import { useMemo, useState } from "react";
-import {
-  Archive,
-  CalendarDays,
-  Folder,
-  ListChecks,
-  MessageSquare,
-  Plus,
-  Search,
-  X,
-} from "lucide-react";
+import { Archive, CalendarDays, Folder, ListChecks, Plus, Search, X } from "lucide-react";
 import { boardActions, useActiveFile, useFileColumns } from "@/stores/board";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "@/components/app/UserMenu";
 import { NotificationsMenu } from "@/components/kanban/NotificationsMenu";
 import { MobileArchived } from "./MobileArchived";
 import { MobileCalendar } from "./MobileCalendar";
-import { MobileInbox } from "./MobileInbox";
 import { MobileNoteList } from "./MobileNoteList";
 import { MobileNoteScreen } from "./MobileNoteScreen";
 import { MobileProjectsSheet } from "./MobileProjectsSheet";
 
-type MobileTab = "tarefas" | "calendario" | "inbox" | "arquivadas";
+type MobileTab = "tarefas" | "calendario" | "arquivadas";
 
 const TABS = [
   { id: "tarefas", label: "Tarefas", icon: ListChecks },
   { id: "calendario", label: "Calendário", icon: CalendarDays },
-  { id: "inbox", label: "Inbox", icon: MessageSquare },
   { id: "arquivadas", label: "Arquivadas", icon: Archive },
 ] as const satisfies ReadonlyArray<{ id: MobileTab; label: string; icon: typeof ListChecks }>;
 
@@ -78,7 +67,7 @@ export function MobileApp() {
             )}
           </div>
 
-          <NotificationsMenu notes={notes} onSelect={setOpenNoteId} />
+          <NotificationsMenu notes={notes} withInbox onSelect={setOpenNoteId} />
           <UserMenu />
         </div>
 
@@ -97,7 +86,6 @@ export function MobileApp() {
       {tab === "calendario" && (
         <MobileCalendar notes={notes} columns={columns} query={query} onOpenNote={setOpenNoteId} />
       )}
-      {tab === "inbox" && <MobileInbox notes={notes} query={query} onOpenNote={setOpenNoteId} />}
       {tab === "arquivadas" && (
         <MobileArchived notes={notes} query={query} onOpenNote={setOpenNoteId} />
       )}
