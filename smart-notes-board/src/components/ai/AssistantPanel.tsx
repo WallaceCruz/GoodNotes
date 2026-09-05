@@ -8,6 +8,7 @@ import {
   PanelLeft,
   Paperclip,
   Plus,
+  Settings2,
   Square,
   SquarePen,
   StickyNote,
@@ -234,7 +235,9 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
     <div className="fixed inset-0 z-50 flex items-end justify-end p-3 sm:p-5">
       <button aria-label="Fechar assistente" onClick={onClose} className="absolute inset-0" />
 
-      <div className="relative flex h-[min(80vh,42rem)] w-full max-w-[26rem] flex-col overflow-hidden rounded-2xl border border-border bg-popover shadow-2xl">
+      {/* Alto o bastante para a conversa não rolar a cada duas respostas, sem
+          encostar nas bordas da janela. */}
+      <div className="relative flex h-[min(90vh,52rem)] w-full max-w-[27rem] flex-col overflow-hidden rounded-2xl border border-border bg-popover shadow-2xl">
         {/* Cabeçalho: menu à esquerda, o chat ao centro, fechar à direita. */}
         <header className="flex items-center gap-2 px-3 py-3">
           <button
@@ -261,6 +264,25 @@ export function AssistantPanel({ scope, onClose }: { scope: AiScope; onClose: ()
               Novo chat
             </button>
           </span>
+
+          {/* A chave da API se configura aqui. Sem este botão, a tela só
+              aparecia na primeira abertura, quando ainda não havia chave —
+              trocar de modelo ou de chave depois ficava sem caminho. */}
+          <button
+            onClick={() => {
+              setShowSettings((v) => !v);
+              setShowHistory(false);
+              setShowNotePicker(false);
+            }}
+            aria-label="Configurações da API"
+            title="Configurações da API"
+            className={cn(
+              "rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent",
+              showSettings && "bg-accent text-foreground",
+            )}
+          >
+            <Settings2 className="h-[18px] w-[18px]" />
+          </button>
 
           <button
             onClick={onClose}
