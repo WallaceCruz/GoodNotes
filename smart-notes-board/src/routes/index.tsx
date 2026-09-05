@@ -122,10 +122,10 @@ function Index() {
     [view, filters],
   );
 
-  const inboxNotes = useMemo(
-    () => allNotes.filter(matches).sort((a, b) => b.updatedAt - a.updatedAt),
-    [allNotes, matches],
-  );
+  // O Inbox mostra os comentários dessas notas, e quem ordena por data de
+  // comentário é o domínio — aqui basta respeitar os filtros do quadro, para
+  // que os dois painéis falem do mesmo recorte.
+  const inboxNotes = useMemo(() => allNotes.filter(matches), [allNotes, matches]);
 
   /** Notas que vencem no dia escolhido no calendário, destacadas no quadro. */
   const highlightIds = useMemo(

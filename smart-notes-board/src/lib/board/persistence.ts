@@ -41,6 +41,7 @@ export function normalize(state: BoardState): BoardState {
           tags: n.tags ?? [],
           checklist: n.checklist ?? [],
           images: n.images ?? [],
+          comments: n.comments ?? [],
           priority: n.priority ?? null,
           status: n.status ?? null,
           category: n.category ?? null,

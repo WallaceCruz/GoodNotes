@@ -14,6 +14,7 @@ import { RichNoteEditor } from "@/components/editor/RichNoteEditor";
 import { PrioritySelect } from "@/components/note/PrioritySelect";
 import { StatusSelect } from "@/components/note/StatusSelect";
 import { TagEditor } from "@/components/note/TagEditor";
+import { NoteComments } from "@/components/note/NoteComments";
 import type { Note } from "@/lib/board/model";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -141,6 +142,10 @@ export function MobileNoteScreen({ note, onClose }: { note: Note; onClose: () =>
 
         <Field label="Etiquetas">
           <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} size="md" />
+        </Field>
+
+        <Field label="Comentários">
+          <NoteComments noteId={note.id} comments={note.comments} />
         </Field>
 
         <Field label="Responsáveis">

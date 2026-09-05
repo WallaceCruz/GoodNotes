@@ -1,4 +1,4 @@
-import { CheckCircle2, Pin } from "lucide-react";
+import { CheckCircle2, MessageSquare, Pin } from "lucide-react";
 import { type Column, type Note } from "@/lib/board/model";
 import { noteAssignees } from "@/lib/board/notes";
 import { useActiveProjectId, useFileTags } from "@/stores/board";
@@ -87,6 +87,14 @@ export function DeckCard({ note, columns }: { note: Note; columns: Column[] }) {
       <footer className="mt-3 flex flex-wrap items-center gap-2 border-t border-foreground/10 pt-3">
         <AssigneeStack names={assignees} size="md" max={3} />
         <TagChips tags={note.tags} tagDefs={fileTags} max={3} className="flex-1" />
+        {/* Só a contagem: o card responde a deslizar, e um controle aqui
+            disputaria o gesto. Para ler e responder, abra a nota. */}
+        {note.comments.length > 0 && (
+          <span className="flex shrink-0 items-center gap-1 text-[11px] text-foreground/60">
+            <MessageSquare className="h-3 w-3" />
+            {note.comments.length}
+          </span>
+        )}
       </footer>
     </article>
   );

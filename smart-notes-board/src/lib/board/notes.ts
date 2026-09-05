@@ -60,6 +60,7 @@ export function createNote(columnId: string): Note {
     updatedAt: Date.now(),
     tags: [],
     checklist: [],
+    comments: [],
     showChecklist: false,
     images: [],
     priority: null,

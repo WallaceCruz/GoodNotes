@@ -114,6 +114,20 @@ export const MEMBERS: Member[] = [
   { id: "qa", name: "QA" },
 ];
 
+/**
+ * Comentário do time numa nota.
+ *
+ * Vive dentro da nota — é dela que o comentário fala, e nenhuma tela precisa
+ * dos comentários sem a nota junto. O Inbox os reúne de volta na hora de
+ * mostrar a conversa do arquivo inteiro.
+ */
+export type Comment = {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: number;
+};
+
 export type ChecklistItem = {
   id: string;
   text: string;
@@ -144,6 +158,7 @@ export type Note = {
   tags: string[];
   checklist: ChecklistItem[];
   showChecklist: boolean;
+  comments: Comment[];
   images: NoteImage[];
   priority: Priority | null;
   status: NoteStatus | null;

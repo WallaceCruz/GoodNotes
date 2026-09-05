@@ -15,6 +15,7 @@ import * as columns from "@/lib/board/columns";
 import * as notes from "@/lib/board/notes";
 import * as projects from "@/lib/board/projects";
 import * as tags from "@/lib/board/tags";
+import * as comments from "@/lib/board/comments";
 import { loadState } from "@/lib/board/persistence";
 import { createInitialState } from "@/lib/board/seed";
 
@@ -79,6 +80,9 @@ export type BoardActions = {
   renameTag: (oldName: string, newName: string) => void;
   setTagColor: (name: string, color: NoteColor) => void;
   removeTag: (name: string) => void;
+
+  addComment: (noteId: string, author: string, text: string) => void;
+  removeComment: (noteId: string, commentId: string) => void;
 
   addChecklistItem: (noteId: string, text: string) => void;
   updateChecklistItem: (
@@ -205,6 +209,11 @@ export const useBoard = create<BoardSlice>()((set, get) => {
         })),
       selectAllNotes: (noteIds) => set({ selectedNoteIds: noteIds }),
       clearSelection: () => set({ selectedNoteIds: [] }),
+
+      addComment: (noteId, author, text) =>
+        onFile((f) => comments.addComment(f, noteId, author, text)),
+      removeComment: (noteId, commentId) =>
+        onFile((f) => comments.removeComment(f, noteId, commentId)),
 
       addTag: (name, color) => onFile((f) => tags.addTag(f, name, color)),
       renameTag: (oldName, newName) => onFile((f) => tags.renameTag(f, oldName, newName)),

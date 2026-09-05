@@ -24,6 +24,7 @@ import { NoteBadges } from "@/components/note/note-parts";
 import { useNoteAppearance } from "@/stores/note-appearance";
 import { RichNoteEditor } from "@/components/editor/RichNoteEditor";
 import { TagEditor } from "@/components/note/TagEditor";
+import { NoteComments } from "@/components/note/NoteComments";
 
 function StickyNoteCardBase({
   note,
@@ -205,6 +206,7 @@ function StickyNoteCardBase({
         <div className="min-w-0 flex-1">
           <TagEditor tags={note.tags} onChange={(tags) => onChange({ tags })} />
         </div>
+        <NoteComments noteId={note.id} comments={note.comments} compact />
       </footer>
     </div>
   );

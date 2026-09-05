@@ -34,6 +34,7 @@ function makeFile(name: string, seed: Array<Partial<Note>>): BoardFile {
       updatedAt: n.updatedAt ?? minutes(60 + i * 30),
       tags: n.tags ?? [],
       checklist: n.checklist ?? [],
+      comments: (n.comments ?? []).map((c) => ({ ...c, id: uid() })),
       showChecklist: (n.checklist?.length ?? 0) > 0,
       images: n.images ?? [],
       priority: n.priority ?? null,
@@ -69,6 +70,20 @@ export function createInitialState(): BoardState {
                 { id: uid(), text: "Arrastar uma nota entre colunas", done: true },
                 { id: uid(), text: "Marcar um item da checklist", done: false },
               ],
+              comments: [
+                {
+                  id: "",
+                  author: "Design",
+                  text: "O Inbox agora mostra só os comentários do time, não o texto das notas.",
+                  createdAt: minutes(30),
+                },
+                {
+                  id: "",
+                  author: "Engenharia",
+                  text: "Isso aqui é um comentário. Clique no ícone de mensagem no rodapé da nota para responder.",
+                  createdAt: minutes(8),
+                },
+              ],
             },
             {
               title: "Escreva com formatação, imagens e tabelas",
@@ -79,6 +94,14 @@ export function createInitialState(): BoardState {
               author: "Design",
               updatedAt: minutes(48),
               priority: "high",
+              comments: [
+                {
+                  id: "",
+                  author: "Produto",
+                  text: "Vale documentar os atalhos do editor num guia à parte.",
+                  createdAt: minutes(95),
+                },
+              ],
             },
             {
               title: "Organize por etiquetas e prioridade",
@@ -99,6 +122,14 @@ export function createInitialState(): BoardState {
               author: "Produto",
               updatedAt: minutes(180),
               priority: "low",
+              comments: [
+                {
+                  id: "",
+                  author: "QA",
+                  text: "Testei arrastar a barra na linha do tempo e as datas mudaram certinho.",
+                  createdAt: minutes(150),
+                },
+              ],
             },
             {
               title: "No celular, o quadro vira um baralho de cartas",
