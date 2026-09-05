@@ -1,15 +1,13 @@
-import { type Column, type Note, type Priority } from "@/lib/board/model";
-import { effectiveStatus } from "@/lib/board/status";
+import { type Note, type Priority } from "@/lib/board/model";
 import { daysUntil } from "@/lib/date";
 
 /**
- * A fila de "o que fazer agora".
+ * Quão urgente é uma nota.
  *
  * No celular não há espaço para o quadro inteiro, então a ordem das colunas
- * deixa de ser a forma de navegar e a urgência assume esse papel: o topo da
- * pilha é sempre a nota que mais precisa de atenção. A regra vive aqui, fora da
- * tela, porque é a mesma pergunta que um resumo diário ou uma notificação
- * fariam.
+ * deixa de ser a forma de navegar e a urgência assume esse papel. A regra vive
+ * aqui, fora da tela, porque é a mesma pergunta que um resumo diário ou uma
+ * notificação fariam.
  */
 
 const PRIORITY_WEIGHT: Record<Priority, number> = {
@@ -46,14 +44,4 @@ export function compareByUrgency(a: Note, b: Note): number {
     (a.deadline ?? Infinity) - (b.deadline ?? Infinity) ||
     b.updatedAt - a.updatedAt
   );
-}
-
-/** Notas que ainda pedem ação: nem arquivadas, nem concluídas. */
-export function isOpen(note: Note, columns: Column[]): boolean {
-  return !note.archived && effectiveStatus(note, columns) !== "done";
-}
-
-/** O baralho: só o que está aberto, do mais urgente para o menos. */
-export function triageDeck(notes: Note[], columns: Column[]): Note[] {
-  return notes.filter((note) => isOpen(note, columns)).sort(compareByUrgency);
 }

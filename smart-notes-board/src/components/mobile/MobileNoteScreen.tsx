@@ -19,12 +19,15 @@ import { NoteAttachments } from "@/components/note/NoteAttachments";
 import { NoteDates } from "@/components/note/NoteDates";
 import type { Note } from "@/lib/board/model";
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+/** O rótulo é opcional: alguns editores já trazem o próprio cabeçalho. */
+function Field({ label, children }: { label?: string; children: React.ReactNode }) {
   return (
     <section className="border-t border-border px-4 py-4">
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </p>
+      {label && (
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+      )}
       {children}
     </section>
   );
@@ -98,7 +101,7 @@ export function MobileNoteScreen({ note, onClose }: { note: Note; onClose: () =>
           </div>
         </div>
 
-        <Field label="Checklist">
+        <Field>
           <ChecklistEditor
             items={note.checklist}
             onAdd={(text) => boardActions.addChecklistItem(note.id, text)}

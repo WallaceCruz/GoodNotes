@@ -134,9 +134,9 @@ export function createInitialState(): BoardState {
               ],
             },
             {
-              title: "No celular, o quadro vira um baralho de cartas",
+              title: "No celular, vira uma lista de tarefas",
               content:
-                "<p>Em telas pequenas as notas viram um deck: deslize para percorrer a fila, ordenada por urgência.</p>",
+                "<p>Em telas pequenas as notas viram uma agenda agrupada por prazo, com calendário ao lado. Conclua direto na lista, sem abrir a nota.</p>",
               color: "sky",
               tags: ["mobile"],
               author: "Design",

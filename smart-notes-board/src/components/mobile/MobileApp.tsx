@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
-import { toastUndo } from "@/lib/toast";
-import { Check, FileText, Layers, ListFilter, Plus } from "lucide-react";
+import { CalendarDays, Check, FileText, Layers, ListChecks, Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,28 +16,29 @@ import {
   useFileColumns,
   useProjects,
 } from "@/stores/board";
-import { isNoteDone } from "@/lib/board/status";
-import { triageDeck } from "@/lib/board/triage";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "@/components/app/UserMenu";
-import { DeckActions } from "./DeckActions";
+import { MobileCalendar } from "./MobileCalendar";
 import { MobileNoteList } from "./MobileNoteList";
 import { MobileNoteScreen } from "./MobileNoteScreen";
-import { NoteDeck } from "./NoteDeck";
-import { useSwipeDeck } from "./useSwipeDeck";
 
-type MobileTab = "deck" | "lista";
+type MobileTab = "tarefas" | "calendario";
+
+const TABS = [
+  { id: "tarefas", label: "Tarefas", icon: ListChecks },
+  { id: "calendario", label: "Calendário", icon: CalendarDays },
+] as const satisfies ReadonlyArray<{ id: MobileTab; label: string; icon: typeof ListChecks }>;
 
 /**
  * O app no celular.
  *
  * Não é o quadro espremido: colunas lado a lado exigem largura que o telefone
- * não tem, e arrastar cards entre elas com o polegar é impreciso. O quadro vira
- * uma pilha — uma nota por vez, a mais urgente na frente — e o fluxo do kanban
- * continua acessível pelo campo "Coluna" na tela da nota.
+ * não tem, e arrastar cards entre elas com o polegar é impreciso. Aqui as notas
+ * viram uma agenda de tarefas, agrupada por prazo, com um calendário ao lado —
+ * o fluxo do kanban continua acessível pelo campo "Coluna" na tela da nota.
  */
 export function MobileApp() {
-  const [tab, setTab] = useState<MobileTab>("deck");
+  const [tab, setTab] = useState<MobileTab>("tarefas");
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
 
   const projects = useProjects();
@@ -48,16 +48,6 @@ export function MobileApp() {
   const columns = useFileColumns();
 
   const notes = useMemo(() => activeFile?.notes ?? [], [activeFile]);
-  const deckNotes = useMemo(() => triageDeck(notes, columns), [notes, columns]);
-
-  const deck = useSwipeDeck(deckNotes.length, {
-    onTap: (index) => {
-      const tapped = deckNotes[index];
-      if (tapped) setOpenNoteId(tapped.id);
-    },
-  });
-  const activeCard = deckNotes[deck.index] ?? null;
-  const activeCardDone = activeCard ? isNoteDone(activeCard, columns) : false;
   const openNote = notes.find((note) => note.id === openNoteId) ?? null;
 
   const createNote = () => {
@@ -67,7 +57,7 @@ export function MobileApp() {
   };
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background text-foreground">
+    <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-background text-foreground">
       <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -114,64 +104,47 @@ export function MobileApp() {
         <UserMenu />
       </header>
 
-      {tab === "deck" ? (
-        <>
-          <NoteDeck notes={deckNotes} columns={columns} deck={deck} />
-          {activeCard && (
-            <DeckActions
-              position={deck.index + 1}
-              total={deckNotes.length}
-              done={activeCardDone}
-              canGoBack={deck.canGoBack}
-              canGoForward={deck.canGoForward}
-              onPrevious={deck.previous}
-              onNext={deck.next}
-              onToggleDone={() => {
-                boardActions.setNoteDone(activeCard.id, !activeCardDone);
-                if (!activeCardDone) {
-                  toastUndo(`"${activeCard.title || "Nota"}" concluída`, () =>
-                    boardActions.setNoteDone(activeCard.id, false),
-                  );
-                }
-              }}
-              onOpen={() => setOpenNoteId(activeCard.id)}
-            />
-          )}
-        </>
-      ) : (
+      {tab === "tarefas" ? (
         <MobileNoteList notes={notes} columns={columns} onOpenNote={setOpenNoteId} />
+      ) : (
+        <MobileCalendar notes={notes} columns={columns} onOpenNote={setOpenNoteId} />
       )}
 
-      <nav className="flex shrink-0 items-center gap-1 border-t border-border px-3 pb-[env(safe-area-inset-bottom)] pt-1.5">
-        {(
-          [
-            ["deck", "Deck", Layers],
-            ["lista", "Lista", ListFilter],
-          ] as const
-        ).map(([id, label, Icon]) => (
-          <button
-            key={id}
-            onClick={() => setTab(id)}
-            className={cn(
-              "flex flex-1 flex-col items-center gap-0.5 rounded-lg py-1.5 text-[11px] transition-colors",
-              tab === id ? "text-primary" : "text-muted-foreground",
-            )}
-          >
-            <Icon className="h-5 w-5" />
-            {label}
-          </button>
-        ))}
+      {/*
+        Barra flutuante: solta do rodapé, ela deixa a lista correr por baixo em
+        vez de terminar numa borda dura, e o polegar alcança as ações sem
+        esticar até o fim da tela. O respiro embaixo respeita a área segura do
+        aparelho.
+      */}
+      <nav className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-border/70 bg-popover/90 p-1.5 shadow-lg backdrop-blur-md">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              aria-pressed={tab === id}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium transition-colors",
+                tab === id
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
 
-        <button
-          onClick={createNote}
-          aria-label="Nova nota"
-          className="flex flex-1 flex-col items-center gap-0.5 rounded-lg py-1.5 text-[11px] text-muted-foreground"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+          <span className="mx-0.5 h-6 w-px bg-border" />
+
+          <button
+            onClick={createNote}
+            aria-label="Nova nota"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow"
+          >
             <Plus className="h-5 w-5" />
-          </span>
-          Nova
-        </button>
+          </button>
+        </div>
       </nav>
 
       {openNote && <MobileNoteScreen note={openNote} onClose={() => setOpenNoteId(null)} />}
