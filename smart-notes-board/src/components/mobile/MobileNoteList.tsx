@@ -114,7 +114,7 @@ export function MobileNoteList({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="scroll-thin min-h-0 flex-1 overflow-y-auto pb-28">
+      <div className="scroll-thin min-h-0 flex-1 overflow-y-auto pb-36">
         {total === 0 && (
           <p className="px-6 py-16 text-center text-sm text-muted-foreground">
             {query ? "Nenhuma nota encontrada." : "Nada por aqui ainda."}

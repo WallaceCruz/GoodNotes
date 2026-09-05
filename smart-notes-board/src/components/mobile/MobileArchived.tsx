@@ -38,7 +38,7 @@ export function MobileArchived({
 
   if (archived.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-8 pb-28 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-8 pb-36 text-center">
         <Inbox className="h-7 w-7 text-muted-foreground" />
         <p className="text-base font-semibold">
           {query ? "Nenhuma arquivada encontrada" : "Nenhuma nota arquivada"}
@@ -53,7 +53,7 @@ export function MobileArchived({
   }
 
   return (
-    <ul className="scroll-thin min-h-0 flex-1 overflow-y-auto pb-28">
+    <ul className="scroll-thin min-h-0 flex-1 overflow-y-auto pb-36">
       {archived.map((note) => (
         <li key={note.id} className="flex items-stretch gap-3 px-4">
           <button

@@ -144,7 +144,7 @@ export function MobileCalendar({
         </div>
       </div>
 
-      <div className="scroll-thin mt-1 min-h-0 flex-1 overflow-y-auto border-t border-border pb-28">
+      <div className="scroll-thin mt-1 min-h-0 flex-1 overflow-y-auto border-t border-border pb-36">
         {doDia.length === 0 ? (
           <p className="px-6 py-10 text-center text-sm text-muted-foreground">
             Nenhuma nota com prazo neste dia.

@@ -96,6 +96,22 @@ export function MobileApp() {
         esticar até o fim da tela. O respiro embaixo respeita a área segura do
         aparelho.
       */}
+      {/*
+        Criar nota e' a acao principal e nao pertence a barra de navegacao: la
+        ela competiria por espaco com os destinos e teria o mesmo tamanho deles.
+        Solta e acima, ganha alvo maior e fica no canto onde o polegar alcanca
+        sem atravessar a tela. A altura vem da barra (2.5rem de botao + 0.75rem
+        de moldura) mais o respiro entre as duas.
+      */}
+      <button
+        onClick={createNote}
+        aria-label="Nova nota"
+        title="Nova nota"
+        className="absolute bottom-[calc(max(1rem,env(safe-area-inset-bottom))+4rem)] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition active:scale-95"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
+
       <nav className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center pb-[max(1rem,env(safe-area-inset-bottom))]">
         <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-border/70 bg-popover/90 p-1.5 shadow-lg backdrop-blur-md">
           <button
@@ -126,16 +142,6 @@ export function MobileApp() {
               <Icon className="h-[18px] w-[18px]" />
             </button>
           ))}
-
-          <span className="mx-0.5 h-6 w-px bg-border" />
-
-          <button
-            onClick={createNote}
-            aria-label="Nova nota"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow"
-          >
-            <Plus className="h-5 w-5" />
-          </button>
         </div>
       </nav>
 
