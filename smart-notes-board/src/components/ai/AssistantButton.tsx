@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AssistantPanel } from "./AssistantPanel";
+import { ClaudeBadge } from "./ClaudeMark";
 import type { AiScope } from "@/lib/ai/context";
 import { cn } from "@/lib/utils";
 
@@ -23,17 +24,7 @@ export function AssistantButton({ scope, className }: { scope: AiScope; classNam
           className,
         )}
       >
-        {/* O anel é desenhado com gradiente cônico: um círculo colorido com o
-            miolo vazado, sem depender de imagem. */}
-        <span
-          aria-hidden
-          className="h-5 w-5 shrink-0 rounded-full"
-          style={{
-            background: "conic-gradient(from 210deg, #2563eb, #7c3aed, #db2777, #f59e0b, #2563eb)",
-            mask: "radial-gradient(circle, transparent 42%, black 44%)",
-            WebkitMask: "radial-gradient(circle, transparent 42%, black 44%)",
-          }}
-        />
+        <ClaudeBadge />
         Assistente
       </button>
 
