@@ -1,6 +1,6 @@
 import { uid } from "@/lib/id";
 import { type BoardFile, type Column, type Note, type NoteColor } from "@/lib/board/model";
-import { reindex } from "./notes";
+import { reindex, cloneNote, type AttachmentCopy } from "./notes";
 
 /** Move o item do índice `from` para o `to`, sem mutar o array original. */
 export function moveAt<T>(list: T[], from: number, to: number): T[] {
@@ -29,17 +29,25 @@ export function setColumnColor(file: BoardFile, cid: string, color: NoteColor | 
 }
 
 /** A cópia nunca é nativa: só uma coluna pode ocupar cada papel do fluxo. */
-export function duplicateColumn(file: BoardFile, cid: string): BoardFile {
+export function duplicateColumn(
+  file: BoardFile,
+  cid: string,
+): { file: BoardFile; attachments: AttachmentCopy[] } {
   const index = file.columns.findIndex((c) => c.id === cid);
   const source = file.columns[index];
-  if (!source) return file;
+  if (!source) return { file, attachments: [] };
   const clone: Column = { ...source, id: uid(), native: null, title: `${source.title} (cópia)` };
   const columns = [...file.columns];
   columns.splice(index + 1, 0, clone);
+  // Cópia profunda: sem ela as notas duplicadas dividiriam checklist,
+  // comentários e anexos com as originais. Ver `cloneNote`.
   const copies = file.notes
     .filter((n) => n.columnId === cid)
-    .map((n) => ({ ...n, id: uid(), columnId: clone.id }));
-  return { ...file, columns, notes: reindex([...file.notes, ...copies]) };
+    .map((n) => cloneNote(n, { columnId: clone.id }));
+  return {
+    file: { ...file, columns, notes: reindex([...file.notes, ...copies.map((c) => c.note)]) },
+    attachments: copies.flatMap((c) => c.attachments),
+  };
 }
 
 /** Colunas nativas do fluxo não são excluíveis. */

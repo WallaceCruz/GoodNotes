@@ -1,10 +1,17 @@
 import type { Editor } from "@tiptap/react";
 import {
   Code2,
+  Film,
   Heading1,
   Heading2,
   Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
+  ImagePlus,
+  Link2,
   List,
+  ListChecks,
   ListOrdered,
   Minus,
   Quote,
@@ -20,8 +27,12 @@ export type BlockKind =
   | "h1"
   | "h2"
   | "h3"
+  | "h4"
+  | "h5"
+  | "h6"
   | "bulletList"
   | "orderedList"
+  | "taskList"
   | "blockquote"
   | "codeBlock"
   | "divider"
@@ -31,17 +42,19 @@ export type BlockKind =
  * Catálogo de blocos do painel. Os mesmos blocos também nascem dos atalhos que o
  * editor já reconhece ao digitar (`# `, `- `, `> `, ```` ``` ````, via StarterKit).
  */
-export const INSERT_BLOCKS: Array<{
-  kind: BlockKind;
-  label: string;
-  icon: typeof Type;
-}> = [
+export type BlockEntry = { kind: BlockKind; label: string; icon: typeof Type };
+
+export const INSERT_BLOCKS: BlockEntry[] = [
   { kind: "paragraph", label: "Texto", icon: Type },
-  { kind: "h1", label: "Título", icon: Heading1 },
-  { kind: "h2", label: "Subtítulo", icon: Heading2 },
-  { kind: "h3", label: "Título menor", icon: Heading3 },
+  { kind: "h1", label: "Título 1", icon: Heading1 },
+  { kind: "h2", label: "Título 2", icon: Heading2 },
+  { kind: "h3", label: "Título 3", icon: Heading3 },
+  { kind: "h4", label: "Título 4", icon: Heading4 },
+  { kind: "h5", label: "Título 5", icon: Heading5 },
+  { kind: "h6", label: "Título 6", icon: Heading6 },
   { kind: "bulletList", label: "Lista", icon: List },
   { kind: "orderedList", label: "Lista numerada", icon: ListOrdered },
+  { kind: "taskList", label: "Checklist", icon: ListChecks },
   { kind: "blockquote", label: "Citação", icon: Quote },
   { kind: "codeBlock", label: "Bloco de código", icon: Code2 },
   { kind: "divider", label: "Divisor", icon: Minus },
@@ -50,6 +63,132 @@ export const INSERT_BLOCKS: Array<{
 
 /** Blocos de texto puro — a seção "Blocos" do painel. Tabela e linha têm UI própria. */
 export const TEXT_BLOCKS = INSERT_BLOCKS.filter((b) => b.kind !== "table" && b.kind !== "divider");
+
+/**
+ * O que a mídia precisa e um bloco de texto não: um seletor de arquivo ou um
+ * endereço. Ficam à parte porque não são inseríveis só com `insertBlock`.
+ */
+export type MediaKind = "image" | "video" | "mediaUrl" | "link";
+
+export const MEDIA_ACTIONS: Array<{ kind: MediaKind; label: string; icon: typeof Type }> = [
+  { kind: "image", label: "Imagem", icon: ImagePlus },
+  { kind: "video", label: "GIF ou vídeo", icon: Film },
+  { kind: "mediaUrl", label: "Mídia por link", icon: Link2 },
+  { kind: "link", label: "Hiperlink", icon: Link2 },
+];
+
+/**
+ * As seções do menu do botão "+", na ordem em que aparecem.
+ *
+ * A mesma lista serve o menu da alça e o painel lateral: um bloco novo entra
+ * aqui uma vez e aparece nos dois lugares.
+ */
+export const BLOCK_MENU_GROUPS: Array<{ title: string; kinds: BlockKind[] }> = [
+  { title: "Transformar em", kinds: ["paragraph", "h1", "h2", "h3", "h4", "h5", "h6"] },
+  { title: "Listas", kinds: ["bulletList", "orderedList", "taskList"] },
+  { title: "Blocos", kinds: ["blockquote", "codeBlock"] },
+  { title: "Inserir", kinds: ["divider", "table"] },
+];
+
+/**
+ * Blocos que *substituem* o bloco atual, como no Notion e no Obsidian:
+ * escolher "Título 1" com o cursor num parágrafo transforma aquele parágrafo,
+ * preservando o texto. Divisor e tabela não têm o que transformar — nascem
+ * abaixo — e por isso ficam na seção "Inserir".
+ */
+const CONVERSIVEIS = new Set<BlockKind>([
+  "paragraph",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "bulletList",
+  "orderedList",
+  "taskList",
+  "blockquote",
+  "codeBlock",
+]);
+
+export const isConvertible = (kind: BlockKind): boolean => CONVERSIVEIS.has(kind);
+
+const HEADING_LEVEL: Partial<Record<BlockKind, 1 | 2 | 3 | 4 | 5 | 6>> = {
+  h1: 1,
+  h2: 2,
+  h3: 3,
+  h4: 4,
+  h5: 5,
+  h6: 6,
+};
+
+/** O tipo do bloco que está na posição — para o menu marcar o atual. */
+export function blockKindAt(editor: Editor, pos: number): BlockKind | null {
+  const node = editor.state.doc.nodeAt(pos);
+  if (!node) return null;
+  switch (node.type.name) {
+    case "paragraph":
+      return "paragraph";
+    case "heading": {
+      const level = Number(node.attrs["level"]);
+      return level >= 1 && level <= 6 ? (`h${level}` as BlockKind) : null;
+    }
+    case "bulletList":
+      return "bulletList";
+    case "orderedList":
+      return "orderedList";
+    case "taskList":
+      return "taskList";
+    case "blockquote":
+      return "blockquote";
+    case "codeBlock":
+      return "codeBlock";
+    case "horizontalRule":
+      return "divider";
+    case "table":
+      return "table";
+    default:
+      return null;
+  }
+}
+
+/**
+ * Transforma o bloco na posição dada, ou insere abaixo dele o que não se
+ * transforma. `pos` é a posição *do* bloco, não a de depois dele.
+ */
+export function applyBlock(editor: Editor, kind: BlockKind, pos: number): void {
+  if (editor.isDestroyed) return;
+
+  if (!isConvertible(kind)) {
+    const node = editor.state.doc.nodeAt(pos);
+    insertBlock(editor, kind, pos + (node?.nodeSize ?? 0));
+    return;
+  }
+
+  // Já é esse tipo: os comandos `toggle*` desfariam a formatação, e ninguém
+  // escolhe "Lista" numa lista esperando que ela deixe de ser lista.
+  if (blockKindAt(editor, pos) === kind) return;
+
+  // O cursor pode estar em outro bloco: a alça segue o ponteiro, não a seleção.
+  const chain = editor
+    .chain()
+    .focus()
+    .setTextSelection(pos + 1);
+  const level = HEADING_LEVEL[kind];
+
+  if (level) chain.setHeading({ level });
+  else if (kind === "paragraph") chain.setParagraph();
+  else if (kind === "bulletList") chain.toggleBulletList();
+  else if (kind === "orderedList") chain.toggleOrderedList();
+  else if (kind === "taskList") chain.toggleTaskList();
+  else if (kind === "blockquote") chain.toggleBlockquote();
+  else if (kind === "codeBlock") chain.toggleCodeBlock();
+
+  chain.run();
+}
+
+export const blockEntry = (kind: BlockKind): BlockEntry =>
+  INSERT_BLOCKS.find((b) => b.kind === kind) ?? INSERT_BLOCKS[0]!;
 
 export const MAX_MEDIA_BYTES = 8 * 1024 * 1024;
 
@@ -100,13 +239,23 @@ const listWithItem = (type: string) => ({
   content: [{ type: "listItem", content: [emptyParagraph] }],
 });
 
+const heading = (level: number) => ({ type: "heading", attrs: { level } });
+
 const BLOCK_JSON: Record<Exclude<BlockKind, "table">, Record<string, unknown>> = {
   paragraph: emptyParagraph,
-  h1: { type: "heading", attrs: { level: 1 } },
-  h2: { type: "heading", attrs: { level: 2 } },
-  h3: { type: "heading", attrs: { level: 3 } },
+  h1: heading(1),
+  h2: heading(2),
+  h3: heading(3),
+  h4: heading(4),
+  h5: heading(5),
+  h6: heading(6),
   bulletList: listWithItem("bulletList"),
   orderedList: listWithItem("orderedList"),
+  // O item de tarefa nasce desmarcado; `checked` é obrigatório no schema.
+  taskList: {
+    type: "taskList",
+    content: [{ type: "taskItem", attrs: { checked: false }, content: [emptyParagraph] }],
+  },
   blockquote: { type: "blockquote", content: [emptyParagraph] },
   codeBlock: { type: "codeBlock" },
   divider: { type: "horizontalRule" },

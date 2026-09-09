@@ -128,26 +128,61 @@ export function restoreNotes(file: BoardFile, restored: Note[]): BoardFile {
   return { ...file, notes: reindex([...restored, ...file.notes]) };
 }
 
+/** Um anexo a duplicar: o quadro guarda o metadado, o binário mora fora dele. */
+export type AttachmentCopy = { from: string; to: string };
+
+export type NoteClone = { note: Note; attachments: AttachmentCopy[] };
+
+/**
+ * Cópia profunda de uma nota.
+ *
+ * `{ ...source, id: uid() }` renovava só o id da nota: checklist, comentários,
+ * imagens e anexos seguiam com os ids do original, e duas notas passavam a
+ * declarar os mesmos itens. Isso quebrava em dois lugares — o Inbox junta os
+ * comentários de todas as notas numa lista só e via o mesmo id duas vezes; e
+ * apagar um anexo da cópia apagava o arquivo da original, porque o binário é
+ * endereçado pelo id do anexo.
+ *
+ * Os anexos saem daqui com id novo e a lista do que copiar: o arquivo em si é
+ * assíncrono e não cabe numa função de domínio.
+ */
+export function cloneNote(source: Note, patch: Partial<Note> = {}): NoteClone {
+  const attachments: AttachmentCopy[] = source.attachments.map((anexo) => ({
+    from: anexo.id,
+    to: uid(),
+  }));
+  const note: Note = {
+    ...source,
+    ...patch,
+    // Depois do patch: nem por engano a cópia herda o id do original.
+    id: uid(),
+    checklist: source.checklist.map((item) => ({ ...item, id: uid() })),
+    comments: source.comments.map((comment) => ({ ...comment, id: uid() })),
+    images: source.images.map((image) => ({ ...image, id: uid() })),
+    attachments: source.attachments.map((anexo, i) => ({ ...anexo, id: attachments[i]!.to })),
+  };
+  return { note, attachments };
+}
+
 export function duplicateNote(
   file: BoardFile,
   noteId: string,
-): { file: BoardFile; id: string | null } {
+): { file: BoardFile; id: string | null; attachments: AttachmentCopy[] } {
   const source = file.notes.find((note) => note.id === noteId);
-  if (!source) return { file, id: null };
-  const clone: Note = {
-    ...source,
-    id: uid(),
+  if (!source) return { file, id: null, attachments: [] };
+  const { note: clone, attachments } = cloneNote(source, {
     title: `${source.title || "Nota"} (cópia)`,
     pinned: false,
     updatedAt: Date.now(),
     order: -1,
-  };
+  });
   const siblings = file.notes.filter((note) => note.columnId === source.columnId);
   const others = file.notes.filter((note) => note.columnId !== source.columnId);
   siblings.splice(siblings.findIndex((note) => note.id === noteId) + 1, 0, clone);
   return {
     file: { ...file, notes: [...others, ...siblings].map((note, i) => ({ ...note, order: i })) },
     id: clone.id,
+    attachments,
   };
 }
 

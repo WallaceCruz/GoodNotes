@@ -19,6 +19,7 @@ import * as tags from "@/lib/board/tags";
 import * as comments from "@/lib/board/comments";
 import * as attachments from "@/lib/board/attachments";
 import { loadState } from "@/lib/board/persistence";
+import { copyFile } from "@/lib/attachment-files";
 import { createInitialState } from "@/lib/board/seed";
 
 /**
@@ -120,6 +121,17 @@ export const useBoard = create<BoardSlice>()((set, get) => {
   const onFile = (fn: (file: BoardFile) => BoardFile) =>
     set((s) => ({ data: projects.mapActiveFile(s.data, s.projectId, s.fileId, fn) }));
 
+  /**
+   * Duplica os binários dos anexos de uma cópia.
+   *
+   * O metadado já entrou no quadro; o arquivo chega um instante depois. Se
+   * falhar, a cópia mostra "não está neste navegador" — o mesmo aviso de sempre
+   * para um anexo ausente, e nada do que o usuário acabou de fazer se perde.
+   */
+  const copiarAnexos = (pares: notes.AttachmentCopy[]) => {
+    for (const { from, to } of pares) void copyFile(from, to);
+  };
+
   return {
     data: createInitialState(),
     hydrated: false,
@@ -161,7 +173,15 @@ export const useBoard = create<BoardSlice>()((set, get) => {
       renameColumn: (columnId, title) => onFile((f) => columns.renameColumn(f, columnId, title)),
       setColumnColor: (columnId, color) =>
         onFile((f) => columns.setColumnColor(f, columnId, color)),
-      duplicateColumn: (columnId) => onFile((f) => columns.duplicateColumn(f, columnId)),
+      duplicateColumn: (columnId) => {
+        let anexos: notes.AttachmentCopy[] = [];
+        onFile((f) => {
+          const result = columns.duplicateColumn(f, columnId);
+          anexos = result.attachments;
+          return result.file;
+        });
+        copiarAnexos(anexos);
+      },
       removeColumn: (columnId) => onFile((f) => columns.removeColumn(f, columnId)),
       restoreColumn: (column, restored) =>
         onFile((f) => columns.restoreColumn(f, column, restored)),
@@ -198,11 +218,14 @@ export const useBoard = create<BoardSlice>()((set, get) => {
       restoreNote: (note) => onFile((f) => notes.restoreNote(f, note)),
       duplicateNote: (noteId) => {
         let created: string | null = null;
+        let anexos: notes.AttachmentCopy[] = [];
         onFile((f) => {
           const result = notes.duplicateNote(f, noteId);
           created = result.id;
+          anexos = result.attachments;
           return result.file;
         });
+        copiarAnexos(anexos);
         return created;
       },
       reorderNote: (activeId, overId) => onFile((f) => notes.reorderNote(f, activeId, overId)),

@@ -149,7 +149,9 @@ export function NoteFocusView({
             html={note.content}
             fallback="<p></p>"
             zoomable
-            className="note-prose min-h-[40vh] text-sm"
+            // `pl-11` acompanha a calha da alça de bloco do modo de edição: sem
+            // ela o texto saltaria 44px a cada troca entre ler e editar.
+            className="note-prose min-h-[40vh] pl-11 text-sm"
           />
         )}
       </div>

@@ -163,6 +163,7 @@ function StickyNoteCardBase({
           onChange={(html) => onChange({ content: html })}
           minHeight="min-h-14"
           compact
+          blocks
         />
 
         {showChecklist && (

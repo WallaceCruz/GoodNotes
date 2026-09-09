@@ -57,6 +57,19 @@ export function deleteFile(id: string): Promise<unknown> {
   return transact("readwrite", (store) => store.delete(id));
 }
 
+/**
+ * Duplica o binário sob um id novo.
+ *
+ * A cópia de uma nota não pode dividir o arquivo com a original: apagar o anexo
+ * de uma apagaria o da outra, já que o binário é endereçado pelo id do anexo.
+ * Some em silêncio se o original não estiver neste navegador — a nota copiada
+ * então mostra "não está neste navegador", que é o mesmo que a original mostrava.
+ */
+export async function copyFile(fromId: string, toId: string): Promise<void> {
+  const blob = await getFile(fromId);
+  if (blob) await putFile(toId, blob);
+}
+
 /** Entrega o arquivo ao usuário, com o nome original. */
 export async function downloadFile(id: string, name: string): Promise<boolean> {
   const file = await getFile(id);

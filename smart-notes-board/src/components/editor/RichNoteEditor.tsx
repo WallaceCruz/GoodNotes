@@ -1,6 +1,7 @@
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Highlight from "@tiptap/extension-highlight";
+import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TableKit } from "@tiptap/extension-table";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BlockHandle } from "@/components/editor/BlockHandle";
@@ -56,6 +57,16 @@ function RichNoteEditorBase({
   const images = useMemo(() => collectImages(content), [content]);
   const lightboxIndex = lightbox ? images.indexOf(lightbox) : -1;
 
+  /**
+   * Calha da alça de bloco.
+   *
+   * Vale para o editor *e* para a prévia que o antecede: o card só monta o
+   * Tiptap ao ser tocado, e se a calha nascesse junto com ele o texto — e as
+   * imagens — pulariam 28px para a direita no primeiro clique e nunca mais
+   * voltariam. Notas tocadas ficavam mais estreitas que as intocadas.
+   */
+  const calha = blocks ? (compact ? "pl-7" : "pl-11") : "";
+
   const editor = useEditor({
     extensions: [
       // Link e Underline já vêm no StarterKit v3: registrá-los de novo duplica
@@ -68,6 +79,9 @@ function RichNoteEditorBase({
         },
       }),
       Highlight.configure({ multicolor: true }),
+      // O StarterKit traz listas comuns, mas não a de tarefas.
+      TaskList,
+      TaskItem.configure({ nested: true }),
       DraggableImage.configure({
         inline: false,
         allowBase64: true,
@@ -81,8 +95,9 @@ function RichNoteEditorBase({
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        // Calha à esquerda para a alça de bloco não cobrir o texto.
-        class: cn("outline-none", minHeight, compact ? "text-xs" : "text-sm", blocks && "pl-11"),
+        // A calha à esquerda impede que a alça cubra o texto. No card da coluna
+        // ela é mais estreita: 44px seriam quase um quinto da largura.
+        class: cn("outline-none", minHeight, compact ? "text-xs" : "text-sm", calha),
       },
       handleDrop: (view, event) => {
         // Bloco arrastado do painel: entra na posição solta, não como texto.
@@ -168,12 +183,14 @@ function RichNoteEditorBase({
           <NoteRichContent
             html={content}
             fallback="<p></p>"
-            className={cn("cursor-text", minHeight)}
+            className={cn("cursor-text", minHeight, calha)}
           />
         )}
 
         {mounted && <TableMenu editor={editor} containerRef={proseRef} />}
-        {mounted && blocks && <BlockHandle editor={editor} containerRef={proseRef} />}
+        {mounted && blocks && (
+          <BlockHandle editor={editor} containerRef={proseRef} compact={compact} />
+        )}
 
         {/* Um clique na imagem seleciona o nó (para arrastar ou apagar pelo
             teclado); ampliar é o duplo clique ou o botão da barra. */}
